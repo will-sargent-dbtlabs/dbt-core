@@ -7,7 +7,7 @@ def format_contributors(version):
     Grabs the contributor info at the end of each change line, pulls it off and puts it all at the
     bottom of this bacth of changes in a contributing section.
     """
-    fp = f"../.changes/{version}.md"
+    fp = f"/.changes/{version}.md"
     separator = "ContributorData "
     bullet = "-"
 
