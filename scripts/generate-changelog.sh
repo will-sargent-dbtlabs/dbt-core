@@ -15,8 +15,8 @@ if [ "$final" == "N" ] || [ "$final" == "n" ]; then
 
 else
     full_version=$version
-    rm -rf ./.changes/$version*
     mv ./.changes/$version/* ./.changes/unreleased/
+    rm -rf ./.changes/$version*
     changie batch $full_version
 fi
 
