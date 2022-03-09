@@ -4,9 +4,13 @@
 ### Fixes
 - Fix bug causing empty node level meta, snapshot config errors ([#4459](https://github.com/dbt-labs/dbt-core/issues/4459), [#4726](https://github.com/dbt-labs/dbt-core/pull/4726))
 - Fixed a bug where nodes that depend on multiple macros couldn't be selected using `-s state:modified` ([#4678](https://github.com/dbt-labs/dbt-core/issues/4678))
+- Support click versions in the v7.x series ([#4681](https://github.com/dbt-labs/dbt-core/pull/4681))
 
 ### Docs
 - Resolve errors related to operations preventing DAG from generating in the docs.  Also patch a spark issue to allow search to filter accurately past the missing columns. ([#4578](https://github.com/dbt-labs/dbt-core/issues/4578), [#4763](https://github.com/dbt-labs/dbt-core/pull/4763))
+
+Contributors:
+* [@twilly](https://github.com/twilly) ([#4681](https://github.com/dbt-labs/dbt-core/pull/4681))
 
 ## dbt-core 1.0.3 (February 21, 2022)
 
