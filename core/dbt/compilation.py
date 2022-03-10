@@ -10,7 +10,7 @@ from dbt import flags
 from dbt.adapters.factory import get_adapter
 from dbt.clients import jinja
 from dbt.clients.system import make_directory
-from dbt.context.providers import generate_runtime_model_context
+from dbt.context.providers import generate_runtime_model_context, generate_runtime_sql_operation_context
 from dbt.contracts.graph.manifest import Manifest, UniqueID
 from dbt.contracts.graph.compiled import (
     COMPILED_TYPES,
@@ -19,6 +19,8 @@ from dbt.contracts.graph.compiled import (
     InjectedCTE,
     ManifestNode,
     NonSourceCompiledNode,
+    CompiledSqlNode,
+    CompiledRPCNode,
 )
 from dbt.contracts.graph.parsed import ParsedNode
 from dbt.exceptions import (
@@ -180,8 +182,12 @@ class Compiler:
         manifest: Manifest,
         extra_context: Dict[str, Any],
     ) -> Dict[str, Any]:
-
-        context = generate_runtime_model_context(node, self.config, manifest)
+        
+        if isinstance(node, CompiledSqlNode) or isinstance(node, CompiledRPCNode):
+            # or node.resource_type in ('SqlOperation', 'RPCCall'):
+            context = generate_runtime_sql_operation_context(node, self.config, manifest)
+        else:
+            context = generate_runtime_model_context(node, self.config, manifest)
         context.update(extra_context)
         if isinstance(node, CompiledGenericTestNode):
             # for test nodes, add a special keyword args value to the context

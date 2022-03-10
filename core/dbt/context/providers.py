@@ -32,6 +32,8 @@ from dbt.contracts.graph.compiled import (
     CompiledResource,
     CompiledSeedNode,
     ManifestNode,
+    CompiledSqlNode,
+    CompiledRPCNode,
 )
 from dbt.contracts.graph.parsed import (
     ParsedMacro,
@@ -470,11 +472,11 @@ class OperationRefResolver(RuntimeRefResolver):
         pass
 
     def create_relation(self, target_model: ManifestNode, name: str) -> RelationProxy:
-        if target_model.is_ephemeral_model:
+        if not hasattr(self.model, "set_cte") and target_model.is_ephemeral_model:
             # In operations, we can't ref() ephemeral nodes, because
             # ParsedMacros do not support set_cte
             raise_compiler_error(
-                "Operations can not ref() ephemeral nodes, but {} is ephemeral".format(
+                "Macros run as operations cannot ref() ephemeral nodes, but {} is ephemeral".format(
                     target_model.name
                 ),
                 self.model,
@@ -1283,6 +1285,15 @@ def generate_runtime_macro_context(
     package_name: Optional[str],
 ) -> Dict[str, Any]:
     ctx = MacroContext(macro, config, manifest, OperationProvider(), package_name)
+    return ctx.to_dict()
+
+
+def generate_runtime_sql_operation_context(
+    model: Union[CompiledSqlNode, CompiledRPCNode],
+    config: RuntimeConfig,
+    manifest: Manifest,
+) -> Dict[str, Any]:
+    ctx = ModelContext(model, config, manifest, OperationProvider(), None)
     return ctx.to_dict()
 
 
