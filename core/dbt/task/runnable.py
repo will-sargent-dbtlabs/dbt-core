@@ -54,7 +54,7 @@ from dbt.parser.manifest import ManifestLoader
 import dbt.exceptions
 from dbt import flags
 import dbt.utils
-from dbt.ui import warning_tag
+from dbt.ui import warning_tag, green
 
 RESULT_FILE_NAME = "run_results.json"
 MANIFEST_FILE_NAME = "manifest.json"
@@ -391,7 +391,13 @@ class GraphRunnableTask(ManifestTask):
             self._skipped_children[dep_node_id] = cause
 
     def populate_adapter_cache(self, adapter):
+        import time
+        start = time.time()
+        print("Starting cache population")
         adapter.set_relations_cache(self.manifest)
+        end = time.time()
+        print("Finished cache population")
+        print(green(end - start))
 
     def before_hooks(self, adapter):
         pass
