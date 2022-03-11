@@ -351,12 +351,15 @@ class BaseAdapter(metaclass=AdapterMeta):
                     self.list_relations_without_caching,
                     cache_schema,
                 )
+                print(f"Planning to cache schema {cache_schema.schema}", f"in database {cache_schema.database}" if cache_schema.database else "")
                 futures.append(fut)
 
             for future in as_completed(futures):
+                results = future.result()
+                print(f"Added {len(results)} relations")
                 # if we can't read the relations we need to just raise anyway,
                 # so just call future.result() and let that raise on failure
-                for relation in future.result():
+                for relation in results:
                     self.cache.add(relation)
 
         # it's possible that there were no relations in some schemas. We want

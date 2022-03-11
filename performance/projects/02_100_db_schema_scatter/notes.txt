@@ -1,0 +1,5 @@
+dbt compile --target snowflake --threads 1
+dbt compile --target snowflake --threads 5
+
+dbt compile --target databricks --threads 1
+dbt compile --target databricks --threads 5
