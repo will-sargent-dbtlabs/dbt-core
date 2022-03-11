@@ -1,12 +1,12 @@
 
     {{
     config(
-        enabled=var('add_noise', True),
-        database=('bigdb3' if target.type in ('snowflake', 'bigquery') else target.get('database')),
-        schema='bigschema5',
-        materialized='view'
+        enabled=var('add_noise', False),
+        database=('bigdb4' if target.type in ('snowflake', 'bigquery') else target.get('database')),
+        schema='bigschema2',
+        materialized='table'
     )
     }}
     
-    select 1 as id
+    select 1 as fun, 'blue' as hue, true as is_cool, '2022-01-01' as date_day
     
