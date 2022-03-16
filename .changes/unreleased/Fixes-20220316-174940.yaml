@@ -1,0 +1,8 @@
+kind: Fixes
+body: 'dbt tests with a set severity level of warn may still trigger error level log
+  events '
+time: 2022-03-16T17:49:40.236594-05:00
+custom:
+  Author: iknox-fa
+  Issue: "4814"
+  PR: "4883"
