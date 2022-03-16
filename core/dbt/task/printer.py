@@ -145,6 +145,7 @@ def print_run_end_messages(results, keyboard_interrupt: bool = False) -> None:
                 keyboard_interrupt=keyboard_interrupt,
             )
         )
+
         for error in errors:
             print_run_result_error(error, is_warning=False)
 
