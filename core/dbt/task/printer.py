@@ -98,10 +98,10 @@ def print_run_result_error(result, newline: bool = True, is_warning: bool = Fals
                 )
             )
 
-        if result.message and not is_warning:
-            fire_event(RunResultError(msg=result.message))
-        else:
-            fire_event(RunResultErrorNoMessage(status=result.status))
+            if result.message:
+                fire_event(RunResultError(msg=result.message))
+            else:
+                fire_event(RunResultErrorNoMessage(status=result.status))
 
         if result.node.build_path is not None:
             with TextOnly():
