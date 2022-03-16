@@ -1033,6 +1033,11 @@ class MetricParser(YamlReader):
         )
         model_ref = "{{ " + unparsed.model + " }}"
         get_rendered(model_ref, ctx, parsed, capture_macros=True)
+
+        # Update rendered SQL after compilation
+        rendered_sql = get_rendered(unparsed.sql, ctx, parsed, capture_macros=True)
+        parsed.sql = rendered_sql
+
         return parsed
 
     def parse(self) -> Iterable[ParsedMetric]:

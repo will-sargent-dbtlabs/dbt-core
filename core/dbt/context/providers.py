@@ -87,6 +87,29 @@ class RelationProxy:
         return self._relation_type.create(*args, **kwargs)
 
 
+class MetricProxy:
+    def __init__(self, metric_name, metric_package, node):
+        self.metric_name = metric_name
+        self.metric_package = metric_package
+        self.node = node
+
+    @classmethod
+    def create(cls, metric_name, metric_package, node=None):
+        return MetricProxy(metric_name, metric_package, node)
+
+    def render(self) -> str:
+        if self.node.type == 'number':
+            return self.node.sql
+        elif self.node.type == 'count_distinct':
+            return f'count(distinct {self.node.sql})'
+        else:
+            return f'{self.node.type}({self.node.sql})'
+
+    def __str__(self) -> str:
+        # This should actually return the expression....?
+        return self.render()
+
+
 class BaseDatabaseWrapper:
     """
     Wrapper for runtime database interaction. Applies the runtime quote policy
@@ -197,7 +220,7 @@ class BaseResolver(metaclass=abc.ABCMeta):
         return self.db_wrapper.Relation
 
     @abc.abstractmethod
-    def __call__(self, *args: str) -> Union[str, RelationProxy]:
+    def __call__(self, *args: str) -> Union[str, RelationProxy, MetricProxy]:
         pass
 
 
@@ -261,6 +284,42 @@ class BaseSourceResolver(BaseResolver):
             )
         self.validate_args(args[0], args[1])
         return self.resolve(args[0], args[1])
+
+
+class BaseMetricResolver(BaseResolver):
+    def resolve(self, name: str, package: Optional[str] = None) -> MetricProxy:
+        ...
+
+    def _repack_args(self, name: str, package: Optional[str]) -> List[str]:
+        if package is None:
+            return [name]
+        else:
+            return [package, name]
+
+    def validate_args(self, name: str, package: Optional[str]):
+        if not isinstance(name, str):
+            raise CompilationException(
+                f"The name argument to metric() must be a string, got " f"{type(name)}"
+            )
+
+        if package is not None and not isinstance(package, str):
+            raise CompilationException(
+                f"The package argument to metric() must be a string or None, got " f"{type(package)}"
+            )
+
+    def __call__(self, *args: str) -> MetricProxy:
+        name: str
+        package: Optional[str] = None
+
+        if len(args) == 1:
+            name = args[0]
+        elif len(args) == 2:
+            package, name = args
+        else:
+            # TODO: Use a different error!
+            ref_invalid_args(self.model, args)
+        self.validate_args(name, package)
+        return self.resolve(name, package)
 
 
 class Config(Protocol):
@@ -509,6 +568,33 @@ class RuntimeSourceResolver(BaseSourceResolver):
         return self.Relation.create_from_source(target_source)
 
 
+# metric` implementations
+class ParseMetricResolver(BaseMetricResolver):
+    def resolve(self, name: str, package: Optional[str] = None) -> MetricProxy:
+        return MetricProxy.create(name, package)
+
+
+class RuntimeMetricResolver(BaseMetricResolver):
+    def resolve(self, target_name: str, target_package: Optional[str] = None) -> MetricProxy:
+        target_metric = self.manifest.resolve_metric(
+            target_name,
+            target_package,
+            self.current_project,
+            self.model.package_name,
+        )
+
+        if target_metric is None or isinstance(target_metric, Disabled):
+            # TODO : Use a different exception!!
+            ref_target_not_found(
+                self.model,
+                target_name,
+                target_package,
+                disabled=isinstance(target_metric, Disabled),
+            )
+
+        return MetricProxy.create(target_name, target_package, target_metric)
+
+
 # `var` implementations.
 class ModelConfiguredVar(Var):
     def __init__(
@@ -566,6 +652,7 @@ class Provider(Protocol):
     Var: Type[ModelConfiguredVar]
     ref: Type[BaseRefResolver]
     source: Type[BaseSourceResolver]
+    metric: Type[BaseMetricResolver]
 
 
 class ParseProvider(Provider):
@@ -575,6 +662,7 @@ class ParseProvider(Provider):
     Var = ParseVar
     ref = ParseRefResolver
     source = ParseSourceResolver
+    metric = ParseMetricResolver
 
 
 class GenerateNameProvider(Provider):
@@ -584,6 +672,7 @@ class GenerateNameProvider(Provider):
     Var = RuntimeVar
     ref = ParseRefResolver
     source = ParseSourceResolver
+    metric = ParseMetricResolver
 
 
 class RuntimeProvider(Provider):
@@ -593,6 +682,7 @@ class RuntimeProvider(Provider):
     Var = RuntimeVar
     ref = RuntimeRefResolver
     source = RuntimeSourceResolver
+    metric = RuntimeMetricResolver
 
 
 class OperationProvider(RuntimeProvider):
@@ -775,6 +865,10 @@ class ProviderContext(ManifestContext):
     @contextproperty
     def source(self) -> Callable:
         return self.provider.source(self.db_wrapper, self.model, self.config, self.manifest)
+
+    @contextproperty
+    def metric(self) -> Callable:
+        return self.provider.metric(self.db_wrapper, self.model, self.config, self.manifest)
 
     @contextproperty("config")
     def ctx_config(self) -> Config:
@@ -1357,6 +1451,12 @@ def generate_parse_metrics(
     project = config.load_dependencies()[package_name]
     return {
         "ref": MetricRefResolver(
+            None,
+            metric,
+            project,
+            manifest,
+        ),
+        "metric": RuntimeMetricResolver(
             None,
             metric,
             project,
