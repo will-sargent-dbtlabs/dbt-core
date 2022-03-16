@@ -1,11 +1,15 @@
 from typing import List
+
+# from build.lib.dbt.tracking import initialize_from_flags
 from dbt.logger import log_cache_events, log_manager
 
 import argparse
+
+# import click
 import os.path
 import sys
 import traceback
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 
 import dbt.version
@@ -118,37 +122,63 @@ class DBTArgumentParser(argparse.ArgumentParser):
 
 
 def main(args=None):
-    if args is None:
-        args = sys.argv[1:]
-    with log_manager.applicationbound():
-        try:
-            results, succeeded = handle_and_check(args)
-            if succeeded:
-                exit_code = ExitCodes.Success.value
-            else:
-                exit_code = ExitCodes.ModelError.value
+    new_runner = True
+    if new_runner:
+        breakpoint()
+        with log_manager.applicationbound():
+            # Get config information
+            parsed = parse_args(args) if args else parse_args(sys.argv[1:])
+            user_config = read_user_config(
+                flags.PROFILES_DIR
+            )  # TODO this may not be needed, or only a portion needed
+            profiler_context = (
+                profiler(outfile=parsed.record_timing_info)
+                if parsed.record_timing_info
+                else nullcontext()
+            )
+            flags.set_from_args(parsed, user_config)
 
-        except KeyboardInterrupt:
-            # if the logger isn't configured yet, it will use the default logger
-            fire_event(MainKeyboardInterrupt())
-            exit_code = ExitCodes.UnhandledError.value
+            # Initialize tracking
+            dbt.tracking.initialize_from_flags()
 
-        # This can be thrown by eg. argparse
-        except SystemExit as e:
-            exit_code = e.code
+            # Set log format
+            parsed.cls.set_log_format()
 
-        except BaseException as e:
-            fire_event(MainEncounteredError(e=str(e)))
-            fire_event(MainStackTrace(stack_trace=traceback.format_exc()))
-            exit_code = ExitCodes.UnhandledError.value
+            # Set debug
+            if parsed and flags and flags.DEBUG:
+                log_manager.set_debug()
 
-    sys.exit(exit_code)
+            with profiler_context, adapter_management():
+                task, res = run_from_args(parsed)
+                # success = task.interpret_results(res)
 
+        sys.exit("byee")
+    else:
+        if args is None:
+            args = sys.argv[1:]
+        with log_manager.applicationbound():
+            try:
+                results, succeeded = handle_and_check(args)
+                if succeeded:
+                    exit_code = ExitCodes.Success.value
+                else:
+                    exit_code = ExitCodes.ModelError.value
 
-# here for backwards compatibility
-def handle(args):
-    res, success = handle_and_check(args)
-    return res
+            except KeyboardInterrupt:
+                # if the logger isn't configured yet, it will use the default logger
+                fire_event(MainKeyboardInterrupt())
+                exit_code = ExitCodes.UnhandledError.value
+
+            # This can be thrown by eg. argparse
+            except SystemExit as e:
+                exit_code = e.code
+
+            except BaseException as e:
+                fire_event(MainEncounteredError(e=str(e)))
+                fire_event(MainStackTrace(stack_trace=traceback.format_exc()))
+                exit_code = ExitCodes.UnhandledError.value
+
+        sys.exit(exit_code)
 
 
 @contextmanager
