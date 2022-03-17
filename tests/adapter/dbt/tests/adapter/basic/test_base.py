@@ -75,7 +75,12 @@ class BaseSimpleMaterializations:
         assert len(catalog.sources) == 1
 
         # run_dbt changing materialized_var to view
-        results = run_dbt(["run", "-m", "swappable", "--vars", "materialized_var: view"])
+        if project.test_config.get("require_full_refresh", False):  # required for BigQuery
+            results = run_dbt(
+                ["run", "--full-refresh", "-m", "swappable", "--vars", "materialized_var: view"]
+            )
+        else:
+            results = run_dbt(["run", "-m", "swappable", "--vars", "materialized_var: view"])
         assert len(results) == 1
 
         # check relation types, swappable is view

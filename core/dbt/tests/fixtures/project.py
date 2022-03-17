@@ -275,6 +275,7 @@ class TestProjInfo:
         test_data_dir,
         test_schema,
         database,
+        test_config,
     ):
         self.project_root = project_root
         self.profiles_dir = profiles_dir
@@ -284,6 +285,7 @@ class TestProjInfo:
         self.test_data_dir = test_data_dir
         self.test_schema = test_schema
         self.database = database
+        self.test_config = test_config
 
     # Run sql from a path
     def run_sql_file(self, sql_path, fetch=None):
@@ -312,6 +314,13 @@ class TestProjInfo:
         return {model_name: materialization for (model_name, materialization) in result}
 
 
+# This fixture is for customizing tests that need overrides in adapter
+# repos. Example in dbt.tests.adapter.basic.test_base.
+@pytest.fixture(scope="class")
+def test_config():
+    return {}
+
+
 @pytest.fixture(scope="class")
 def project(
     project_root,
@@ -327,6 +336,7 @@ def project(
     shared_data_dir,
     test_data_dir,
     logs_dir,
+    test_config,
 ):
     # Logbook warnings are ignored so we don't have to fork logbook to support python 3.10.
     # This _only_ works for tests in `tests/` that use the project fixture.
@@ -345,6 +355,7 @@ def project(
         test_data_dir=test_data_dir,
         test_schema=unique_schema,
         database=adapter.config.credentials.database,
+        test_config=test_config,
     )
     project.run_sql("drop schema if exists {schema} cascade")
     project.run_sql("create schema {schema}")
