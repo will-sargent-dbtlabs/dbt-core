@@ -5,6 +5,25 @@ ARG BASE_REQUIREMENTS_SRC_PATH
 ARG WHEEL_REQUIREMENTS_SRC_PATH
 ARG DIST_PATH
 
+##
+# base image (abstract)
+##
+FROM --platform=$build_for python:3.9.9-slim-bullseye as base
+
+# N.B. The refs updated automagically every release via bumpversion
+# N.B. dbt-postgres is currently found in the core codebase so a value of dbt-core@<some_version> is correct
+
+ARG dbt_core_ref=dbt-core@v1.0.4
+ARG dbt_postgres_ref=dbt-core@v1.0.4
+ARG dbt_redshift_ref=dbt-redshift@v1.0.0
+ARG dbt_bigquery_ref=dbt-bigquery@v1.0.0
+ARG dbt_snowflake_ref=dbt-snowflake@v1.0.0
+ARG dbt_spark_ref=dbt-spark@v1.0.0
+# special case args
+ARG dbt_spark_version=all
+ARG dbt_third_party
+
+# System setup
 RUN apt-get update \
   && apt-get dist-upgrade -y \
   && apt-get install -y --no-install-recommends \
