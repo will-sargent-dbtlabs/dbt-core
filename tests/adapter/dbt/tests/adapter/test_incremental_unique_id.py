@@ -484,7 +484,7 @@ class TestIncrementalStrUniqueKey(IncrementalUniqueKeyBase):
 
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__bad_unique_key(self):
+    def test__bad_unique_key(self, project):
         """expect compilation error from unique key not being a column"""
 
         (status, exc) = self.fail_to_build_inc_missing_unique_key_column(
@@ -586,7 +586,7 @@ class TestIncrementalListUniqueKey(IncrementalUniqueKeyBase):
 
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__bad_unique_key_list(self):
+    def test__bad_unique_key_list(self, project):
         """expect compilation error from unique key not being a column"""
 
         (status, exc) = self.fail_to_build_inc_missing_unique_key_column(
