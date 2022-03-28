@@ -4,8 +4,6 @@ from dbt.tests.tables import TableComparison
 from dbt.contracts.results import RunStatus
 from collections import namedtuple
 from pathlib import Path
-from dbt.tests.fixtures.project import write_project_files
-
 
 models__trinary_unique_key_list_sql = """
 -- a multi-argument unique key list should see overwriting on rows in the model
@@ -333,16 +331,6 @@ def seeds():
         "seed.csv": seeds__seed_csv,
         "add_new_rows.sql": seeds__add_new_rows_sql,
     }
-
-
-@pytest.fixture(scope="class")
-def project_files(
-    project_root,
-    models,
-    seeds,
-):
-    write_project_files(project_root, "models", models)
-    write_project_files(project_root, "seeds", seeds)
 
 
 ResultHolder = namedtuple(
