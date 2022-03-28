@@ -304,33 +304,33 @@ values ('CA','Los Angeles','Los Angeles','2022-02-01');
 """
 
 
-@pytest.fixture(scope="class")
-def models():
-    return {
-        "trinary_unique_key_list.sql": models__trinary_unique_key_list_sql,
-        "nontyped_trinary_unique_key_list.sql": models__nontyped_trinary_unique_key_list_sql,
-        "unary_unique_key_list.sql": models__unary_unique_key_list_sql,
-        "not_found_unique_key.sql": models__not_found_unique_key_sql,
-        "empty_unique_key_list.sql": models__empty_unique_key_list_sql,
-        "no_unique_key.sql": models__no_unique_key_sql,
-        "empty_str_unique_key.sql": models__empty_str_unique_key_sql,
-        "str_unique_key.sql": models__str_unique_key_sql,
-        "duplicated_unary_unique_key_list.sql": models__duplicated_unary_unique_key_list_sql,
-        "not_found_unique_key_list.sql": models__not_found_unique_key_list_sql,
-        "expected": {
-            "one_str__overwrite.sql": models__expected__one_str__overwrite_sql,
-            "unique_key_list__inplace_overwrite.sql": models__expected__unique_key_list__inplace_overwrite_sql,
-        },
-    }
+# @pytest.fixture(scope="class")
+# def models():
+#     return {
+#         "trinary_unique_key_list.sql": models__trinary_unique_key_list_sql,
+#         "nontyped_trinary_unique_key_list.sql": models__nontyped_trinary_unique_key_list_sql,
+#         "unary_unique_key_list.sql": models__unary_unique_key_list_sql,
+#         "not_found_unique_key.sql": models__not_found_unique_key_sql,
+#         "empty_unique_key_list.sql": models__empty_unique_key_list_sql,
+#         "no_unique_key.sql": models__no_unique_key_sql,
+#         "empty_str_unique_key.sql": models__empty_str_unique_key_sql,
+#         "str_unique_key.sql": models__str_unique_key_sql,
+#         "duplicated_unary_unique_key_list.sql": models__duplicated_unary_unique_key_list_sql,
+#         "not_found_unique_key_list.sql": models__not_found_unique_key_list_sql,
+#         "expected": {
+#             "one_str__overwrite.sql": models__expected__one_str__overwrite_sql,
+#             "unique_key_list__inplace_overwrite.sql": models__expected__unique_key_list__inplace_overwrite_sql,
+#         },
+#     }
 
 
-@pytest.fixture(scope="class")
-def seeds():
-    return {
-        "duplicate_insert.sql": seeds__duplicate_insert_sql,
-        "seed.csv": seeds__seed_csv,
-        "add_new_rows.sql": seeds__add_new_rows_sql,
-    }
+# @pytest.fixture(scope="class")
+# def seeds():
+#     return {
+#         "duplicate_insert.sql": seeds__duplicate_insert_sql,
+#         "seed.csv": seeds__seed_csv,
+#         "add_new_rows.sql": seeds__add_new_rows_sql,
+#     }
 
 
 ResultHolder = namedtuple(
@@ -347,6 +347,33 @@ ResultHolder = namedtuple(
 
 
 class IncrementalUniqueKeyBase:
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "trinary_unique_key_list.sql": models__trinary_unique_key_list_sql,
+            "nontyped_trinary_unique_key_list.sql": models__nontyped_trinary_unique_key_list_sql,
+            "unary_unique_key_list.sql": models__unary_unique_key_list_sql,
+            "not_found_unique_key.sql": models__not_found_unique_key_sql,
+            "empty_unique_key_list.sql": models__empty_unique_key_list_sql,
+            "no_unique_key.sql": models__no_unique_key_sql,
+            "empty_str_unique_key.sql": models__empty_str_unique_key_sql,
+            "str_unique_key.sql": models__str_unique_key_sql,
+            "duplicated_unary_unique_key_list.sql": models__duplicated_unary_unique_key_list_sql,
+            "not_found_unique_key_list.sql": models__not_found_unique_key_list_sql,
+            "expected": {
+                "one_str__overwrite.sql": models__expected__one_str__overwrite_sql,
+                "unique_key_list__inplace_overwrite.sql": models__expected__unique_key_list__inplace_overwrite_sql,
+            },
+        }
+
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {
+            "duplicate_insert.sql": seeds__duplicate_insert_sql,
+            "seed.csv": seeds__seed_csv,
+            "add_new_rows.sql": seeds__add_new_rows_sql,
+        }
+
     def update_incremental_model(self, incremental_model):
         """update incremental model after the seed table has been updated"""
         model_result_set = run_dbt(["run", "--select", incremental_model])
