@@ -417,8 +417,7 @@ class IncrementalUniqueKeyBase:
 
         return run_result.status, run_result.message
 
-
-class TestIncrementalWithoutUniqueKey(IncrementalUniqueKeyBase):
+    # no unique_key test
     def test__no_unique_keys(self, project):
         """with no unique keys, seed and model should match"""
         seed = "seed"
@@ -435,8 +434,7 @@ class TestIncrementalWithoutUniqueKey(IncrementalUniqueKeyBase):
 
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-
-class TestIncrementalStrUniqueKey(IncrementalUniqueKeyBase):
+    # unique_key as str tests
     def test__empty_str_unique_key(self, project):
         """with empty string for unique key, seed and model should match"""
         seed = "seed"
@@ -482,8 +480,7 @@ class TestIncrementalStrUniqueKey(IncrementalUniqueKeyBase):
         assert status == RunStatus.Error
         assert "thisisnotacolumn" in exc.lower()
 
-
-class TestIncrementalListUniqueKey(IncrementalUniqueKeyBase):
+    # test unique_key as list
     def test__empty_unique_key_list(self, project):
         """with no unique keys, seed and model should match"""
         seed = "seed"
@@ -583,3 +580,7 @@ class TestIncrementalListUniqueKey(IncrementalUniqueKeyBase):
 
         assert status == RunStatus.Error
         assert "thisisnotacolumn" in exc.lower()
+
+
+class TestUniqueKey(IncrementalUniqueKeyBase):
+    pass
