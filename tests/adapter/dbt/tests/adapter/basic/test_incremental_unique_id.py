@@ -417,7 +417,7 @@ class IncrementalUniqueKeyBase:
         """should pass back error state when trying build an incremental
         model whose unique key or keylist includes a column missing
         from the incremental model"""
-        seed_count = len(run_dbt(["seed", "--select", "seed", "--full-refresh"]))  # noqa:F841
+        # seed_count = len(run_dbt(["seed", "--select", "seed", "--full-refresh"]))  # noqa:F841
         # unique keys are not applied on first run, so two are needed
         run_dbt(
             ["run", "--select", incremental_model_name, "--full-refresh"],
