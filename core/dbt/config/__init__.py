@@ -2,3 +2,4 @@
 from .profile import Profile, read_user_config  # noqa
 from .project import Project, IsFQNResource  # noqa
 from .runtime import RuntimeConfig, UnsetProfileConfig  # noqa
+#from .task import TaskConfig  # noqa

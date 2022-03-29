@@ -4,7 +4,7 @@ from pstats import Stats
 
 
 @contextmanager
-def profiler(enable, outfile):
+def profiler(outfile):
     try:
         profiler = Profile()
         profiler.enable()

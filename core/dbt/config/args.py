@@ -1,24 +1,9 @@
-from typing import List
-from dbt.logger import log_cache_events, log_manager
-
 import argparse
-import os.path
+import os
 import sys
-import traceback
-import warnings
-from contextlib import contextmanager
 from pathlib import Path
+from typing import List
 
-import dbt.version
-from dbt.events.functions import fire_event, setup_event_logger
-from dbt.events.types import (
-    MainEncounteredError,
-    MainKeyboardInterrupt,
-    MainReportVersion,
-    MainReportArgs,
-    MainTrackingUserState,
-    MainStackTrace,
-)
 import dbt.flags as flags
 import dbt.task.build as build_task
 import dbt.task.clean as clean_task
@@ -36,14 +21,9 @@ import dbt.task.seed as seed_task
 import dbt.task.serve as serve_task
 import dbt.task.snapshot as snapshot_task
 import dbt.task.test as test_task
-from dbt.profiler import profiler
-from dbt.adapters.factory import reset_adapters, cleanup_connections
+from dbt.exceptions import InternalException
 
-import dbt.tracking
-
-from dbt.utils import ExitCodes, args_to_dict
-from dbt.config.profile import DEFAULT_PROFILES_DIR, read_user_config
-from dbt.exceptions import InternalException, NotImplementedException, FailedToConnectException
+from .profile import DEFAULT_PROFILES_DIR
 
 
 class DBTVersion(argparse.Action):
@@ -117,135 +97,6 @@ class DBTArgumentParser(argparse.ArgumentParser):
 
         return mutex_group
 
-
-def main(args=None):
-    # Logbook warnings are ignored so we don't have to fork logbook to support python 3.10.
-    # This _only_ works for regular cli invocations.
-    breakpoint()
-
-    from dbt.config.project import Project
-    path = "/Users/iknox/Projects/dbt_projects/forced_deps/"
-    project = Project.from_project_root(
-        path,
-        renderer
-    )
-
-    warnings.filterwarnings("ignore", category=DeprecationWarning, module="logbook")
-    if args is None:
-        args = sys.argv[1:]
-    with log_manager.applicationbound():
-        try:
-            results, succeeded = handle_and_check(args)
-            if succeeded:
-                exit_code = ExitCodes.Success.value
-            else:
-                exit_code = ExitCodes.ModelError.value
-
-        except KeyboardInterrupt:
-            # if the logger isn't configured yet, it will use the default logger
-            fire_event(MainKeyboardInterrupt())
-            exit_code = ExitCodes.UnhandledError.value
-
-        # This can be thrown by eg. argparse
-        except SystemExit as e:
-            exit_code = e.code
-
-        except BaseException as e:
-            fire_event(MainEncounteredError(e=str(e)))
-            fire_event(MainStackTrace(stack_trace=traceback.format_exc()))
-            exit_code = ExitCodes.UnhandledError.value
-
-    sys.exit(exit_code)
-
-
-# here for backwards compatibility
-def handle(args):
-    res, success = handle_and_check(args)
-    return res
-
-
-@contextmanager
-def adapter_management():
-    reset_adapters()
-    try:
-        yield
-    finally:
-        cleanup_connections()
-
-
-def handle_and_check(args):
-    with log_manager.applicationbound():
-        parsed = parse_args(args)
-
-        # Set flags from args, user config, and env vars
-        user_config = read_user_config(flags.PROFILES_DIR)  # This is read again later
-        flags.set_from_args(parsed, user_config)
-        dbt.tracking.initialize_from_flags()
-        # Set log_format from flags
-        parsed.cls.set_log_format()
-
-        # we've parsed the args and set the flags - we can now decide if we're debug or not
-        if flags.DEBUG:
-            log_manager.set_debug()
-
-        profiler_enabled = False
-
-        if parsed.record_timing_info:
-            profiler_enabled = True
-
-        with profiler(enable=profiler_enabled, outfile=parsed.record_timing_info):
-
-            with adapter_management():
-
-                task, res = run_from_args(parsed)
-                success = task.interpret_results(res)
-
-            return res, success
-
-
-@contextmanager
-def track_run(task):
-    dbt.tracking.track_invocation_start(config=task.config, args=task.args)
-    try:
-        yield
-        dbt.tracking.track_invocation_end(config=task.config, args=task.args, result_type="ok")
-    except (NotImplementedException, FailedToConnectException) as e:
-        fire_event(MainEncounteredError(e=str(e)))
-        dbt.tracking.track_invocation_end(config=task.config, args=task.args, result_type="error")
-    except Exception:
-        dbt.tracking.track_invocation_end(config=task.config, args=task.args, result_type="error")
-        raise
-    finally:
-        dbt.tracking.flush()
-
-
-def run_from_args(parsed):
-    log_cache_events(getattr(parsed, "log_cache_events", False))
-
-    # this will convert DbtConfigErrors into RuntimeExceptions
-    # task could be any one of the task objects
-    task = parsed.cls.from_args(args=parsed)
-
-    # Set up logging
-    log_path = None
-    if task.config is not None:
-        log_path = getattr(task.config, "log_path", None)
-    log_manager.set_path(log_path)
-    # if 'list' task: set stdout to WARN instead of INFO
-    level_override = parsed.cls.pre_init_hook(parsed)
-    setup_event_logger(log_path or "logs", level_override)
-
-    fire_event(MainReportVersion(v=str(dbt.version.installed)))
-    fire_event(MainReportArgs(args=args_to_dict(parsed)))
-
-    if dbt.tracking.active_user is not None:  # mypy appeasement, always true
-        fire_event(MainTrackingUserState(user_state=dbt.tracking.active_user.state()))
-
-    results = None
-
-    with track_run(task):
-        results = task.run()
-    return task, results
 
 
 def _build_base_subparser():
@@ -882,7 +733,6 @@ def _build_run_operation_subparser(subparsers, base_subparser):
         cls=run_operation_task.RunOperationTask, which="run-operation", rpc_method="run-operation"
     )
     return sub
-
 
 def parse_args(args, cls=DBTArgumentParser):
     p = cls(

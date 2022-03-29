@@ -226,7 +226,8 @@ class ManifestLoader:
 
             # Save performance info
             loader._perf_info.load_all_elapsed = time.perf_counter() - start_load_all
-            loader.track_project_load()
+            if dbt.tracking.active_user is not None:
+                loader.track_project_load()
 
         return manifest
 

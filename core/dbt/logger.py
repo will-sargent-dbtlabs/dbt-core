@@ -548,7 +548,8 @@ class LogManager(logbook.NestedSetup):
 
 
 log_manager = LogManager()
-
+if dbt.flags.DEBUG:
+    log_manager.set_debug()
 
 def log_cache_events(flag):
     """Set the cache logger to propagate its messages based on the given flag."""
