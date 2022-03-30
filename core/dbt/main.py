@@ -121,15 +121,6 @@ class DBTArgumentParser(argparse.ArgumentParser):
 def main(args=None):
     # Logbook warnings are ignored so we don't have to fork logbook to support python 3.10.
     # This _only_ works for regular cli invocations.
-    breakpoint()
-
-    from dbt.config.project import Project
-    path = "/Users/iknox/Projects/dbt_projects/forced_deps/"
-    project = Project.from_project_root(
-        path,
-        renderer
-    )
-
     warnings.filterwarnings("ignore", category=DeprecationWarning, module="logbook")
     if args is None:
         args = sys.argv[1:]
