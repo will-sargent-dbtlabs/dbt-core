@@ -317,7 +317,7 @@ ResultHolder = namedtuple(
 )
 
 
-class IncrementalUniqueKeyBase:
+class BaseIncrementalUniqueKey:
     @pytest.fixture(scope="class")
     def models(self):
         return {
@@ -350,15 +350,20 @@ class IncrementalUniqueKeyBase:
         model_result_set = run_dbt(["run", "--select", incremental_model])
         return len(model_result_set)
 
-    def setup_test(self, seed, incremental_model, update_sql_file, project):
+    def get_test_fields(
+        self, project, seed, incremental_model, update_sql_file, opt_model_count=None
+    ):
         """build a test case and return values for assertions
         [INFO] Models must be in place to test incremental model
         construction and merge behavior. Database touches are side
         effects to extract counts (which speak to health of unique keys)."""
         # idempotently create some number of seeds and incremental models'''
-        seed_count = len(run_dbt(["seed", "--select", seed, "--full-refresh"]))
-        model_count = len(run_dbt(["run", "--select", incremental_model, "--full-refresh"]))
 
+        seed_count = len(run_dbt(["seed", "--select", seed, "--full-refresh"]))
+
+        model_count = len(run_dbt(["run", "--select", incremental_model, "--full-refresh"]))
+        # pass on kwarg
+        relation = incremental_model
         # update seed in anticipation of incremental model update
         row_count_query = "select * from {}.{}".format(project.test_schema, seed)
         project.run_sql_file(Path("seeds") / Path(update_sql_file + ".sql"))
@@ -367,7 +372,9 @@ class IncrementalUniqueKeyBase:
         # propagate seed state to incremental model according to unique keys
         inc_test_model_count = self.update_incremental_model(incremental_model=incremental_model)
 
-        return (seed_count, model_count, seed_rows, inc_test_model_count)
+        return ResultHolder(
+            seed_count, model_count, seed_rows, inc_test_model_count, opt_model_count, relation
+        )
 
     def check_scenario_correctness(self, expected_fields, test_case_fields, project):
         """Invoke assertions to verify correct build functionality"""
@@ -389,7 +396,7 @@ class IncrementalUniqueKeyBase:
         )
         table_comp.assert_tables_equal(expected_fields.relation, test_case_fields.relation)
 
-    def stub_expected_fields(self, relation, seed_rows, opt_model_count=None):
+    def get_expected_fields(self, relation, seed_rows, opt_model_count=None):
         return ResultHolder(
             seed_count=1,
             model_count=1,
@@ -418,54 +425,39 @@ class IncrementalUniqueKeyBase:
     # no unique_key test
     def test__no_unique_keys(self, project):
         """with no unique keys, seed and model should match"""
-        seed = "seed"
-        seed_rows = 8
-        incremental_model = "no_unique_key"
-        update_sql_file = "add_new_rows"
 
-        expected_fields = self.stub_expected_fields(relation=seed, seed_rows=seed_rows)
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=None,
-            relation=incremental_model,
+        expected_fields = self.get_expected_fields(relation="seed", seed_rows=8)
+        test_case_fields = self.get_test_fields(
+            project, seed="seed", incremental_model="no_unique_key", update_sql_file="add_new_rows"
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     # unique_key as str tests
     def test__empty_str_unique_key(self, project):
         """with empty string for unique key, seed and model should match"""
-        seed = "seed"
-        seed_rows = 8
-        incremental_model = "empty_str_unique_key"
-        update_sql_file = "add_new_rows"
 
-        expected_fields = self.stub_expected_fields(relation=seed, seed_rows=seed_rows)
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=None,
-            relation=incremental_model,
+        expected_fields = self.get_expected_fields(relation="seed", seed_rows=8)
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="seed",
+            incremental_model="empty_str_unique_key",
+            update_sql_file="add_new_rows",
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     def test__one_unique_key(self, project):
         """with one unique key, model will overwrite existing row"""
-        seed = "seed"
-        seed_rows = 7
-        incremental_model = "str_unique_key"
-        update_sql_file = "duplicate_insert"
-        expected_model = "one_str__overwrite"
 
-        expected_fields = self.stub_expected_fields(
-            relation=expected_model, seed_rows=seed_rows, opt_model_count=1
+        expected_fields = self.get_expected_fields(
+            relation="one_str__overwrite", seed_rows=7, opt_model_count=1
         )
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=self.update_incremental_model(expected_model),
-            relation=incremental_model,
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="seed",
+            incremental_model="str_unique_key",
+            update_sql_file="duplicate_insert",
+            opt_model_count=self.update_incremental_model("one_str__overwrite"),
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     def test__bad_unique_key(self, project):
@@ -481,92 +473,72 @@ class IncrementalUniqueKeyBase:
     # test unique_key as list
     def test__empty_unique_key_list(self, project):
         """with no unique keys, seed and model should match"""
-        seed = "seed"
-        seed_rows = 8
-        incremental_model = "empty_unique_key_list"
-        update_sql_file = "add_new_rows"
 
-        expected_fields = self.stub_expected_fields(relation=seed, seed_rows=seed_rows)
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=None,
-            relation=incremental_model,
+        expected_fields = self.get_expected_fields(relation="seed", seed_rows=8)
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="seed",
+            incremental_model="empty_unique_key_list",
+            update_sql_file="add_new_rows",
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     def test__unary_unique_key_list(self, project):
         """with one unique key, model will overwrite existing row"""
-        seed = "seed"
-        seed_rows = 7
-        incremental_model = "unary_unique_key_list"
-        update_sql_file = "duplicate_insert"
-        expected_model = "unique_key_list__inplace_overwrite"
 
-        expected_fields = self.stub_expected_fields(
-            relation=expected_model, seed_rows=seed_rows, opt_model_count=1
+        expected_fields = self.get_expected_fields(
+            relation="unique_key_list__inplace_overwrite", seed_rows=7, opt_model_count=1
         )
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=self.update_incremental_model(expected_model),
-            relation=incremental_model,
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="seed",
+            incremental_model="unary_unique_key_list",
+            update_sql_file="duplicate_insert",
+            opt_model_count=self.update_incremental_model("unique_key_list__inplace_overwrite"),
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     def test__duplicated_unary_unique_key_list(self, project):
         """with two of the same unique key, model will overwrite existing row"""
-        seed = "seed"
-        seed_rows = 7
-        incremental_model = "duplicated_unary_unique_key_list"
-        update_sql_file = "duplicate_insert"
-        expected_model = "unique_key_list__inplace_overwrite"
 
-        expected_fields = self.stub_expected_fields(
-            relation=expected_model, seed_rows=seed_rows, opt_model_count=1
+        expected_fields = self.get_expected_fields(
+            relation="unique_key_list__inplace_overwrite", seed_rows=7, opt_model_count=1
         )
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=self.update_incremental_model(expected_model),
-            relation=incremental_model,
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="seed",
+            incremental_model="duplicated_unary_unique_key_list",
+            update_sql_file="duplicate_insert",
+            opt_model_count=self.update_incremental_model("unique_key_list__inplace_overwrite"),
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     def test__trinary_unique_key_list(self, project):
         """with three unique keys, model will overwrite existing row"""
-        seed = "seed"
-        seed_rows = 7
-        incremental_model = "trinary_unique_key_list"
-        update_sql_file = "duplicate_insert"
-        expected_model = "unique_key_list__inplace_overwrite"
 
-        expected_fields = self.stub_expected_fields(
-            relation=expected_model, seed_rows=seed_rows, opt_model_count=1
+        expected_fields = self.get_expected_fields(
+            relation="unique_key_list__inplace_overwrite", seed_rows=7, opt_model_count=1
         )
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=self.update_incremental_model(expected_model),
-            relation=incremental_model,
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="seed",
+            incremental_model="trinary_unique_key_list",
+            update_sql_file="duplicate_insert",
+            opt_model_count=self.update_incremental_model("unique_key_list__inplace_overwrite"),
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     def test__trinary_unique_key_list_no_update(self, project):
         """even with three unique keys, adding distinct rows to seed does not
         cause seed and model to diverge"""
-        seed = "seed"
-        seed_rows = 8
-        incremental_model = "nontyped_trinary_unique_key_list"
-        update_sql_file = "add_new_rows"
 
-        expected_fields = self.stub_expected_fields(relation=seed, seed_rows=seed_rows)
-        test_case_fields = ResultHolder(
-            *self.setup_test(seed, incremental_model, update_sql_file, project),
-            opt_model_count=None,
-            relation=incremental_model,
+        expected_fields = self.get_expected_fields(relation="seed", seed_rows=8)
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="seed",
+            incremental_model="nontyped_trinary_unique_key_list",
+            update_sql_file="add_new_rows",
         )
-
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     def test__bad_unique_key_list(self, project):
@@ -580,5 +552,5 @@ class IncrementalUniqueKeyBase:
         assert "thisisnotacolumn" in exc.lower()
 
 
-class TestUniqueKey(IncrementalUniqueKeyBase):
+class TestIncrementalUniqueKey(BaseIncrementalUniqueKey):
     pass
