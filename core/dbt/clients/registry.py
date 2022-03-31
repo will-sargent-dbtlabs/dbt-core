@@ -1,15 +1,23 @@
 import functools
 import requests
 from dbt.events.functions import fire_event
-from dbt.events.types import RegistryProgressMakingGETRequest, RegistryProgressGETResponse
+from dbt.events.types import (
+    RegistryCacheHit,
+    RegistryProgressMakingGETRequest,
+    RegistryProgressGETResponse,
+)
 from dbt.utils import memoized, _connection_exception_retry as connection_exception_retry
 from dbt import deprecations
 import os
+from typing import Dict, Any
 
 if os.getenv("DBT_PACKAGE_HUB_URL"):
     DEFAULT_REGISTRY_BASE_URL = os.getenv("DBT_PACKAGE_HUB_URL")
 else:
     DEFAULT_REGISTRY_BASE_URL = "https://hub.getdbt.com/"
+
+global REGISTRY_CACHE
+REGISTRY_CACHE: Dict[str, Any] = {}
 
 
 def _get_url(url, registry_base_url=None):
@@ -26,20 +34,27 @@ def _get_with_retries(path, registry_base_url=None):
 
 def _get(path, registry_base_url=None):
     url = _get_url(path, registry_base_url)
+    if url in REGISTRY_CACHE.keys():
+        fire_event(RegistryCacheHit(url=url))
+        return REGISTRY_CACHE[url]
     fire_event(RegistryProgressMakingGETRequest(url=url))
     resp = requests.get(url, timeout=30)
     fire_event(RegistryProgressGETResponse(url=url, resp_code=resp.status_code))
     resp.raise_for_status()
 
+    json_response = (
+        resp.json()  # if this fails, it should raise requests.exceptions.JSONDecodeError and trigger retry
+    )
     # It is unexpected for the content of the response to be None so if it is, raising this error
     # will cause this function to retry (if called within _get_with_retries) and hopefully get
     # a response.  This seems to happen when there's an issue with the Hub.
     # See https://github.com/dbt-labs/dbt-core/issues/4577
-    if resp.json() is None:
+    if json_response is None:
         raise requests.exceptions.ContentDecodingError(
             "Request error: The response is None", response=resp
         )
-    return resp.json()
+    REGISTRY_CACHE[url] = json_response
+    return json_response
 
 
 def index(registry_base_url=None):
@@ -49,6 +64,7 @@ def index(registry_base_url=None):
 index_cached = memoized(index)
 
 
+# not used, and this "endpoint" returns 'null'. here for backwards compatibility?
 def packages(registry_base_url=None):
     return _get_with_retries("api/v1/packages.json", registry_base_url)
 
@@ -80,7 +96,8 @@ def package(name, registry_base_url=None):
 
 
 def package_version(name, version, registry_base_url=None):
-    return _get_with_retries("api/v1/{}/{}.json".format(name, version), registry_base_url)
+    #   return package("api/v1/{}/{}.json".format(name, version), registry_base_url)
+    return package(name)["versions"][version]
 
 
 def get_available_versions(name):
