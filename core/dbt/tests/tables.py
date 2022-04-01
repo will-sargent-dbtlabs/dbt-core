@@ -1,8 +1,7 @@
 from dbt.context import providers
 from unittest.mock import patch
 from contextlib import contextmanager
-from dbt.events.functions import fire_event
-from dbt.events.test_types import IntegrationTestDebug
+from dbt.tests.util import run_sql_with_adapter
 
 # This code was copied from the earlier test framework in test/integration/base.py
 # The goal is to vastly simplify this and replace it with calls to macros.
@@ -309,38 +308,7 @@ class TableComparison:
 
     # This duplicates code in the TestProjInfo class.
     def run_sql(self, sql, fetch=None):
-        if sql.strip() == "":
-            return
-        # substitute schema and database in sql
-        adapter = self.adapter
-        kwargs = {
-            "schema": self.unique_schema,
-            "database": adapter.quote(self.default_database),
-        }
-        sql = sql.format(**kwargs)
-
-        with self.get_connection("__test") as conn:
-            msg = f'test connection "{conn.name}" executing: {sql}'
-            fire_event(IntegrationTestDebug(msg=msg))
-            with conn.handle.cursor() as cursor:
-                try:
-                    cursor.execute(sql)
-                    conn.handle.commit()
-                    conn.handle.commit()
-                    if fetch == "one":
-                        return cursor.fetchone()
-                    elif fetch == "all":
-                        return cursor.fetchall()
-                    else:
-                        return
-                except BaseException as e:
-                    if conn.handle and not getattr(conn.handle, "closed", True):
-                        conn.handle.rollback()
-                    print(sql)
-                    print(e)
-                    raise
-                finally:
-                    conn.transaction_open = False
+        return run_sql_with_adapter(self.adapter, sql, fetch=fetch)
 
     def get_tables_in_schema(self):
         sql = """
