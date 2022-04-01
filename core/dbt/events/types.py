@@ -292,15 +292,6 @@ class GitProgressCheckedOutAt(DebugLevel):
 
 
 @dataclass
-class RegistryCacheHit(DebugLevel):
-    url: str
-    code: str = "M010"
-
-    def message(self) -> str:
-        return f"Using cached registry response for: {self.url}"
-
-
-@dataclass
 class RegistryProgressMakingGETRequest(DebugLevel):
     url: str
     code: str = "M008"
@@ -2431,7 +2422,6 @@ if 1 == 0:
     GitNothingToDo(sha="")
     GitProgressUpdatedCheckoutRange(start_sha="", end_sha="")
     GitProgressCheckedOutAt(end_sha="")
-    RegistryCacheHit(url="")
     RegistryProgressMakingGETRequest(url="")
     RegistryProgressGETResponse(url="", resp_code=1234)
     SystemErrorRetrievingModTime(path="")

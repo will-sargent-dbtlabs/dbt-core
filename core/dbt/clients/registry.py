@@ -1,23 +1,15 @@
 import functools
 import requests
 from dbt.events.functions import fire_event
-from dbt.events.types import (
-    RegistryCacheHit,
-    RegistryProgressMakingGETRequest,
-    RegistryProgressGETResponse,
-)
+from dbt.events.types import RegistryProgressMakingGETRequest, RegistryProgressGETResponse
 from dbt.utils import memoized, _connection_exception_retry as connection_exception_retry
 from dbt import deprecations
 import os
-from typing import Dict, Any
 
 if os.getenv("DBT_PACKAGE_HUB_URL"):
     DEFAULT_REGISTRY_BASE_URL = os.getenv("DBT_PACKAGE_HUB_URL")
 else:
     DEFAULT_REGISTRY_BASE_URL = "https://hub.getdbt.com/"
-
-global REGISTRY_CACHE
-REGISTRY_CACHE: Dict[str, Any] = {}
 
 
 def _get_url(url, registry_base_url=None):
@@ -28,15 +20,12 @@ def _get_url(url, registry_base_url=None):
 
 
 def _get_with_retries(path, registry_base_url=None):
-    get_fn = functools.partial(_get, path, registry_base_url)
+    get_fn = functools.partial(_get_cached, path, registry_base_url)
     return connection_exception_retry(get_fn, 5)
 
 
 def _get(path, registry_base_url=None):
     url = _get_url(path, registry_base_url)
-    if url in REGISTRY_CACHE.keys():
-        fire_event(RegistryCacheHit(url=url))
-        return REGISTRY_CACHE[url]
     fire_event(RegistryProgressMakingGETRequest(url=url))
     resp = requests.get(url, timeout=30)
     fire_event(RegistryProgressGETResponse(url=url, resp_code=resp.status_code))
@@ -53,20 +42,18 @@ def _get(path, registry_base_url=None):
         raise requests.exceptions.ContentDecodingError(
             "Request error: The response is None", response=resp
         )
-    REGISTRY_CACHE[url] = json_response
     return json_response
+
+
+_get_cached = memoized(_get)
 
 
 def index(registry_base_url=None):
     return _get_with_retries("api/v1/index.json", registry_base_url)
 
 
+# is this redundant, now that all _get responses are being cached?
 index_cached = memoized(index)
-
-
-# not used, and this "endpoint" returns 'null'. here for backwards compatibility?
-def packages(registry_base_url=None):
-    return _get_with_retries("api/v1/packages.json", registry_base_url)
 
 
 def package(name, registry_base_url=None):
@@ -96,8 +83,8 @@ def package(name, registry_base_url=None):
 
 
 def package_version(name, version, registry_base_url=None):
-    #   return package("api/v1/{}/{}.json".format(name, version), registry_base_url)
-    return package(name)["versions"][version]
+    response = package(name, registry_base_url)
+    return response["versions"][version]
 
 
 def get_available_versions(name):
