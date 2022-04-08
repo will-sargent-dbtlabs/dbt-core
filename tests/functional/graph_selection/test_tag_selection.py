@@ -97,35 +97,43 @@ class TestTagSelection(SelectionFixtures):
         _verify_select_tag(results)
 
     def test_select_tag_selector_str(self, project):
+        run_dbt(["seed"])
         results = run_dbt(["run", "--selector", "tag_specified_as_string_str"])
         _verify_select_tag(results)
 
     def test_select_tag_selector_dict(self, project):
+        run_dbt(["seed"])
         results = run_dbt(["run", "--selector", "tag_specified_as_string_dict"])
         _verify_select_tag(results)
 
     def test_select_tag_and_children(self, project):  # noqa
+        run_dbt(["seed"])
         results = run_dbt(["run", "--models", "+tag:specified_in_project+"])
         _verify_select_tag_and_children(results)
 
     def test_select_tag_and_children_selector_str(self, project):  # noqa
+        run_dbt(["seed"])
         results = run_dbt(["run", "--selector", "tag_specified_in_project_children_str"])
         _verify_select_tag_and_children(results)
 
     def test_select_tag_and_children_selector_dict(self, project):  # noqa
+        run_dbt(["seed"])
         results = run_dbt(["run", "--selector", "tag_specified_in_project_children_dict"])
         _verify_select_tag_and_children(results)
 
     def test_select_tag_in_model_with_project_config(self, project):  # noqa
+        run_dbt(["seed"])
         results = run_dbt(["run", "--models", "tag:bi"])
         _verify_select_bi(results)
 
     def test_select_tag_in_model_with_project_config_selector(self, project):  # noqa
+        run_dbt(["seed"])
         results = run_dbt(["run", "--selector", "tagged-bi"])
         _verify_select_bi(results)
 
     # check that model configs aren't squashed by project configs
     def test_select_tag_in_model_with_project_config_parents_children(self, project):  # noqa
+        run_dbt(["seed"])
         results = run_dbt(["run", "--models", "@tag:users"])
         assert len(results) == 4
 
@@ -159,6 +167,7 @@ class TestTagSelection(SelectionFixtures):
         ]
 
     def test_select_tag_in_model_with_project_config_parents_children_selectors(self, project):
+        run_dbt(["seed"])
         results = run_dbt(["run", "--selector", "user_tagged_childrens_parents"])
         assert len(results) == 4
 
