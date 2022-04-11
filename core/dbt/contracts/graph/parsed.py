@@ -37,6 +37,7 @@ from dbt.contracts.graph.unparsed import (
     ExposureType,
     MaturityType,
     MetricFilter,
+    MetricRatioTerms,
 )
 from dbt.contracts.util import Replaceable, AdditionalPropertiesMixin
 from dbt.exceptions import warn_or_error
@@ -198,6 +199,7 @@ class ParsedNodeDefaults(NodeInfoMixin, ParsedNodeMandatory):
     tags: List[str] = field(default_factory=list)
     refs: List[List[str]] = field(default_factory=list)
     sources: List[List[str]] = field(default_factory=list)
+    metrics: List[List[str]] = field(default_factory=list)
     depends_on: DependsOn = field(default_factory=DependsOn)
     description: str = field(default="")
     columns: Dict[str, ColumnInfo] = field(default_factory=dict)
@@ -799,8 +801,31 @@ class ParsedExposure(UnparsedBaseNode, HasUniqueID, HasFqn):
 
 
 @dataclass
+class MetricReference(dbtClassMixin, Replaceable):
+    sql: str
+    unique_id: Optional[str]
+
+
+@dataclass
+class UnparsedRatioTerms(dbtClassMixin, Replaceable):
+    numerator: str
+    denominator: str
+
+
+@dataclass
+class ParsedRatioTerms(dbtClassMixin, Replaceable):
+    numerator: MetricReference
+    denominator: MetricReference
+
+
+@dataclass
+class RatioTerms(dbtClassMixin, Replaceable):
+    raw: Optional[UnparsedRatioTerms]
+    parsed: Optional[ParsedRatioTerms]
+
+
+@dataclass
 class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
-    model: str
     name: str
     description: str
     label: str
@@ -810,13 +835,37 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     filters: List[MetricFilter]
     time_grains: List[str]
     dimensions: List[str]
+    model: Optional[str] = None
     resource_type: NodeType = NodeType.Metric
     meta: Dict[str, Any] = field(default_factory=dict)
     tags: List[str] = field(default_factory=list)
     sources: List[List[str]] = field(default_factory=list)
     depends_on: DependsOn = field(default_factory=DependsOn)
     refs: List[List[str]] = field(default_factory=list)
+    metrics: List[List[str]] = field(default_factory=list)
+    # ratio_terms: Optional[ParsedMetricRatioTerms] = None
+    ratio_terms: Optional[MetricRatioTerms] = None
+    is_derived: bool = False
     created_at: float = field(default_factory=lambda: time.time())
+
+    def resolve_metric_references(self, context):
+        # TODO: Obviously don't do this...
+        from dbt.clients.jinja import get_rendered
+        if self.type == 'ratio':
+            numerator_id = get_rendered(
+                self.ratio_terms.parsed.numerator.sql,
+                context,
+                node=self,
+                native=True,
+            ).unique_id
+            denominator_id = get_rendered(
+                self.ratio_terms.parsed.denominator.sql,
+                context,
+                node=self,
+                native=True,
+            ).unique_id
+            self.ratio_terms.parsed.numerator.unique_id = numerator_id
+            self.ratio_terms.parsed.denominator.unique_id = denominator_id
 
     @property
     def depends_on_nodes(self):
@@ -853,6 +902,10 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     def same_time_grains(self, old: "ParsedMetric") -> bool:
         return self.time_grains == old.time_grains
 
+    def same_ratio_terms(self, old: "ParsedMetric") -> bool:
+        # TODO: Do we need a deep compare b/c this is a dict?
+        return self.ratio_terms == old.ratio_terms
+
     def same_contents(self, old: Optional["ParsedMetric"]) -> bool:
         # existing when it didn't before is a change!
         # metadata/tags changes are not "changes"
@@ -869,6 +922,7 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
             and self.same_sql(old)
             and self.same_timestamp(old)
             and self.same_time_grains(old)
+            and self.same_ratio_terms(old)
             and True
         )
 

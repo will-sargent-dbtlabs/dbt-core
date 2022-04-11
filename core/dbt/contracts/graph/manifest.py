@@ -960,8 +960,6 @@ class Manifest(MacroMethods, DataClassMessagePackMixin, dbtClassMixin):
         current_project: str,
         node_package: str,
     ) -> MaybeMetricNode:
-        candidates = _search_packages(current_project, node_package)
-
         metric: Optional[ParsedMetric] = None
         disabled: Optional[List[ParsedMetric]] = None
 

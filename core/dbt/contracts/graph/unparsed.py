@@ -445,11 +445,17 @@ class MetricFilter(dbtClassMixin, Replaceable):
 
 
 @dataclass
+class MetricRatioTerms(dbtClassMixin, Replaceable):
+    numerator: str
+    denominator: str
+
+
+@dataclass
 class UnparsedMetric(dbtClassMixin, Replaceable):
-    model: str
     name: str
     label: str
     type: str
+    model: Optional[str] = None
     description: str = ""
     sql: Optional[str] = None
     timestamp: Optional[str] = None
@@ -458,3 +464,5 @@ class UnparsedMetric(dbtClassMixin, Replaceable):
     filters: List[MetricFilter] = field(default_factory=list)
     meta: Dict[str, Any] = field(default_factory=dict)
     tags: List[str] = field(default_factory=list)
+
+    ratio_terms: Optional[MetricRatioTerms] = None

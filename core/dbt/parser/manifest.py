@@ -48,7 +48,7 @@ from dbt.config import Project, RuntimeConfig
 from dbt.context.docs import generate_runtime_docs_context
 from dbt.context.macro_resolver import MacroResolver, TestMacroNamespace
 from dbt.context.configured import generate_macro_context
-from dbt.context.providers import ParseProvider
+from dbt.context.providers import ParseProvider, generate_runtime_metric_context
 from dbt.contracts.files import FileHash, ParseFileType, SchemaSourceFile
 from dbt.parser.read_files import read_files, load_source_file
 from dbt.parser.partial import PartialParsing, special_override_macros
@@ -67,6 +67,9 @@ from dbt.contracts.graph.parsed import (
     ColumnInfo,
     ParsedExposure,
     ParsedMetric,
+)
+from dbt.contracts.graph.metrics import (
+    MetricReference,
 )
 from dbt.contracts.util import Writable
 from dbt.exceptions import (
@@ -389,6 +392,7 @@ class ManifestLoader:
             self.process_sources(self.root_project.project_name)
             self.process_refs(self.root_project.project_name)
             self.process_docs(self.root_project)
+            self.process_metrics(self.root_project)
 
             # update tracking data
             self._perf_info.process_manifest_elapsed = time.perf_counter() - start_process
@@ -831,6 +835,35 @@ class ManifestLoader:
                 continue
             _process_refs_for_metric(self.manifest, current_project, metric)
 
+    def resolve_metric(self, unresolved_metric: MetricReference, current_project: str):
+        return self.manifest.resolve_metric(
+            unresolved_metric.metric_name,
+            unresolved_metric.package_name,
+            current_project,
+        )
+
+    # Takes references in 'metrics' array of nodes and exposures, finds the target
+    # node, and updates 'depends_on.nodes' with the unique id
+    def process_metrics(self, config: RuntimeConfig):
+        current_project = config.project_name
+        for node in self.manifest.nodes.values():
+            if node.created_at < self.started_at:
+                continue
+            _process_metrics_for_node(self.manifest, current_project, node)
+        for metric in self.manifest.metrics.values():
+            if metric.created_at < self.started_at:
+                continue
+            _process_metrics_for_node(self.manifest, current_project, metric)
+            if metric.is_derived:
+                # This mutates the metric
+                ctx = generate_runtime_metric_context(
+                    metric,
+                    config,
+                    self.manifest
+                )
+
+                metric.resolve_metric_references(ctx)
+
     # nodes: node and column descriptions
     # sources: source and table descriptions, column descriptions
     # macros: macro argument descriptions
@@ -1039,6 +1072,10 @@ def _process_docs_for_metrics(context: Dict[str, Any], metric: ParsedMetric) -> 
     metric.description = get_rendered(metric.description, context)
 
 
+def _process_derived_metrics(context: Dict[str, Any], metric: ParsedMetric) -> None:
+    metric.description = get_rendered(metric.description, context)
+
+
 def _process_refs_for_exposure(manifest: Manifest, current_project: str, exposure: ParsedExposure):
     """Given a manifest and exposure in that manifest, process its refs"""
     for ref in exposure.refs:
@@ -1119,6 +1156,49 @@ def _process_refs_for_metric(manifest: Manifest, current_project: str, metric: P
 
         metric.depends_on.nodes.append(target_model_id)
         manifest.update_metric(metric)
+
+
+def _process_metrics_for_node(manifest: Manifest, current_project: str, node: Union[ManifestNode, ParsedMetric]):
+    """Given a manifest and a node in that manifest, process its metrics"""
+    for metric in node.metrics:
+        target_metric: Optional[Union[Disabled, ParsedMetric]] = None
+        target_metric_name: str
+        target_metric_package: Optional[str] = None
+
+        if len(metric) == 1:
+            target_metric_name = metric[0]
+        elif len(metric) == 2:
+            target_metric_package, target_metric_name = metric
+        else:
+            raise dbt.exceptions.InternalException(
+                f"Metric references should always be 1 or 2 arguments - got {len(metric)}"
+            )
+
+        # Resolve_ref
+        target_metric = manifest.resolve_metric(
+            target_metric_name,
+            target_metric_package,
+            current_project,
+            node.package_name,
+        )
+
+        if target_metric is None or isinstance(target_metric, Disabled):
+            # This may raise. Even if it doesn't, we don't want to add
+            # this node to the graph b/c there is no destination node
+            node.config.enabled = False
+            # TODO : Different error message?
+            invalid_ref_fail_unless_test(
+                node,
+                target_metric_name,
+                target_metric_package,
+                disabled=(isinstance(target_metric, Disabled)),
+            )
+
+            continue
+
+        target_metric_id = target_metric.unique_id
+
+        node.depends_on.nodes.append(target_metric_id)
 
 
 def _process_refs_for_node(manifest: Manifest, current_project: str, node: ManifestNode):

@@ -40,6 +40,9 @@ from dbt.contracts.graph.parsed import (
     ParsedSeedNode,
     ParsedSourceDefinition,
 )
+from dbt.contracts.graph.metrics import (
+    MetricReference, ResolvedMetricReference
+)
 from dbt.exceptions import (
     CompilationException,
     ParsingException,
@@ -85,29 +88,6 @@ class RelationProxy:
     def create(self, *args, **kwargs):
         kwargs["quote_policy"] = merge(self._quoting_config, kwargs.pop("quote_policy", {}))
         return self._relation_type.create(*args, **kwargs)
-
-
-class MetricProxy:
-    def __init__(self, metric_name, metric_package, node):
-        self.metric_name = metric_name
-        self.metric_package = metric_package
-        self.node = node
-
-    @classmethod
-    def create(cls, metric_name, metric_package, node=None):
-        return MetricProxy(metric_name, metric_package, node)
-
-    def render(self) -> str:
-        if self.node.type == 'number':
-            return self.node.sql
-        elif self.node.type == 'count_distinct':
-            return f'count(distinct {self.node.sql})'
-        else:
-            return f'{self.node.type}({self.node.sql})'
-
-    def __str__(self) -> str:
-        # This should actually return the expression....?
-        return self.render()
 
 
 class BaseDatabaseWrapper:
@@ -220,7 +200,7 @@ class BaseResolver(metaclass=abc.ABCMeta):
         return self.db_wrapper.Relation
 
     @abc.abstractmethod
-    def __call__(self, *args: str) -> Union[str, RelationProxy, MetricProxy]:
+    def __call__(self, *args: str) -> Union[str, RelationProxy, MetricReference]:
         pass
 
 
@@ -287,7 +267,7 @@ class BaseSourceResolver(BaseResolver):
 
 
 class BaseMetricResolver(BaseResolver):
-    def resolve(self, name: str, package: Optional[str] = None) -> MetricProxy:
+    def resolve(self, name: str, package: Optional[str] = None) -> MetricReference:
         ...
 
     def _repack_args(self, name: str, package: Optional[str]) -> List[str]:
@@ -307,7 +287,7 @@ class BaseMetricResolver(BaseResolver):
                 f"The package argument to metric() must be a string or None, got " f"{type(package)}"
             )
 
-    def __call__(self, *args: str) -> MetricProxy:
+    def __call__(self, *args: str) -> MetricReference:
         name: str
         package: Optional[str] = None
 
@@ -570,12 +550,14 @@ class RuntimeSourceResolver(BaseSourceResolver):
 
 # metric` implementations
 class ParseMetricResolver(BaseMetricResolver):
-    def resolve(self, name: str, package: Optional[str] = None) -> MetricProxy:
-        return MetricProxy.create(name, package)
+    def resolve(self, name: str, package: Optional[str] = None) -> MetricReference:
+        self.model.metrics.append(self._repack_args(name, package))
+
+        return MetricReference(name, package)
 
 
 class RuntimeMetricResolver(BaseMetricResolver):
-    def resolve(self, target_name: str, target_package: Optional[str] = None) -> MetricProxy:
+    def resolve(self, target_name: str, target_package: Optional[str] = None) -> MetricReference:
         target_metric = self.manifest.resolve_metric(
             target_name,
             target_package,
@@ -592,7 +574,7 @@ class RuntimeMetricResolver(BaseMetricResolver):
                 disabled=isinstance(target_metric, Disabled),
             )
 
-        return MetricProxy.create(target_name, target_package, target_metric)
+        return ResolvedMetricReference(target_metric)
 
 
 # `var` implementations.
@@ -1380,6 +1362,15 @@ def generate_runtime_macro_context(
     return ctx.to_dict()
 
 
+def generate_runtime_metric_context(
+    metric: ParsedMetric,
+    config: RuntimeConfig,
+    manifest: Manifest,
+) -> Dict[str, Any]:
+    ctx = ProviderContext(metric, config, manifest, RuntimeProvider(), None)
+    return ctx.to_dict()
+
+
 class ExposureRefResolver(BaseResolver):
     def __call__(self, *args) -> str:
         if len(args) not in (1, 2):
@@ -1456,7 +1447,7 @@ def generate_parse_metrics(
             project,
             manifest,
         ),
-        "metric": RuntimeMetricResolver(
+        "metric": ParseMetricResolver(
             None,
             metric,
             project,
