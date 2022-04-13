@@ -31,10 +31,6 @@ from dbt.contracts.graph.parsed import (
     UnpatchedSourceDefinition,
     ParsedExposure,
     ParsedMetric,
-
-    RatioTerms,
-    UnparsedRatioTerms,
-    ParsedRatioTerms
 )
 from dbt.contracts.graph.unparsed import (
     HasColumnDocs,
@@ -1019,7 +1015,8 @@ class MetricParser(YamlReader):
         fqn = self.schema_parser.get_fqn_prefix(path)
         fqn.append(unparsed.name)
 
-        parsed = ParsedMetric(
+        parsed = ParsedMetric.parse_from_args(
+            unparsed,
             package_name=package_name,
             root_path=self.project.project_root,
             path=path,
@@ -1046,41 +1043,8 @@ class MetricParser(YamlReader):
             self.schema_parser.manifest,
             package_name,
         )
-        if unparsed.type == 'ratio':
-            is_derived = True
-            numerator_def = "{{ " + unparsed.ratio_terms.numerator + " }}"
-            denominator_def = "{{ " + unparsed.ratio_terms.denominator + "}}"
 
-            get_rendered(numerator_def, ctx, parsed, capture_macros=True)
-            get_rendered(denominator_def, ctx, parsed, capture_macros=True)
-
-            parsed.ratio_terms = RatioTerms(
-                raw=UnparsedRatioTerms(**unparsed.ratio_terms.to_dict()),
-                parsed=ParsedRatioTerms.from_dict({
-                    "numerator": {
-                        "sql": numerator_def,
-                        "unique_id": None
-                    },
-                    "denominator": {
-                        "sql": denominator_def,
-                        "unique_id": None
-                    },
-                })
-            )
-
-            parsed.sql = f'{numerator_def} / {denominator_def}'
-
-        else:
-            is_derived = False
-            model_ref = "{{ " + unparsed.model + " }}"
-            get_rendered(model_ref, ctx, parsed, capture_macros=True)
-
-            # Only supply SQL if it's not a derived metric (ie. a ratio)
-            rendered_sql = get_rendered(unparsed.sql, ctx, parsed, capture_macros=True)
-            parsed.sql = rendered_sql
-
-        parsed.is_derived = is_derived
-        # Update rendered SQL after compilation
+        parsed.postprocess_depends_on(lambda to_eval: get_rendered(to_eval, ctx, parsed))
 
         return parsed
 

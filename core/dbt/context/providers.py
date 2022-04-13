@@ -40,9 +40,7 @@ from dbt.contracts.graph.parsed import (
     ParsedSeedNode,
     ParsedSourceDefinition,
 )
-from dbt.contracts.graph.metrics import (
-    MetricReference, ResolvedMetricReference
-)
+from dbt.contracts.graph.metrics import MetricReference, ResolvedMetricReference
 from dbt.exceptions import (
     CompilationException,
     ParsingException,
@@ -284,7 +282,8 @@ class BaseMetricResolver(BaseResolver):
 
         if package is not None and not isinstance(package, str):
             raise CompilationException(
-                f"The package argument to metric() must be a string or None, got " f"{type(package)}"
+                f"The package argument to metric() must be a string or None, got "
+                f"{type(package)}"
             )
 
     def __call__(self, *args: str) -> MetricReference:

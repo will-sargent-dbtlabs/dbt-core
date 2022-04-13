@@ -1,4 +1,3 @@
-
 class MetricReference(object):
     def __init__(self, metric_name, package_name=None):
         self.metric_name = metric_name
@@ -11,6 +10,7 @@ class ResolvedMetricReference(MetricReference):
     lookups to the underlying node. Also adds helper functions
     for working with metrics (ie. __str__ and templating functions)
     """
+
     def __init__(self, node):
         super().__init__(node.name, node.package_name)
         self.node = node
@@ -23,8 +23,7 @@ class ResolvedMetricReference(MetricReference):
         return self.node.is_derived
 
     def qualify(self, namespace):
-        return f'{namespace}.{self.metric_name}'
+        return f"{namespace}.{self.metric_name}"
 
     def __str__(self):
         return self.node.name
-

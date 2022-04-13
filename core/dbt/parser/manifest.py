@@ -68,9 +68,6 @@ from dbt.contracts.graph.parsed import (
     ParsedExposure,
     ParsedMetric,
 )
-from dbt.contracts.graph.metrics import (
-    MetricReference,
-)
 from dbt.contracts.util import Writable
 from dbt.exceptions import (
     ref_target_not_found,
@@ -835,13 +832,6 @@ class ManifestLoader:
                 continue
             _process_refs_for_metric(self.manifest, current_project, metric)
 
-    def resolve_metric(self, unresolved_metric: MetricReference, current_project: str):
-        return self.manifest.resolve_metric(
-            unresolved_metric.metric_name,
-            unresolved_metric.package_name,
-            current_project,
-        )
-
     # Takes references in 'metrics' array of nodes and exposures, finds the target
     # node, and updates 'depends_on.nodes' with the unique id
     def process_metrics(self, config: RuntimeConfig):
@@ -856,11 +846,7 @@ class ManifestLoader:
             _process_metrics_for_node(self.manifest, current_project, metric)
             if metric.is_derived:
                 # This mutates the metric
-                ctx = generate_runtime_metric_context(
-                    metric,
-                    config,
-                    self.manifest
-                )
+                ctx = generate_runtime_metric_context(metric, config, self.manifest)
 
                 metric.resolve_metric_references(ctx)
 
@@ -1158,7 +1144,9 @@ def _process_refs_for_metric(manifest: Manifest, current_project: str, metric: P
         manifest.update_metric(metric)
 
 
-def _process_metrics_for_node(manifest: Manifest, current_project: str, node: Union[ManifestNode, ParsedMetric]):
+def _process_metrics_for_node(
+    manifest: Manifest, current_project: str, node: Union[ManifestNode, ParsedMetric]
+):
     """Given a manifest and a node in that manifest, process its metrics"""
     for metric in node.metrics:
         target_metric: Optional[Union[Disabled, ParsedMetric]] = None

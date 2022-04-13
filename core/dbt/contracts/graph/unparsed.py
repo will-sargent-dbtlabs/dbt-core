@@ -445,7 +445,7 @@ class MetricFilter(dbtClassMixin, Replaceable):
 
 
 @dataclass
-class MetricRatioTerms(dbtClassMixin, Replaceable):
+class UnparsedRatioTerms(dbtClassMixin, Replaceable):
     numerator: str
     denominator: str
 
@@ -465,4 +465,9 @@ class UnparsedMetric(dbtClassMixin, Replaceable):
     meta: Dict[str, Any] = field(default_factory=dict)
     tags: List[str] = field(default_factory=list)
 
-    ratio_terms: Optional[MetricRatioTerms] = None
+    ratio_terms: Optional[UnparsedRatioTerms] = None
+
+    def __post_init__(self):
+        if self.ratio_terms:
+            self.ratio_terms.numerator = "{{ " + self.ratio_terms.numerator + " }}"
+            self.ratio_terms.denominator = "{{ " + self.ratio_terms.denominator + " }}"

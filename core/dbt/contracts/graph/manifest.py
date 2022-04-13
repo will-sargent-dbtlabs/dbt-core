@@ -467,7 +467,7 @@ class Disabled(Generic[D]):
     target: D
 
 
-MaybeMetricNode = Optional[ParsedMetric]
+MaybeMetricNode = Optional[Union[ParsedMetric, Disabled[ParsedMetric]]]
 
 
 MaybeDocumentation = Optional[ParsedDocumentation]
