@@ -970,9 +970,8 @@ class Manifest(MacroMethods, DataClassMessagePackMixin, dbtClassMixin):
                 # Skip if the metric is disabled!
                 return metric
 
-            # TODO: Figure this part out...
-            # if disabled is None:
-            #     disabled = self.disabled_lookup.find(search_name, pkg)
+            if disabled is None:
+                disabled = self.disabled_lookup.find(target_metric_name, target_metric_package)
 
         if disabled:
             return Disabled(disabled[0])
@@ -1090,9 +1089,12 @@ class Manifest(MacroMethods, DataClassMessagePackMixin, dbtClassMixin):
         source_file.exposures.append(exposure.unique_id)
 
     def add_metric(self, source_file: SchemaSourceFile, metric: ParsedMetric):
-        _check_duplicates(metric, self.metrics)
-        self.metrics[metric.unique_id] = metric
-        source_file.metrics.append(metric.unique_id)
+        if not metric.config.enabled:
+            self.add_disabled_nofile(metric)
+        else:
+            _check_duplicates(metric, self.metrics)
+            self.metrics[metric.unique_id] = metric
+            source_file.metrics.append(metric.unique_id)
 
     def add_disabled_nofile(self, node: CompileResultNode):
         # There can be multiple disabled nodes for the same unique_id

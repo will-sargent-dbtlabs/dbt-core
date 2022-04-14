@@ -810,6 +810,15 @@ class ParsedRatioTerms(dbtClassMixin, Replaceable):
     numerator: MetricReference
     denominator: MetricReference
 
+    @classmethod
+    def parse_from_raw(cls, unparsed):
+        return cls.from_dict(
+            {
+                "numerator": {"sql": unparsed.numerator, "unique_id": None},
+                "denominator": {"sql": unparsed.denominator, "unique_id": None},
+            }
+        )
+
 
 @dataclass
 class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
@@ -838,11 +847,13 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
         pass
 
     @classmethod
-    def parse_from_args(cls, unparsed_node, **kwargs):
+    def parse_from_args(cls, unparsed_node, data):
         if unparsed_node.type == "ratio":
-            return ParsedRatioMetric(**kwargs, ratio_terms=unparsed_node.ratio_terms)
+            data = data.copy()
+            data['ratio_terms'] = ParsedRatioTerms.parse_from_raw(unparsed_node.ratio_terms).to_dict()
+            return ParsedRatioMetric.from_dict(data)
         else:
-            return ParsedMetric(**kwargs)
+            return ParsedMetric.from_dict(data)
 
     def postprocess_depends_on(self, parse_func):
         # Capture ref to parent model
@@ -888,6 +899,13 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     def same_time_grains(self, old: "ParsedMetric") -> bool:
         return self.time_grains == old.time_grains
 
+    def same_config(self, old: "ParsedMetric") -> bool:
+        import ipdb; ipdb.set_trace()
+        return self.config.same_contents(
+            self.config,
+            old.config,
+        )
+
     def same_contents(self, old: Optional["ParsedMetric"]) -> bool:
         # existing when it didn't before is a change!
         # metadata/tags changes are not "changes"
@@ -904,6 +922,8 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
             and self.same_sql(old)
             and self.same_timestamp(old)
             and self.same_time_grains(old)
+            # TODO: Need to test this...
+            and self.same_config(old)
             and True
         )
 
@@ -917,14 +937,6 @@ class ParsedRatioMetric(ParsedMetric):
     # default value of None and validate that it is present in __post_init_
     type: str = field(metadata={"restrict": ["ratio"]})
     ratio_terms: Optional[ParsedRatioTerms] = None
-
-    def __post_init__(self):
-        self.ratio_terms = ParsedRatioTerms.from_dict(
-            {
-                "numerator": {"sql": self.ratio_terms.numerator, "unique_id": None},
-                "denominator": {"sql": self.ratio_terms.denominator, "unique_id": None},
-            }
-        )
 
     def same_ratio_terms(self, old: "ParsedRatioMetric") -> bool:
         # TODO: Do we need a deep compare b/c this is a dict?
