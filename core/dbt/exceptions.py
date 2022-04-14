@@ -515,6 +515,10 @@ def ref_invalid_args(model, args) -> NoReturn:
     raise_compiler_error("ref() takes at most two arguments ({} given)".format(len(args)), model)
 
 
+def metric_invalid_args(model, args) -> NoReturn:
+    raise_compiler_error("metric() takes at most two arguments ({} given)".format(len(args)), model)
+
+
 def ref_bad_context(model, args) -> NoReturn:
     ref_args = ", ".join("'{}'".format(a) for a in args)
     ref_string = "{{{{ ref({}) }}}}".format(ref_args)

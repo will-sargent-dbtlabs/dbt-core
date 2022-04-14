@@ -51,7 +51,9 @@ from dbt.exceptions import (
     missing_config,
     raise_compiler_error,
     ref_invalid_args,
+    metric_invalid_args,
     ref_target_not_found,
+    metric_target_not_found,
     ref_bad_context,
     source_target_not_found,
     wrapped_exports,
@@ -295,8 +297,7 @@ class BaseMetricResolver(BaseResolver):
         elif len(args) == 2:
             package, name = args
         else:
-            # TODO: Use a different error!
-            ref_invalid_args(self.model, args)
+            metric_invalid_args(self.model, args)
         self.validate_args(name, package)
         return self.resolve(name, package)
 
@@ -566,7 +567,7 @@ class RuntimeMetricResolver(BaseMetricResolver):
 
         if target_metric is None or isinstance(target_metric, Disabled):
             # TODO : Use a different exception!!
-            ref_target_not_found(
+            metric_target_not_found(
                 self.model,
                 target_name,
                 target_package,

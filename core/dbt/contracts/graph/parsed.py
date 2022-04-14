@@ -923,7 +923,6 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
             and self.same_sql(old)
             and self.same_timestamp(old)
             and self.same_time_grains(old)
-            # TODO: Need to test this...
             and self.same_config(old)
             and True
         )
