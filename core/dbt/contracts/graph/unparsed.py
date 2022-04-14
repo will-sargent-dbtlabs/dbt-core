@@ -9,7 +9,7 @@ from dbt.contracts.util import (
 import dbt.helper_types  # noqa:F401
 from dbt.exceptions import CompilationException
 
-from dbt.dataclass_schema import dbtClassMixin, StrEnum, ExtensibleDbtClassMixin
+from dbt.dataclass_schema import dbtClassMixin, StrEnum, ExtensibleDbtClassMixin, ValidationError
 
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -471,3 +471,12 @@ class UnparsedMetric(dbtClassMixin, Replaceable):
         if self.ratio_terms:
             self.ratio_terms.numerator = "{{ " + self.ratio_terms.numerator + " }}"
             self.ratio_terms.denominator = "{{ " + self.ratio_terms.denominator + " }}"
+
+    @classmethod
+    def validate(cls, data):
+        super().validate(data)
+
+        if data.get('model') is None and data.get('type') != 'ratio':
+            raise ValidationError(
+                "Non-ratio metrics require a 'model' property"
+            )

@@ -717,7 +717,9 @@ class TestUnparsedMetric(ContractTestCase):
 
     def test_bad_metric_no_model(self):
         tst = self.get_ok_dict()
+        # Metrics with type='ratio' do not have model props
         tst['model'] = None
+        tst['type'] = 'sum'
         self.assert_fails_validation(tst)
 
     def test_bad_filter_missing_things(self):
