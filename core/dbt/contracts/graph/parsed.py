@@ -850,7 +850,9 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     def parse_from_args(cls, unparsed_node, data):
         if unparsed_node.type == "ratio":
             data = data.copy()
-            data['ratio_terms'] = ParsedRatioTerms.parse_from_raw(unparsed_node.ratio_terms).to_dict()
+            data["ratio_terms"] = ParsedRatioTerms.parse_from_raw(
+                unparsed_node.ratio_terms
+            ).to_dict()
             return ParsedRatioMetric.from_dict(data)
         else:
             return ParsedMetric.from_dict(data)
@@ -900,10 +902,9 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
         return self.time_grains == old.time_grains
 
     def same_config(self, old: "ParsedMetric") -> bool:
-        import ipdb; ipdb.set_trace()
         return self.config.same_contents(
-            self.config,
-            old.config,
+            self.config.to_dict(),
+            old.config.to_dict(),
         )
 
     def same_contents(self, old: Optional["ParsedMetric"]) -> bool:

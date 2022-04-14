@@ -1037,7 +1037,7 @@ class MetricParser(YamlReader):
                 "meta": unparsed.meta,
                 "tags": unparsed.tags,
                 "config": unparsed.config,
-            }
+            },
         )
 
         ctx = generate_parse_metrics(

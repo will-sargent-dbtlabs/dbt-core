@@ -477,7 +477,5 @@ class UnparsedMetric(dbtClassMixin, Replaceable):
     def validate(cls, data):
         super().validate(data)
 
-        if data.get('model') is None and data.get('type') != 'ratio':
-            raise ValidationError(
-                "Non-ratio metrics require a 'model' property"
-            )
+        if data.get("model") is None and data.get("type") != "ratio":
+            raise ValidationError("Non-ratio metrics require a 'model' property")

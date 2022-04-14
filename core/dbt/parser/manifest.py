@@ -73,6 +73,7 @@ from dbt.exceptions import (
     ref_target_not_found,
     get_target_not_found_or_disabled_msg,
     source_target_not_found,
+    metric_target_not_found,
     get_source_not_found_or_disabled_msg,
     warn_or_error,
 )
@@ -953,6 +954,25 @@ def invalid_source_fail_unless_test(node, target_name, target_table_name, disabl
         source_target_not_found(node, target_name, target_table_name, disabled=disabled)
 
 
+def invalid_metric_fail_unless_test(node, target_metric_name, target_metric_package, disabled):
+
+    if node.resource_type == NodeType.Test:
+        msg = get_target_not_found_or_disabled_msg(
+            node, target_metric_name, target_metric_package, disabled
+        )
+        if disabled:
+            fire_event(InvalidRefInTestNode(msg=msg))
+        else:
+            warn_or_error(msg, log_fmt=warning_tag("{}"))
+    else:
+        metric_target_not_found(
+            node,
+            target_metric_name,
+            target_metric_package,
+            disabled=disabled,
+        )
+
+
 def _check_resource_uniqueness(
     manifest: Manifest,
     config: RuntimeConfig,
@@ -1174,8 +1194,7 @@ def _process_metrics_for_node(
             # This may raise. Even if it doesn't, we don't want to add
             # this node to the graph b/c there is no destination node
             node.config.enabled = False
-            # TODO : Different error message?
-            invalid_ref_fail_unless_test(
+            invalid_metric_fail_unless_test(
                 node,
                 target_metric_name,
                 target_metric_package,
