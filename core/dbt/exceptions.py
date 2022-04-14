@@ -516,7 +516,9 @@ def ref_invalid_args(model, args) -> NoReturn:
 
 
 def metric_invalid_args(model, args) -> NoReturn:
-    raise_compiler_error("metric() takes at most two arguments ({} given)".format(len(args)), model)
+    raise_compiler_error(
+        "metric() takes at most two arguments ({} given)".format(len(args)), model
+    )
 
 
 def ref_bad_context(model, args) -> NoReturn:
@@ -667,7 +669,7 @@ def source_target_not_found(
 
 
 def metric_target_not_found(
-    metric, target_name: str, target_package: str, disabled: Optional[bool] = None
+    metric, target_name: str, target_package: Optional[str], disabled: Optional[bool] = None
 ) -> NoReturn:
     msg = get_metric_not_found_or_disabled_msg(metric, target_name, target_package, disabled)
     raise_compiler_error(msg, metric)
