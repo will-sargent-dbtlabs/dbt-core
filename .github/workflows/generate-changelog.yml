@@ -1,0 +1,114 @@
+# **what?**
+# This workflow will take a version number, prerelease flag and prerelease
+# and run the changie commands to generate a cahngelog markdown file for
+# the specified release and also regenerate the `CHANGELOG.MD` file.
+# These files will be created/modified on a new branch and the action will
+# also open a PR for the change.
+#
+# **why?**
+# This is to aid in releasing dbt and making sure we have updated
+# changelog upon release.
+
+# **when?**
+# This is triggered either manually OR
+# from the repository_dispatch event "generate-changelog" which is sent from
+# the dbt-release repo Action
+
+name: Generate Changelog Markdown
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+       description: 'The version number to bump to (ex: 1.4.2)'
+       required: true
+      is_prerelease:
+       description: 'Mark this as a pre-release'
+       required: true
+       default: 'true'
+      prerelease:
+       description: 'The prerelease to use (ex: rc1)'
+       required: false
+  repository_dispatch:
+    types: [generate-changelog]
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Set version and dry run values
+        id: variables
+        env:
+          VERSION_NUMBER: "${{ github.event.client_payload.version_number == '' && github.event.inputs.version_number || github.event.client_payload.version_number }}"
+          IS_PRERELEASE: "${{ github.event.client_payload.is_prerelease == '' && github.event.inputs.is_prerelease || github.event.client_payload.is_prerelease }}"
+          PRERELEASE: "${{ github.event.client_payload.prerelease == '' && github.event.inputs.prerelease || github.event.client_payload.prerelease }}"
+        run: |
+          echo Repository dispatch event version: ${{ github.event.client_payload.version_number }}
+          echo Repository dispatch event is prerelease: ${{ github.event.client_payload.is_prerelease }}
+          echo Repository dispatch event prerelease: ${{ github.event.client_payload.prerelease }}
+          echo Workflow dispatch event version: ${{ github.event.inputs.version_number }}
+          echo Workflow dispatch event is prerelease: ${{ github.event.inputs.is_prerelease }}
+          echo Workflow dispatch event prerelease: ${{ github.event.inputs.prerelease }}
+          echo ::set-output name=VERSION_NUMBER::$VERSION_NUMBER
+          echo ::set-output name=PRERELEASE::$PRERELEASE
+          echo ::set-output name=IS_PRERELEASE::$IS_PRERELEASE
+          if $IS_PRERELEASE == 'true' ; then
+              echo ::set-output name=FULL_VERSION_NUMBER::$VERSION_NUMBER-$PRERELEASE
+          else
+              echo ::set-output name=FULL_VERSION_NUMBER::$VERSION_NUMBER
+          fi
+
+      - name: Create PR branch
+        run: |
+          git checkout -b generate-changelog/${{steps.variables.outputs.FULL_VERSION_NUMBER}}_$GITHUB_RUN_ID
+          git push origin generate-changelog/${{steps.variables.outputs.FULL_VERSION_NUMBER}}_$GITHUB_RUN_ID
+          git branch --set-upstream-to=origin/generate-changelog/${{steps.variables.outputs.FULL_VERSION_NUMBER}}_$GITHUB_RUN_ID generate-changelog/${{steps.variables.outputs.FULL_VERSION_NUMBER}}_$GITHUB_RUN_ID
+
+      - name: Prerelease Changelog
+        # This step runs on the changie docker image
+        # This will combine all the yaml files under '/unreleased' into a single markdown file and then
+        # move all those yaml files into a directory named after the version (ex: `/1.1.0`)
+        # Finally the merge command will generate a new CHANGELOG.md file by combining all `.md` files under `/.changes`
+        if: ${{ steps.variables.outputs.IS_PRERELEASE == 'true' }}
+        uses: docker://ghcr.io/miniscruff/changie:latest
+        run: |
+          changie batch ${{ steps.variables.outputs.VERSION_NUMBER }}  --move-dir '${{ steps.variables.outputs.VERSION_NUMBER }}' --prerelease '${{ steps.variables.outputs.PRERELEASE }}'
+          changie merge
+
+      - name: Final Release Changelog
+        # This will combine all the yaml files under both the `/unreleased` directory and the version
+        # directory (ex: `/1.1.0`), combine them all into a single markdown file for the release and
+        # then delete all the yaml files.
+        # Finally the merge command will generate a new CHANGELOG.md file by combining all `.md` files under `/.changes`
+        if: ${{ steps.variables.outputs.IS_PRERELEASE != 'true' }}
+        run: |
+          changie batch ${{ steps.variables.outputs.VERSION_NUMBER }}  --include '${{ steps.variables.outputs.VERSION_NUMBER }}' --remove-prereleases
+          changie merge
+
+      - name: Commit Changelog File and Updates
+        uses: gr2m/create-or-update-pull-request-action@v1
+        env:
+          # When using the GITHUB_TOKEN, the resulting commit will not trigger another GitHub Actions
+          # Workflow run. This is due to limitations set by GitHub.
+          # See: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
+          # When you use the repository's GITHUB_TOKEN to perform tasks on behalf of the GitHub Actions
+          # app, events triggered by the GITHUB_TOKEN will not create a new workflow run. This prevents
+          # you from accidentally creating recursive workflow runs. To get around this, use a Personal
+          # Access Token to commit changes.
+          GITHUB_TOKEN: ${{ secrets.FISHTOWN_BOT_PAT }}
+        with:
+          branch: ${{ github.event.pull_request.head.ref }}
+          # author expected in the format "Lorem J. Ipsum <lorem@example.com>"
+          author: "Github Build Bot <buildbot@fishtownanalytics.com>"
+          commit-message: "Generate CHANGELOG for ${{ steps.variables.outputs.FULL_VERSION_NUMBER }}"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3\
+        with:
+          author: 'Github Build Bot <buildbot@fishtownanalytics.com>'
+          base: ${{github.ref}}
+          title: 'Generating CHANGELOG for Release of ${{steps.variables.outputs.FULL_VERSION_NUMBER}}'
+          branch: 'generate-changelog/${{steps.variables.outputs.FULL_VERSION_NUMBER}}_${{GITHUB.RUN_ID}}'
