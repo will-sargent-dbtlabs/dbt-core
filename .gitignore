@@ -11,6 +11,8 @@ __pycache__/
 env*/
 dbt_env/
 build/
+# Saves test folder for build task. Naming is hard!
+!/tests/functional/build
 develop-eggs/
 dist/
 downloads/

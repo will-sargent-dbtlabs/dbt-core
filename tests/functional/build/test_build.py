@@ -1,9 +1,9 @@
 import pytest
 
-from dbt.tests.util import run_dbt
+from dbt.tests.util import run_dbt, copy_file
 
-"""
-from tests.functional.build_test.fixtures import (
+
+from tests.functional.build.fixtures import (  # noqa: F401
     snapshots,
     tests_failing,
     models,
@@ -14,13 +14,12 @@ from tests.functional.build_test.fixtures import (
     test_files,
     models_interdependent,
     project_files,
-)  # noqa: F401
-"""
+)
+
 
 # from test.integration.base import DBTIntegrationTest, use_profile, normalize
 from test.integration.base import normalize
 import yaml
-import shutil
 import os
 
 
@@ -55,15 +54,22 @@ class TestPassingBuild(TestBuildBase):
         self,
         project,
     ):
-        self.build()
+        self.build(expect_pass=True)
 
 
 class TestFailingBuild(TestBuildBase):
     @pytest.fixture(scope="class")
-    def model_path(self):
-        return "models-failing"
+    def models(self, models_failing):  # noqa: F811
+        return {
+            "model_3.sql": models_failing["model_3.sql"],
+            "model_2.sql": models_failing["model_2.sql"],
+            "test.yml": models_failing["test.yml"],
+            "model_0.sql": models_failing["model_0.sql"],
+            "model_1.sql": models_failing["model_1.sql"],
+            "model_99.sql": models_failing["model_99.sql"],
+        }
 
-    def test__build_happy_path(
+    def test__build_sad_path(
         self,
         project,
     ):
@@ -76,8 +82,14 @@ class TestFailingBuild(TestBuildBase):
 
 class TestFailingTestsBuild(TestBuildBase):
     @pytest.fixture(scope="class")
-    def model_path(self):
-        return "tests-failing"
+    def models(self, tests_failing):  # noqa: F811
+        return {
+            "model_2.sql": tests_failing["model_2.sql"],
+            "test.yml": tests_failing["test.yml"],
+            "model_0.sql": tests_failing["model_0.sql"],
+            "model_1.sql": tests_failing["model_1.sql"],
+            "model_99.sql": tests_failing["model_99.sql"],
+        }
 
     def test__failing_test_skips_downstream(
         self,
@@ -92,8 +104,13 @@ class TestFailingTestsBuild(TestBuildBase):
 
 class TestCircularRelationshipTestsBuild(TestBuildBase):
     @pytest.fixture(scope="class")
-    def model_path(self):
-        return "models-circular-relationship"
+    def models(self, models_circular_relationship):  # noqa: F811
+        return {
+            "test.yml": models_circular_relationship["test.yml"],
+            "model_0.sql": models_circular_relationship["model_0.sql"],
+            "model_1.sql": models_circular_relationship["model_1.sql"],
+            "model_99.sql": models_circular_relationship["model_99.sql"],
+        }
 
     def test__circular_relationship_test_success(
         self,
@@ -109,8 +126,12 @@ class TestCircularRelationshipTestsBuild(TestBuildBase):
 
 class TestSimpleBlockingTest(TestBuildBase):
     @pytest.fixture(scope="class")
-    def model_path(self):
-        return "models-simple-blocking"
+    def models(self, models_simple_blocking):  # noqa: F811
+        return {
+            "schema.yml": models_simple_blocking["schema.yml"],
+            "model_b.sql": models_simple_blocking["model_b.sql"],
+            "model_a.sql": models_simple_blocking["model_a.sql"],
+        }
 
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -143,24 +164,27 @@ class TestInterdependentModels(TestBuildBase):
         }
 
     @pytest.fixture(scope="class")
-    def model_path(self):
-        return "models-interdependent"
+    def models(self, models_interdependent):  # noqa: F811
+        return {
+            "schema.yml": models_interdependent["schema.yml"],
+            "model_c.sql": models_interdependent["model_c.sql"],
+            "model_a.sql": models_interdependent["model_a.sql"],
+        }
 
     def tearDown(self):
         if os.path.exists(normalize("models-interdependent/model_b.sql")):
             os.remove(normalize("models-interdependent/model_b.sql"))
 
-    def test__interdependent_models(
-        self,
-        project,
-    ):
+    def test__interdependent_models(self, project, test_data_dir):
         # check that basic build works
-        shutil.copyfile("test-files/model_b.sql", "models-interdependent/model_b.sql")
+        copy_file(test_data_dir, "model_b.sql", project.project_root + "/models", ["model_b.sql"])
         results = self.build()
         assert len(results) == 16
 
         # return null from model_b
-        shutil.copyfile("test-files/model_b_null.sql", "models-interdependent/model_b.sql")
+        copy_file(
+            test_data_dir, "model_b_null.sql", project.project_root + "/models", ["model_b.sql"]
+        )
         results = self.build(expect_pass=False)
         assert len(results) == 16
         actual = [str(r.status) for r in results]
