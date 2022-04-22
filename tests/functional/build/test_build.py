@@ -1,6 +1,9 @@
+import pytest
+import yaml
+import os
+
 from dbt.tests.util import run_dbt, copy_file
-
-
+from dbt.tests.fixtures.project import write_project_files
 from tests.functional.build.fixtures import (
     snapshots__snap_0_sql,
     snapshots__snap_1_sql,
@@ -34,10 +37,6 @@ from tests.functional.build.fixtures import (
     models_failing__model_99_sql,
 )
 from test.integration.base import normalize
-import pytest
-import yaml
-import os
-from dbt.tests.fixtures.project import write_project_files
 
 
 @pytest.fixture(scope="class")
