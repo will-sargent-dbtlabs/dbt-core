@@ -300,16 +300,6 @@ select null as id
 
 """
 
-test_files__model_b_sql = """
-select * from {{ ref('model_a') }}
-
-"""
-
-test_files__model_b_null_sql = """
-select null from {{ ref('model_a') }}
-
-"""
-
 models_interdependent__schema_yml = """
 version: 2
 
@@ -434,14 +424,6 @@ def models_simple_blocking():
 
 
 @pytest.fixture(scope="class")
-def test_files():
-    return {
-        "model_b.sql": test_files__model_b_sql,
-        "model_b_null.sql": test_files__model_b_null_sql,
-    }
-
-
-@pytest.fixture(scope="class")
 def models_interdependent():
     return {
         "schema.yml": models_interdependent__schema_yml,
@@ -460,7 +442,6 @@ def project_files(
     seeds,
     models_circular_relationship,
     models_simple_blocking,
-    test_files,
     models_interdependent,
 ):
     write_project_files(project_root, "snapshots", snapshots)
@@ -470,5 +451,4 @@ def project_files(
     write_project_files(project_root, "seeds", seeds)
     write_project_files(project_root, "models-circular-relationship", models_circular_relationship)
     write_project_files(project_root, "models-simple-blocking", models_simple_blocking)
-    write_project_files(project_root, "test-files", test_files)
     write_project_files(project_root, "models-interdependent", models_interdependent)

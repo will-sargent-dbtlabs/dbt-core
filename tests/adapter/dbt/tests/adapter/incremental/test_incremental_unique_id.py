@@ -421,7 +421,7 @@ class BaseIncrementalUniqueKey:
         return run_result.status, run_result.message
 
     # no unique_key test
-    def test__no_unique_keys(self, project):
+    def test_no_unique_keys(self, project):
         """with no unique keys, seed and model should match"""
 
         expected_fields = self.get_expected_fields(relation="seed", seed_rows=8)
@@ -431,7 +431,7 @@ class BaseIncrementalUniqueKey:
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
     # unique_key as str tests
-    def test__empty_str_unique_key(self, project):
+    def test_empty_str_unique_key(self, project):
         """with empty string for unique key, seed and model should match"""
 
         expected_fields = self.get_expected_fields(relation="seed", seed_rows=8)
@@ -443,7 +443,7 @@ class BaseIncrementalUniqueKey:
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__one_unique_key(self, project):
+    def test_one_unique_key(self, project):
         """with one unique key, model will overwrite existing row"""
 
         expected_fields = self.get_expected_fields(
@@ -458,7 +458,7 @@ class BaseIncrementalUniqueKey:
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__bad_unique_key(self, project):
+    def test_bad_unique_key(self, project):
         """expect compilation error from unique key not being a column"""
 
         (status, exc) = self.fail_to_build_inc_missing_unique_key_column(
@@ -469,7 +469,7 @@ class BaseIncrementalUniqueKey:
         assert "thisisnotacolumn" in exc.lower()
 
     # test unique_key as list
-    def test__empty_unique_key_list(self, project):
+    def test_empty_unique_key_list(self, project):
         """with no unique keys, seed and model should match"""
 
         expected_fields = self.get_expected_fields(relation="seed", seed_rows=8)
@@ -481,7 +481,7 @@ class BaseIncrementalUniqueKey:
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__unary_unique_key_list(self, project):
+    def test_unary_unique_key_list(self, project):
         """with one unique key, model will overwrite existing row"""
 
         expected_fields = self.get_expected_fields(
@@ -496,7 +496,7 @@ class BaseIncrementalUniqueKey:
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__duplicated_unary_unique_key_list(self, project):
+    def test_duplicated_unary_unique_key_list(self, project):
         """with two of the same unique key, model will overwrite existing row"""
 
         expected_fields = self.get_expected_fields(
@@ -511,7 +511,7 @@ class BaseIncrementalUniqueKey:
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__trinary_unique_key_list(self, project):
+    def test_trinary_unique_key_list(self, project):
         """with three unique keys, model will overwrite existing row"""
 
         expected_fields = self.get_expected_fields(
@@ -526,7 +526,7 @@ class BaseIncrementalUniqueKey:
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__trinary_unique_key_list_no_update(self, project):
+    def test_trinary_unique_key_list_no_update(self, project):
         """even with three unique keys, adding distinct rows to seed does not
         cause seed and model to diverge"""
 
@@ -539,7 +539,7 @@ class BaseIncrementalUniqueKey:
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
 
-    def test__bad_unique_key_list(self, project):
+    def test_bad_unique_key_list(self, project):
         """expect compilation error from unique key not being a column"""
 
         (status, exc) = self.fail_to_build_inc_missing_unique_key_column(

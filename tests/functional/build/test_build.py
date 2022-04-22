@@ -11,30 +11,17 @@ from tests.functional.build.fixtures import (  # noqa: F401
     seeds,
     models_circular_relationship,
     models_simple_blocking,
-    test_files,
     models_interdependent,
     project_files,
 )
 
 
-# from test.integration.base import DBTIntegrationTest, use_profile, normalize
 from test.integration.base import normalize
 import yaml
 import os
 
 
-class TestBuildBase:
-    @pytest.fixture(scope="class")
-    def project_config_update(self):
-        return {
-            "config-version": 2,
-            "snapshot-paths": ["snapshots"],
-            "seed-paths": ["seeds"],
-            "seeds": {
-                "quote_columns": False,
-            },
-        }
-
+class BuildBase:
     def build(self, expect_pass=True, extra_args=None, **kwargs):
         args = ["build"]
         if kwargs:
@@ -45,19 +32,19 @@ class TestBuildBase:
         return run_dbt(args, expect_pass=expect_pass)
 
 
-class TestPassingBuild(TestBuildBase):
+class TestPassingBuild(BuildBase):
     @pytest.fixture(scope="class")
     def model_path(self):
         return "models"
 
-    def test__build_happy_path(
+    def test_build_happy_path(
         self,
         project,
     ):
         self.build(expect_pass=True)
 
 
-class TestFailingBuild(TestBuildBase):
+class TestFailingBuild(BuildBase):
     @pytest.fixture(scope="class")
     def models(self, models_failing):  # noqa: F811
         return {
@@ -69,7 +56,7 @@ class TestFailingBuild(TestBuildBase):
             "model_99.sql": models_failing["model_99.sql"],
         }
 
-    def test__build_sad_path(
+    def test_build_sad_path(
         self,
         project,
     ):
@@ -80,7 +67,7 @@ class TestFailingBuild(TestBuildBase):
         assert sorted(actual) == sorted(expected)
 
 
-class TestFailingTestsBuild(TestBuildBase):
+class TestFailingTestsBuild(BuildBase):
     @pytest.fixture(scope="class")
     def models(self, tests_failing):  # noqa: F811
         return {
@@ -91,7 +78,7 @@ class TestFailingTestsBuild(TestBuildBase):
             "model_99.sql": tests_failing["model_99.sql"],
         }
 
-    def test__failing_test_skips_downstream(
+    def test_failing_test_skips_downstream(
         self,
         project,
     ):
@@ -102,7 +89,7 @@ class TestFailingTestsBuild(TestBuildBase):
         assert sorted(actual) == sorted(expected)
 
 
-class TestCircularRelationshipTestsBuild(TestBuildBase):
+class TestCircularRelationshipTestsBuild(BuildBase):
     @pytest.fixture(scope="class")
     def models(self, models_circular_relationship):  # noqa: F811
         return {
@@ -112,7 +99,7 @@ class TestCircularRelationshipTestsBuild(TestBuildBase):
             "model_99.sql": models_circular_relationship["model_99.sql"],
         }
 
-    def test__circular_relationship_test_success(
+    def test_circular_relationship_test_success(
         self,
         project,
     ):
@@ -124,7 +111,7 @@ class TestCircularRelationshipTestsBuild(TestBuildBase):
         assert sorted(actual) == sorted(expected)
 
 
-class TestSimpleBlockingTest(TestBuildBase):
+class TestSimpleBlockingTest(BuildBase):
     @pytest.fixture(scope="class")
     def models(self, models_simple_blocking):  # noqa: F811
         return {
@@ -141,7 +128,7 @@ class TestSimpleBlockingTest(TestBuildBase):
             "seed-paths": ["does-not-exist"],
         }
 
-    def test__simple_blocking_test(
+    def test_simple_blocking_test(
         self,
         project,
     ):
@@ -152,7 +139,7 @@ class TestSimpleBlockingTest(TestBuildBase):
         assert sorted(actual) == sorted(expected)
 
 
-class TestInterdependentModels(TestBuildBase):
+class TestInterdependentModels(BuildBase):
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
@@ -175,7 +162,7 @@ class TestInterdependentModels(TestBuildBase):
         if os.path.exists(normalize("models-interdependent/model_b.sql")):
             os.remove(normalize("models-interdependent/model_b.sql"))
 
-    def test__interdependent_models(self, project, test_data_dir):
+    def test_interdependent_models(self, project, test_data_dir):
         # check that basic build works
         copy_file(test_data_dir, "model_b.sql", project.project_root + "/models", ["model_b.sql"])
         results = self.build()
