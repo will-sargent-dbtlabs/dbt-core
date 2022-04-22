@@ -1,42 +1,43 @@
-import pytest
-import yaml
 import os
 
-from dbt.tests.util import run_dbt, copy_file
+import pytest
+import yaml
 from dbt.tests.fixtures.project import write_project_files
+from dbt.tests.util import copy_file, run_dbt
+
+from test.integration.base import normalize
 from tests.functional.build.fixtures import (
-    snapshots__snap_0_sql,
-    snapshots__snap_1_sql,
-    snapshots__snap_99_sql,
-    tests_failing__model_2_sql,
-    tests_failing__test_yml,
-    tests_failing__model_0_sql,
-    tests_failing__model_1_sql,
-    tests_failing__model_99_sql,
-    models__model_2_sql,
-    models__test_yml,
     models__model_0_sql,
     models__model_1_sql,
+    models__model_2_sql,
     models__model_99_sql,
-    seeds__countries_csv,
-    models_circular_relationship__test_yml,
+    models__test_yml,
     models_circular_relationship__model_0_sql,
     models_circular_relationship__model_1_sql,
     models_circular_relationship__model_99_sql,
-    models_simple_blocking__schema_yml,
-    models_simple_blocking__model_b_sql,
-    models_simple_blocking__model_a_sql,
-    models_interdependent__schema_yml,
-    models_interdependent__model_c_sql,
-    models_interdependent__model_a_sql,
-    models_failing__test_yml,
+    models_circular_relationship__test_yml,
     models_failing__model_0_sql,
     models_failing__model_1_sql,
     models_failing__model_2_sql,
     models_failing__model_3_sql,
     models_failing__model_99_sql,
+    models_failing__test_yml,
+    models_interdependent__model_a_sql,
+    models_interdependent__model_c_sql,
+    models_interdependent__schema_yml,
+    models_simple_blocking__model_a_sql,
+    models_simple_blocking__model_b_sql,
+    models_simple_blocking__schema_yml,
+    seeds__countries_csv,
+    snapshots__snap_0_sql,
+    snapshots__snap_1_sql,
+    snapshots__snap_99_sql,
+    tests_failing__model_0_sql,
+    tests_failing__model_1_sql,
+    tests_failing__model_2_sql,
+    tests_failing__model_99_sql,
+    tests_failing__test_yml,
 )
-from test.integration.base import normalize
 
 
 @pytest.fixture(scope="class")
