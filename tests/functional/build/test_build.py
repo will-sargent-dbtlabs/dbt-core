@@ -1,9 +1,124 @@
-import pytest
-
 from dbt.tests.util import run_dbt, copy_file
 
 
-from tests.functional.build.fixtures import (  # noqa: F401
+from tests.functional.build.fixtures import (
+    snapshots__snap_0_sql,
+    snapshots__snap_1_sql,
+    snapshots__snap_99_sql,
+    tests_failing__model_2_sql,
+    tests_failing__test_yml,
+    tests_failing__model_0_sql,
+    tests_failing__model_1_sql,
+    tests_failing__model_99_sql,
+    models__model_2_sql,
+    models__test_yml,
+    models__model_0_sql,
+    models__model_1_sql,
+    models__model_99_sql,
+    seeds__countries_csv,
+    models_circular_relationship__test_yml,
+    models_circular_relationship__model_0_sql,
+    models_circular_relationship__model_1_sql,
+    models_circular_relationship__model_99_sql,
+    models_simple_blocking__schema_yml,
+    models_simple_blocking__model_b_sql,
+    models_simple_blocking__model_a_sql,
+    models_interdependent__schema_yml,
+    models_interdependent__model_c_sql,
+    models_interdependent__model_a_sql,
+    models_failing__test_yml,
+    models_failing__model_0_sql,
+    models_failing__model_1_sql,
+    models_failing__model_2_sql,
+    models_failing__model_3_sql,
+    models_failing__model_99_sql,
+)
+from test.integration.base import normalize
+import pytest
+import yaml
+import os
+from dbt.tests.fixtures.project import write_project_files
+
+
+@pytest.fixture(scope="class")
+def snapshots():
+    return {
+        "snap_1.sql": snapshots__snap_1_sql,
+        "snap_0.sql": snapshots__snap_0_sql,
+        "snap_99.sql": snapshots__snap_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def tests_failing():
+    return {
+        "model_2.sql": tests_failing__model_2_sql,
+        "test.yml": tests_failing__test_yml,
+        "model_0.sql": tests_failing__model_0_sql,
+        "model_1.sql": tests_failing__model_1_sql,
+        "model_99.sql": tests_failing__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models():
+    return {
+        "model_2.sql": models__model_2_sql,
+        "test.yml": models__test_yml,
+        "model_0.sql": models__model_0_sql,
+        "model_1.sql": models__model_1_sql,
+        "model_99.sql": models__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models_failing():
+    return {
+        "model_3.sql": models_failing__model_3_sql,
+        "model_2.sql": models_failing__model_2_sql,
+        "test.yml": models_failing__test_yml,
+        "model_0.sql": models_failing__model_0_sql,
+        "model_1.sql": models_failing__model_1_sql,
+        "model_99.sql": models_failing__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def seeds():
+    return {"countries.csv": seeds__countries_csv}
+
+
+@pytest.fixture(scope="class")
+def models_circular_relationship():
+    return {
+        "test.yml": models_circular_relationship__test_yml,
+        "model_0.sql": models_circular_relationship__model_0_sql,
+        "model_1.sql": models_circular_relationship__model_1_sql,
+        "model_99.sql": models_circular_relationship__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models_simple_blocking():
+    return {
+        "schema.yml": models_simple_blocking__schema_yml,
+        "model_b.sql": models_simple_blocking__model_b_sql,
+        "model_a.sql": models_simple_blocking__model_a_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models_interdependent():
+    return {
+        "schema.yml": models_interdependent__schema_yml,
+        "model_c.sql": models_interdependent__model_c_sql,
+        "model_a.sql": models_interdependent__model_a_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def project_files(
+    project_root,
     snapshots,
     tests_failing,
     models,
@@ -12,13 +127,15 @@ from tests.functional.build.fixtures import (  # noqa: F401
     models_circular_relationship,
     models_simple_blocking,
     models_interdependent,
-    project_files,
-)
-
-
-from test.integration.base import normalize
-import yaml
-import os
+):
+    write_project_files(project_root, "snapshots", snapshots)
+    write_project_files(project_root, "tests-failing", tests_failing)
+    write_project_files(project_root, "models", models)
+    write_project_files(project_root, "models-failing", models_failing)
+    write_project_files(project_root, "seeds", seeds)
+    write_project_files(project_root, "models-circular-relationship", models_circular_relationship)
+    write_project_files(project_root, "models-simple-blocking", models_simple_blocking)
+    write_project_files(project_root, "models-interdependent", models_interdependent)
 
 
 class BuildBase:
