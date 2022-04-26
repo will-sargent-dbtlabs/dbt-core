@@ -155,6 +155,9 @@ class TestCLIVarsPackages:
         results = run_dbt(["deps", "--vars", "dip_version: 1.1"])
         assert results is None
 
+        results = run_dbt(["run"])
+        assert len(results) == 1
+
 
 initial_selectors_yml = """
 selectors:
