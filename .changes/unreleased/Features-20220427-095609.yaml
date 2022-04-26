@@ -1,0 +1,7 @@
+kind: Features
+body: Add support for percentages in error_if, warn_if
+time: 2022-04-27T09:56:09.707636+10:00
+custom:
+  Author: jaypeedevlin ehmartens
+  Issue: "4723"
+  PR: "5172"
