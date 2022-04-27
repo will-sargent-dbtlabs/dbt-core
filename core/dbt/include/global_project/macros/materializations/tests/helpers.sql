@@ -6,7 +6,7 @@
     {% set model_name = model.file_key_name.split('.')[1] %}
     {% set warn_if, warn_pct_division = get_pct_division(warn_if, model_name) %}
     {% set error_if, error_pct_division = get_pct_division(error_if, model_name) %}
-    
+
     select
       {{ fail_calc }} as failures,
       {{ fail_calc }} {{ warn_pct_division }} {{ warn_if }} as should_warn,
