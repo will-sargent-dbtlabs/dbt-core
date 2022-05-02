@@ -17,6 +17,11 @@ In order to build a new image, run the following docker command.
 ```
 docker build --tag <your_image_name>  --target <target_name> <path/to/dockerfile>
 ```
+---
+> **Note:**  Docker must be configured to use [BuildKit](https://docs.docker.com/develop/develop-images/build_enhancements/) in order for images to build properly!
+
+---
+
 By default the images will be populated with the most recent release of `dbt-core` and whatever database adapter you select.  If you need to use a different version you can specify it by git ref using the `--build-arg` flag:
 ```
 docker build --tag <your_image_name> \
@@ -32,13 +37,16 @@ valid arg names for versioning are:
 * `dbt_snowflake_ref`
 * `dbt_spark_ref`
 
-> Note: Only overide a _single_ build arg for each build. Using multiple overides may lead to a non-functioning image.
+---
+>**NOTE:**  Only override a _single_ build arg for each build. Using multiple overrides may lead to a non-functioning image.
+
+---
 
 If you wish to build an image with a third-party adapter you can use the `dbt-third-party` target.  This target requires you provide a path to the adapter that can be processed by `pip` by using the `dbt_third_party` build arg:
 ```
 docker build --tag <your_image_name> \
-  --target dbt-third-party \ 
-  --build-arg dbt_third_party=<pip_parsable_install_string> \ 
+  --target dbt-third-party \
+  --build-arg dbt_third_party=<pip_parsable_install_string> \
   <path/to/dockerfile>
 ```
 
@@ -74,7 +82,7 @@ docker build --tag my-third-party-dbt \
 There are a few special cases worth noting:
 * The `dbt-spark` database adapter comes in three different versions named `PyHive`, `ODBC`, and the default `all`.  If you wish to overide this you can use the `--build-arg` flag with the value of `dbt_spark_version=<version_name>`.  See the [docs](https://docs.getdbt.com/reference/warehouse-profiles/spark-profile) for more information.
 
-* The `dbt-postgres` database adapter is released as part of the `dbt-core` codebase.  If you wish to overide the version used, make sure you use the gitref for `dbt-core`: 
+* The `dbt-postgres` database adapter is released as part of the `dbt-core` codebase.  If you wish to overide the version used, make sure you use the gitref for `dbt-core`:
 ```
 docker build --tag my_dbt \
   --target dbt-postgres \
@@ -101,6 +109,9 @@ docker run \
 my-dbt \
 ls
 ```
-> Notes: 
-> * Bind-mount sources _must_ be an absolute path
-> * You may need to make adjustments to the docker networking setting depending on the specifics of your data warehouse/database host.
+---
+**Notes:**
+* Bind-mount sources _must_ be an absolute path
+* You may need to make adjustments to the docker networking setting depending on the specifics of your data warehouse/database host.
+
+---

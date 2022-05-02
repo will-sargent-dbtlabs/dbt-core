@@ -186,6 +186,7 @@ REQUIRED_BASE_KEYS = frozenset({
     'invocation_id',
     'modules',
     'flags',
+    'print',
 })
 
 REQUIRED_TARGET_KEYS = REQUIRED_BASE_KEYS | {'target'}
@@ -220,6 +221,7 @@ REQUIRED_MACRO_KEYS = REQUIRED_QUERY_HEADER_KEYS | {
     'sql',
     'sql_now',
     'adapter_macro',
+    'selected_resources'
 }
 REQUIRED_MODEL_KEYS = REQUIRED_MACRO_KEYS | {'this'}
 MAYBE_KEYS = frozenset({'debug'})
