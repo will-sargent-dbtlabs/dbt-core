@@ -326,7 +326,7 @@ class SchemaParser(SimpleParser[GenericTestBlock, ParsedGenericTestNode]):
         tags = sorted(set(itertools.chain(tags, builder.tags())))
 
         if isinstance(target, UnpatchedSourceDefinition):
-            file_key_name = f"{target.source.yaml_key}.{target.source.name}"
+            file_key_name = f"{target.source.yaml_key}.{target.source.name}.{target.table.name}"
         else:
             file_key_name = f"{target.yaml_key}.{target.name}"
 

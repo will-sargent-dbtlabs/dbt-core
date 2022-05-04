@@ -461,6 +461,17 @@ class ParsedGenericTestNode(ParsedNode, HasTestMetadata):
     def test_node_type(self):
         return "generic"
 
+    @property
+    def get_ref_str(self):
+        if not self.file_key_name:
+            return ""
+        name_parts = self.file_key_name.split(".")
+        if name_parts[0] == "sources":
+            target_str = f"source('{name_parts[1]}, {name_parts[2]})"
+        else:
+            target_str = f"ref('{name_parts[1]}')"
+        return f"{{{{ get_where_subquery({target_str}) }}}}"
+
 
 @dataclass
 class IntermediateSnapshotNode(ParsedNode):
