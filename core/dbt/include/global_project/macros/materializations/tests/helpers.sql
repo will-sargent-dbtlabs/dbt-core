@@ -3,7 +3,7 @@
 {%- endmacro %}
 
 {% macro default__get_test_sql(main_sql, fail_calc, warn_if, error_if, limit) -%}
-    {% set model_name = model.file_key_name.split('.')[1] %}
+    {% set model_name = model.test_metadata.kwargs.model %}
     {% set warn_if, warn_pct_division = get_pct_division(warn_if, model_name) %}
     {% set error_if, error_pct_division = get_pct_division(error_if, model_name) %}
 
