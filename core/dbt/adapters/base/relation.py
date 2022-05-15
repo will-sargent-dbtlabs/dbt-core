@@ -1,6 +1,6 @@
 from collections.abc import Hashable
-from dataclasses import dataclass
-from typing import Optional, TypeVar, Any, Type, Dict, Union, Iterator, Tuple, Set
+from dataclasses import dataclass, field
+from typing import Optional, TypeVar, Any, Type, Dict, Union, Iterator, Tuple, Set, List
 
 from dbt.contracts.graph.compiled import CompiledNode
 from dbt.contracts.graph.parsed import ParsedSourceDefinition, ParsedNode
@@ -12,6 +12,7 @@ from dbt.contracts.relation import (
     Policy,
     Path,
 )
+from dbt.adapters.base.column import Column
 from dbt.exceptions import InternalException
 from dbt.node_types import NodeType
 from dbt.utils import filter_null_values, deep_merge, classproperty
@@ -30,6 +31,10 @@ class BaseRelation(FakeAPIObject, Hashable):
     include_policy: Policy = Policy()
     quote_policy: Policy = Policy()
     dbt_created: bool = False
+    
+    # this should be List[Columns], but that raises a validation error:
+    # Field "columns" of type List[Column] in PostgresRelation has invalid value [<Column id (integer)>, <Column color (text)>]
+    columns: List[Any] = field(default_factory=lambda: [])
 
     def _is_exactish_match(self, field: ComponentName, value: str) -> bool:
         if self.dbt_created and self.quote_policy.get_part(field) is False:

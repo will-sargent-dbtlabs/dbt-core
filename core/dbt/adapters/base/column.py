@@ -2,11 +2,13 @@ from dataclasses import dataclass
 import re
 from typing import Dict, ClassVar, Any, Optional
 
+from dbt.dataclass_schema import dbtClassMixin
+
 from dbt.exceptions import RuntimeException
 
 
 @dataclass
-class Column:
+class Column(dbtClassMixin):
     TYPE_LABELS: ClassVar[Dict[str, str]] = {
         "STRING": "TEXT",
         "TIMESTAMP": "TIMESTAMP",

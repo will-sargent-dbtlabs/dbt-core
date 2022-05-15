@@ -19,6 +19,8 @@ from dbt.events.types import (
     TemporaryRelation,
     UncachedRelation,
     UpdateReference,
+    UpdateRelation,
+    UpdateMissingRelation,
 )
 from dbt.utils import lowercase
 from dbt.helper_types import Lazy
@@ -249,6 +251,25 @@ class RelationsCache:
         self.add_schema(relation.database, relation.schema)
         key = relation.key()
         return self.relations.setdefault(key, relation)
+        
+    def _update(self, relation: _CachedRelation):
+        key = relation.key()
+
+        if key not in self.relations:
+            fire_event(UpdateMissingRelation(relation=key))
+            return
+
+        self.relations[key].inner = relation.inner
+
+    def update_relation(self, relation):
+        """Update the relation inner to the cache
+        : param BaseRelation relation: The underlying relation.
+        """
+        cached = _CachedRelation(relation)
+        fire_event(UpdateRelation(relation=_make_key(cached)))
+
+        with self.lock:
+            self._update(cached)
 
     def _add_link(self, referenced_key, dependent_key):
         """Add a link between two relations to the database. Both the old and

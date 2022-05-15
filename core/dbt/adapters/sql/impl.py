@@ -12,6 +12,7 @@ from dbt.events.types import ColTypeChange, SchemaCreation, SchemaDrop
 
 
 from dbt.adapters.base.relation import BaseRelation
+from dbt.adapters.base.column import Column
 
 LIST_RELATIONS_MACRO_NAME = "list_relations_without_caching"
 GET_COLUMNS_IN_RELATION_MACRO_NAME = "get_columns_in_relation"
@@ -148,10 +149,17 @@ class SQLAdapter(BaseAdapter):
         kwargs = {"from_relation": from_relation, "to_relation": to_relation}
         self.execute_macro(RENAME_RELATION_MACRO_NAME, kwargs=kwargs)
 
-    def get_columns_in_relation(self, relation):
-        return self.execute_macro(
-            GET_COLUMNS_IN_RELATION_MACRO_NAME, kwargs={"relation": relation}
-        )
+    def get_columns_in_relation(self, relation: BaseRelation) -> List[Column]:
+        cached_relation = self.get_relation(relation.database, relation.schema, relation.identifier)
+        if cached_relation and cached_relation.columns:
+            print("Cache hit for columns")
+            return cached_relation.columns
+        else:
+            print("Cache miss for columns")
+            columns = self.execute_macro(GET_COLUMNS_IN_RELATION_MACRO_NAME, kwargs={"relation": relation})
+            updated_relation = cached_relation.incorporate(columns=columns)
+            self.cache.update_relation(updated_relation)
+            return columns
 
     def create_schema(self, relation: BaseRelation) -> None:
         relation = relation.without_identifier()

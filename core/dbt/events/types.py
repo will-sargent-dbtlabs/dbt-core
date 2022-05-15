@@ -645,6 +645,24 @@ class UncachedRelation(DebugLevel, Cache):
 
 
 @dataclass
+class UpdateRelation(DebugLevel, Cache):
+    relation: _ReferenceKey
+    code: str = "E038"
+
+    def message(self) -> str:
+        return f"Updating relation: {str(self.relation)}"
+
+
+@dataclass
+class UpdateMissingRelation(DebugLevel, Cache):
+    relation: _ReferenceKey
+    code: str = "E039"
+
+    def message(self) -> str:
+        return f"updated a nonexistent relationship: {str(self.relation)}"
+
+
+@dataclass
 class AddLink(DebugLevel, Cache):
     dep_key: _ReferenceKey
     ref_key: _ReferenceKey
