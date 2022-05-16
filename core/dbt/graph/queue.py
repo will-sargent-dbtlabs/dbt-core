@@ -1,7 +1,6 @@
 import networkx as nx  # type: ignore
-import threading
 
-from queue import PriorityQueue
+from asyncio import PriorityQueue, Lock, Condition
 from typing import Dict, Set, List, Generator, Optional
 
 from .graph import UniqueId
@@ -16,7 +15,7 @@ class GraphQueue:
     Note: this will mutate input!
 
     This queue is thread-safe for `mark_done` calls, though you must ensure
-    that separate threads do not call `.empty()` or `__len__()` and `.get()` at
+    that separate threads do not call `.empty()` or `size()` and `.get()` at
     the same time, as there is an unlocked race!
     """
 
@@ -32,13 +31,13 @@ class GraphQueue:
         # things that are in the queue
         self.queued: Set[UniqueId] = set()
         # this lock controls most things
-        self.lock = threading.Lock()
+        self.lock = Lock()
         # store the 'score' of each node as a number. Lower is higher priority.
         self._scores = self._get_scores(self.graph)
         # populate the initial queue
         self._find_new_additions()
         # awaits after task end
-        self.some_task_done = threading.Condition(self.lock)
+        self.some_task_done = Condition(self.lock)
 
     def get_selected_nodes(self) -> Set[UniqueId]:
         return self._selected.copy()
@@ -106,7 +105,7 @@ class GraphQueue:
 
         return scores
 
-    def get(self, block: bool = True, timeout: Optional[float] = None) -> GraphMemberNode:
+    async def get(self) -> GraphMemberNode:
         """Get a node off the inner priority queue. By default, this blocks.
 
         This takes the lock, but only for part of it.
@@ -118,28 +117,23 @@ class GraphQueue:
         See `queue.PriorityQueue` for more information on `get()` behavior and
         exceptions.
         """
-        _, node_id = self.inner.get(block=block, timeout=timeout)
-        with self.lock:
+        _, node_id = await self.inner.get()
+        async with self.lock:
             self._mark_in_progress(node_id)
         return self.manifest.expect(node_id)
 
-    def __len__(self) -> int:
-        """The length of the queue is the number of tasks left for the queue to
+    async def size(self) -> int:
+        """The size of the queue is the number of tasks left for the queue to
         give out, regardless of where they are. Incomplete tasks are not part
         of the length.
-
-        This takes the lock.
         """
-        with self.lock:
-            return len(self.graph) - len(self.in_progress)
+        return self.inner.qsize()
 
-    def empty(self) -> bool:
+    async def empty(self) -> bool:
         """The graph queue is 'empty' if it all remaining nodes in the graph
         are in progress.
-
-        This takes the lock.
         """
-        return len(self) == 0
+        return self.inner.empty()
 
     def _already_known(self, node: UniqueId) -> bool:
         """Decide if a node is already known (either handed out as a task, or
@@ -158,17 +152,17 @@ class GraphQueue:
         """
         for node, in_degree in self.graph.in_degree():
             if not self._already_known(node) and in_degree == 0:
-                self.inner.put((self._scores[node], node))
+                self.inner.put_nowait((self._scores[node], node))
                 self.queued.add(node)
 
-    def mark_done(self, node_id: UniqueId) -> None:
+    async def mark_done(self, node_id: UniqueId) -> None:
         """Given a node's unique ID, mark it as done.
 
         This method takes the lock.
 
         :param str node_id: The node ID to mark as complete.
         """
-        with self.lock:
+        async with self.lock:
             self.in_progress.remove(node_id)
             self.graph.remove_node(node_id)
             self._find_new_additions()
@@ -185,17 +179,18 @@ class GraphQueue:
         self.queued.remove(node_id)
         self.in_progress.add(node_id)
 
-    def join(self) -> None:
+    async def join(self) -> None:
         """Join the queue. Blocks until all tasks are marked as done.
 
         Make sure not to call this before the queue reports that it is empty.
         """
-        self.inner.join()
+        await self.inner.join()
 
-    def wait_until_something_was_done(self) -> int:
+    async def wait_until_something_was_done(self) -> int:
         """Block until a task is done, then return the number of unfinished
         tasks.
         """
-        with self.lock:
-            self.some_task_done.wait()
-            return self.inner.unfinished_tasks
+        async with self.lock:
+            await self.some_task_done.wait()
+            import ipdb; ipdb.set_trace()
+            return self.inner.qsize()
