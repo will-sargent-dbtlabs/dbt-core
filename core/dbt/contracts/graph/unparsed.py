@@ -3,11 +3,12 @@ from dbt.contracts.util import (
     AdditionalPropertiesMixin,
     Mergeable,
     Replaceable,
+    Identifier
 )
 
 # trigger the PathEncoder
 import dbt.helper_types  # noqa:F401
-from dbt.exceptions import CompilationException
+from dbt.exceptions import CompilationException, ParsingException
 
 from dbt.dataclass_schema import dbtClassMixin, StrEnum, ExtensibleDbtClassMixin, ValidationError
 
@@ -242,6 +243,7 @@ class Quoting(dbtClassMixin, Mergeable):
 
 @dataclass
 class UnparsedSourceTableDefinition(HasColumnTests, HasTests):
+    config: Dict[str, Any] = field(default_factory=dict)
     loaded_at_field: Optional[str] = None
     identifier: Optional[str] = None
     quoting: Quoting = field(default_factory=Quoting)
@@ -322,6 +324,7 @@ class SourcePatch(dbtClassMixin, Replaceable):
     path: Path = field(
         metadata=dict(description="The path to the patch-defining yml file"),
     )
+    config: Dict[str, Any] = field(default_factory=dict)
     description: Optional[str] = None
     meta: Optional[Dict[str, Any]] = None
     database: Optional[str] = None
@@ -452,7 +455,8 @@ class UnparsedRatioTerms(dbtClassMixin, Replaceable):
 
 @dataclass
 class UnparsedMetric(dbtClassMixin, Replaceable):
-    name: str
+    # TODO : verify that this disallows metric names with spaces
+    name: Identifier
     label: str
     type: str
     model: Optional[str] = None

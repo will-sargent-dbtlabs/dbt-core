@@ -1166,7 +1166,7 @@ AnyManifest = Union[Manifest, MacroManifest]
 
 
 @dataclass
-@schema_version("manifest", 4)
+@schema_version("manifest", 5)
 class WritableManifest(ArtifactMixin):
     nodes: Mapping[UniqueID, ManifestNode] = field(
         metadata=dict(description=("The nodes defined in the dbt project and its dependencies"))
@@ -1209,6 +1209,12 @@ class WritableManifest(ArtifactMixin):
             description="Metadata about the manifest",
         )
     )
+
+    def __post_serialize__(self, dct):
+        for unique_id, node in dct["nodes"].items():
+            if "config_call_dict" in node:
+                del node["config_call_dict"]
+        return dct
 
 
 def _check_duplicates(value: HasUniqueID, src: Mapping[str, HasUniqueID]):
