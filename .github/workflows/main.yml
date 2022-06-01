@@ -148,8 +148,8 @@ jobs:
 
       - name: Install python tools
         run: |
-          pip install --user --upgrade pip
-          pip --version
+          # pip install --user --upgrade pip
+          # pip --version
           pip install tox
           tox --version
 

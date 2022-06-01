@@ -105,9 +105,9 @@ def copy_file(src_path, src, dest_path, dest) -> None:
 
 
 # Used in tests when you want to remove a file from the project directory
-def rm_file(src_path, src) -> None:
+def rm_file(*paths) -> None:
     # remove files from proj_path
-    os.remove(os.path.join(src_path, src))
+    os.remove(os.path.join(*paths))
 
 
 # Used in tests to write out the string contents of a file to a
