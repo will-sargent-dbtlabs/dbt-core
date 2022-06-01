@@ -149,8 +149,9 @@ jobs:
 
       - name: Install python tools
         run: |
-          pip install --user --upgrade pip
-          pip --version
+          # Removing pip upgrade because of #5321
+          # pip install --user --upgrade pip
+          # pip --version
           pip install tox
           tox --version
 
