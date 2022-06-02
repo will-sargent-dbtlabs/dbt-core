@@ -969,7 +969,7 @@ class Manifest(MacroMethods, DataClassMessagePackMixin, dbtClassMixin):
         for pkg in candidates:
             metric = self.metric_lookup.find(target_metric_name, pkg, self)
             if metric is not None:
-                # Skip if the metric is disabled!
+                # TODO: Skip if the metric is disabled!
                 return metric
 
             if disabled is None:

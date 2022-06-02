@@ -834,12 +834,31 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     depends_on: DependsOn = field(default_factory=DependsOn)
     refs: List[List[str]] = field(default_factory=list)
     metrics: List[List[str]] = field(default_factory=list)
+    ratio_terms: Optional[ParsedRatioTerms] = None
     config: SourceConfig = field(default_factory=SourceConfig)
-    is_derived: bool = False
     created_at: float = field(default_factory=lambda: time.time())
 
     def resolve_metric_references(self, context):
-        pass
+        from dbt.clients.jinja import get_rendered
+        if self.ratio_terms is None:
+            return
+
+        numerator = get_rendered(
+            self.ratio_terms.numerator.sql,
+            context,
+            node=self,
+            native=True,
+        )
+
+        denominator = get_rendered(
+            self.ratio_terms.denominator.sql,
+            context,
+            node=self,
+            native=True,
+        )
+
+        self.ratio_terms.numerator.unique_id = numerator.unique_id
+        self.ratio_terms.denominator.unique_id = denominator.unique_id
 
     @classmethod
     def parse_from_args(cls, unparsed_node, data):
@@ -848,11 +867,10 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
             data["ratio_terms"] = ParsedRatioTerms.parse_from_raw(
                 unparsed_node.ratio_terms
             ).to_dict()
-            return ParsedRatioMetric.from_dict(data)
-        else:
-            return ParsedMetric.from_dict(data)
 
-    def postprocess_depends_on(self, parse_func):
+        return ParsedMetric.from_dict(data)
+
+    def _postprocess_generic_metric(self, parse_func):
         # Capture ref to parent model
         model_ref = "{{ " + self.model + " }}"
         parse_func(model_ref)
@@ -861,6 +879,23 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
         rendered_sql = parse_func(self.sql)
         self.sql = rendered_sql
 
+    def _postprocess_ratio_metric(self, parse_func):
+        # Capture metric() calls in numerator and denominator
+        numerator = self.ratio_terms.numerator.sql
+        parse_func(numerator)
+
+        denominator = self.ratio_terms.denominator.sql
+        parse_func(denominator)
+
+        # assign reasonable SQL
+        self.sql = f"{numerator} / {denominator}"
+
+    def postprocess_depends_on(self, parse_func):
+        if self.type == 'ratio':
+            self._postprocess_ratio_metric(parse_func)
+        else:
+            self._postprocess_generic_metric(parse_func)
+
     @property
     def depends_on_nodes(self):
         return self.depends_on.nodes
@@ -868,6 +903,10 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     @property
     def search_name(self):
         return self.name
+
+    def same_ratio_terms(self, old: "ParsedMetric") -> bool:
+        # TODO: Do we need a deep compare b/c this is a dict?
+        return self.ratio_terms == old.ratio_terms
 
     def same_model(self, old: "ParsedMetric") -> bool:
         return self.model == old.model
@@ -919,67 +958,9 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
             and self.same_timestamp(old)
             and self.same_time_grains(old)
             and self.same_config(old)
+            and self.same_ratio_terms(old)
             and True
         )
-
-
-@dataclass
-class ParsedRatioMetric(ParsedMetric):
-    # This would idealy not be optional, but making it required would force
-    # us to add a bunch of different base classes for required ParsedMetric
-    # fields and then layer on optional kwargs on top of those base classes
-    # in other dataclass subclasses. Instead, initialize ratio_terms with a
-    # default value of None and validate that it is present in __post_init_
-    type: str = field(metadata={"restrict": ["ratio"]})
-    ratio_terms: Optional[ParsedRatioTerms] = None
-
-    def same_ratio_terms(self, old: "ParsedRatioMetric") -> bool:
-        # TODO: Do we need a deep compare b/c this is a dict?
-        return self.ratio_terms == old.ratio_terms
-
-    def same_contents(self, old: Optional["ParsedMetric"]) -> bool:
-        if isinstance(old, ParsedRatioMetric) and not self.same_ratio_terms(old):
-            return False
-
-        return super().same_contents(old)
-
-    def resolve_metric_references(self, context):
-        from dbt.clients.jinja import get_rendered
-
-        numerator = get_rendered(
-            self.ratio_terms.numerator.sql,
-            context,
-            node=self,
-            native=True,
-        )
-
-        denominator = get_rendered(
-            self.ratio_terms.denominator.sql,
-            context,
-            node=self,
-            native=True,
-        )
-
-        self.ratio_terms.numerator.unique_id = numerator.unique_id
-        self.ratio_terms.denominator.unique_id = denominator.unique_id
-
-    def postprocess_depends_on(self, parse_func):
-        # Capture metric() calls in numerator and denominator
-        numerator = self.ratio_terms.numerator.sql
-        parse_func(numerator)
-
-        denominator = self.ratio_terms.denominator.sql
-        parse_func(denominator)
-
-        # assign reasonable SQL
-        self.sql = f"{numerator} / {denominator}"
-        self.is_derived = True
-
-
-ParsedMetricNode = Union[
-    ParsedMetric,
-    ParsedRatioMetric,
-]
 
 
 ManifestNodes = Union[
@@ -1000,6 +981,6 @@ ParsedResource = Union[
     ParsedMacro,
     ParsedNode,
     ParsedExposure,
-    ParsedMetricNode,
+    ParsedMetric,
     ParsedSourceDefinition,
 ]

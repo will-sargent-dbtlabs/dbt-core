@@ -1039,6 +1039,7 @@ class MetricParser(YamlReader):
                 "meta": unparsed.meta,
                 "tags": unparsed.tags,
                 "config": unparsed.config,
+                "ratio_terms": unparsed.ratio_terms,
             },
         )
 

@@ -844,14 +844,15 @@ class ManifestLoader:
                 continue
             _process_metrics_for_node(self.manifest, current_project, node)
         for metric in self.manifest.metrics.values():
+            # TODO: Can we do this if the metric is derived & depends on
+            # some other metric for its definition? Maybe....
             if metric.created_at < self.started_at:
                 continue
             _process_metrics_for_node(self.manifest, current_project, metric)
-            if metric.is_derived:
-                # This mutates the metric
-                ctx = generate_runtime_metric_context(metric, config, self.manifest)
 
-                metric.resolve_metric_references(ctx)
+            # This mutates the metric
+            ctx = generate_runtime_metric_context(metric, config, self.manifest)
+            metric.resolve_metric_references(ctx)
 
     # nodes: node and column descriptions
     # sources: source and table descriptions, column descriptions

@@ -26,4 +26,5 @@ class ResolvedMetricReference(MetricReference):
         return f"{namespace}.{self.metric_name}"
 
     def __str__(self):
+        import ipdb; ipdb.set_trace()
         return self.node.name
