@@ -48,7 +48,7 @@ from dbt.config import Project, RuntimeConfig
 from dbt.context.docs import generate_runtime_docs_context
 from dbt.context.macro_resolver import MacroResolver, TestMacroNamespace
 from dbt.context.configured import generate_macro_context
-from dbt.context.providers import ParseProvider, generate_runtime_metric_context
+from dbt.context.providers import ParseProvider
 from dbt.contracts.files import FileHash, ParseFileType, SchemaSourceFile
 from dbt.parser.read_files import read_files, load_source_file
 from dbt.parser.partial import PartialParsing, special_override_macros
@@ -849,10 +849,6 @@ class ManifestLoader:
             if metric.created_at < self.started_at:
                 continue
             _process_metrics_for_node(self.manifest, current_project, metric)
-
-            # This mutates the metric
-            # ctx = generate_runtime_metric_context(metric, config, self.manifest)
-            # metric.resolve_metric_references(ctx)
 
     # nodes: node and column descriptions
     # sources: source and table descriptions, column descriptions

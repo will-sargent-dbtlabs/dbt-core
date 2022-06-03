@@ -8,7 +8,7 @@ class MetricReference(object):
 
     def __str__(self):
         # TODO : Qualify the metric name as a CTE or field?
-        return f'{self.metric_name}.metric_value'
+        return f"{self.metric_name}.metric_value"
 
 
 class ResolvedMetricReference(MetricReference):
@@ -29,7 +29,7 @@ class ResolvedMetricReference(MetricReference):
 
     def __str__(self):
         # TODO : Qualify the metric name as a CTE or field?
-        return f'{self.node.name}.metric_value'
+        return f"{self.node.name}.metric_value"
 
     @classmethod
     def parent_metrics(cls, metric_node, manifest):
@@ -48,25 +48,25 @@ class ResolvedMetricReference(MetricReference):
             "derived": [],
         }
         for metric in in_scope_metrics:
-            if metric.type == 'expression':
-                to_return['derived'].append({
-                    "metric_source": None,
-                    "metric": metric,
-                    "is_derived": True
-                })
+            if metric.type == "expression":
+                to_return["derived"].append(
+                    {"metric_source": None, "metric": metric, "is_derived": True}
+                )
             else:
                 for node_unique_id in metric.depends_on.nodes:
                     node = self.manifest.nodes.get(node_unique_id)
                     if node and node.resource_type in NodeType.refable():
-                        to_return['base'].append({
-                            "metric_relation_node": node,
-                            "metric_relation": self.Relation.create(
-                                database=node.database,
-                                schema=node.schema,
-                                identifier=node.alias
-                            ),
-                            "metric": metric,
-                            "is_derived": False,
-                        })
+                        to_return["base"].append(
+                            {
+                                "metric_relation_node": node,
+                                "metric_relation": self.Relation.create(
+                                    database=node.database,
+                                    schema=node.schema,
+                                    identifier=node.alias,
+                                ),
+                                "metric": metric,
+                                "is_derived": False,
+                            }
+                        )
 
         return to_return

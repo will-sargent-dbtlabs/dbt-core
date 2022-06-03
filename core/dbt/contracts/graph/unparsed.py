@@ -1,14 +1,9 @@
 from dbt.node_types import NodeType
-from dbt.contracts.util import (
-    AdditionalPropertiesMixin,
-    Mergeable,
-    Replaceable,
-    Identifier
-)
+from dbt.contracts.util import AdditionalPropertiesMixin, Mergeable, Replaceable, Identifier
 
 # trigger the PathEncoder
 import dbt.helper_types  # noqa:F401
-from dbt.exceptions import CompilationException, ParsingException
+from dbt.exceptions import CompilationException
 
 from dbt.dataclass_schema import dbtClassMixin, StrEnum, ExtensibleDbtClassMixin, ValidationError
 
@@ -448,15 +443,10 @@ class MetricFilter(dbtClassMixin, Replaceable):
 
 
 @dataclass
-class UnparsedRatioTerms(dbtClassMixin, Replaceable):
-    numerator: str
-    denominator: str
-
-
-@dataclass
 class UnparsedMetric(dbtClassMixin, Replaceable):
     # TODO : verify that this disallows metric names with spaces
-    name: Identifier
+    # TODO: fix validation that you broke :p
+    name: str
     label: str
     type: str
     model: Optional[str] = None

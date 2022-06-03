@@ -1017,7 +1017,8 @@ class MetricParser(YamlReader):
         fqn = self.schema_parser.get_fqn_prefix(path)
         fqn.append(unparsed.name)
 
-        parsed = ParsedMetric.from_dict({
+        parsed = ParsedMetric.from_dict(
+            {
                 "package_name": package_name,
                 "root_path": self.project.project_root,
                 "path": path,
@@ -1037,7 +1038,10 @@ class MetricParser(YamlReader):
                 "meta": unparsed.meta,
                 "tags": unparsed.tags,
                 "config": unparsed.config,
-        })
+            }
+        )
+
+        import ipdb; ipdb.set_trace()
 
         ctx = generate_parse_metrics(
             parsed,
