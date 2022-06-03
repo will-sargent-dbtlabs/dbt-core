@@ -470,16 +470,10 @@ class UnparsedMetric(dbtClassMixin, Replaceable):
     tags: List[str] = field(default_factory=list)
     config: Dict[str, Any] = field(default_factory=dict)
 
-    ratio_terms: Optional[UnparsedRatioTerms] = None
-
-    def __post_init__(self):
-        if self.ratio_terms:
-            self.ratio_terms.numerator = "{{ " + self.ratio_terms.numerator + " }}"
-            self.ratio_terms.denominator = "{{ " + self.ratio_terms.denominator + " }}"
-
     @classmethod
     def validate(cls, data):
         super().validate(data)
 
-        if data.get("model") is None and data.get("type") != "ratio":
-            raise ValidationError("Non-ratio metrics require a 'model' property")
+        # TODO: Expressions _cannot_ have `model` properties
+        if data.get("model") is None and data.get("type") != "expression":
+            raise ValidationError("Non-expression metrics require a 'model' property")

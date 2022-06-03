@@ -851,8 +851,8 @@ class ManifestLoader:
             _process_metrics_for_node(self.manifest, current_project, metric)
 
             # This mutates the metric
-            ctx = generate_runtime_metric_context(metric, config, self.manifest)
-            metric.resolve_metric_references(ctx)
+            # ctx = generate_runtime_metric_context(metric, config, self.manifest)
+            # metric.resolve_metric_references(ctx)
 
     # nodes: node and column descriptions
     # sources: source and table descriptions, column descriptions

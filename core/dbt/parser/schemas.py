@@ -1017,9 +1017,7 @@ class MetricParser(YamlReader):
         fqn = self.schema_parser.get_fqn_prefix(path)
         fqn.append(unparsed.name)
 
-        parsed = ParsedMetric.parse_from_args(
-            unparsed,
-            {
+        parsed = ParsedMetric.from_dict({
                 "package_name": package_name,
                 "root_path": self.project.project_root,
                 "path": path,
@@ -1039,9 +1037,7 @@ class MetricParser(YamlReader):
                 "meta": unparsed.meta,
                 "tags": unparsed.tags,
                 "config": unparsed.config,
-                "ratio_terms": unparsed.ratio_terms,
-            },
-        )
+        })
 
         ctx = generate_parse_metrics(
             parsed,
@@ -1050,7 +1046,15 @@ class MetricParser(YamlReader):
             package_name,
         )
 
-        parsed.postprocess_depends_on(lambda to_eval: get_rendered(to_eval, ctx, parsed))
+        if parsed.model is not None:
+            model_ref = "{{ " + parsed.model + " }}"
+            get_rendered(model_ref, ctx, parsed)
+
+        parsed.sql = get_rendered(
+            parsed.sql,
+            ctx,
+            node=parsed,
+        )
 
         return parsed
 

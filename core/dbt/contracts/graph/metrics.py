@@ -1,7 +1,14 @@
+from dbt.node_types import NodeType
+
+
 class MetricReference(object):
     def __init__(self, metric_name, package_name=None):
         self.metric_name = metric_name
         self.package_name = package_name
+
+    def __str__(self):
+        # TODO : Qualify the metric name as a CTE or field?
+        return f'{self.metric_name}.metric_value'
 
 
 class ResolvedMetricReference(MetricReference):
@@ -21,37 +28,45 @@ class ResolvedMetricReference(MetricReference):
         return getattr(self.node, key)
 
     def __str__(self):
-        return self.node.name
+        # TODO : Qualify the metric name as a CTE or field?
+        return f'{self.node.name}.metric_value'
 
-    def parent_metrics(self):
-        if self.node.type != 'ratio':
-            return []
+    @classmethod
+    def parent_metrics(cls, metric_node, manifest):
+        yield metric_node
 
-        ratio_terms = self.node.ratio_terms
-
-        numerator_id = ratio_terms.numerator.unique_id
-        denominator_id = ratio_terms.denominator.unique_id
-
-        return [
-            self.manifest.metrics.get(numerator_id),
-            self.manifest.metrics.get(denominator_id),
-        ]
+        for parent_unique_id in metric_node.depends_on.nodes:
+            node = manifest.metrics.get(parent_unique_id)
+            if node and node.resource_type == NodeType.Metric:
+                yield from cls.parent_metrics(node, manifest)
 
     def parent_models(self):
-        search_metrics = [self.node] + self.parent_metrics()
+        in_scope_metrics = list(self.parent_metrics(self.node, self.manifest))
 
-        # We need to figure out how to get a handle on the model
-        # that powers this metric. We can use `refs`, but that sucks!
-        # We should try to pop a unique_id somewhere instead?
-        # actually....
-        # We can iterate over metric.depends_on and look up nodes in the manifest?
+        to_return = {
+            "base": [],
+            "derived": [],
+        }
+        for metric in in_scope_metrics:
+            if metric.type == 'expression':
+                to_return['derived'].append({
+                    "metric_source": None,
+                    "metric": metric,
+                    "is_derived": True
+                })
+            else:
+                for node_unique_id in metric.depends_on.nodes:
+                    node = self.manifest.nodes.get(node_unique_id)
+                    if node and node.resource_type in NodeType.refable():
+                        to_return['base'].append({
+                            "metric_relation_node": node,
+                            "metric_relation": self.Relation.create(
+                                database=node.database,
+                                schema=node.schema,
+                                identifier=node.alias
+                            ),
+                            "metric": metric,
+                            "is_derived": False,
+                        })
 
-        for metric in search_metrics:
-            import ipdb; ipdb.set_trace()
-            for depends_on in metric.depends_on.nodes:
-                pass
-
-            node = self.manifest.ref_lookup.find(target_model_name, pkg, self)
-            # rel = self.Relation.create(
-            pass
-
+        return to_return

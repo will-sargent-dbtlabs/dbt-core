@@ -801,21 +801,6 @@ class MetricReference(dbtClassMixin, Replaceable):
 
 
 @dataclass
-class ParsedRatioTerms(dbtClassMixin, Replaceable):
-    numerator: MetricReference
-    denominator: MetricReference
-
-    @classmethod
-    def parse_from_raw(cls, unparsed):
-        return cls.from_dict(
-            {
-                "numerator": {"sql": unparsed.numerator, "unique_id": None},
-                "denominator": {"sql": unparsed.denominator, "unique_id": None},
-            }
-        )
-
-
-@dataclass
 class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     name: str
     description: str
@@ -835,67 +820,8 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     depends_on: DependsOn = field(default_factory=DependsOn)
     refs: List[List[str]] = field(default_factory=list)
     metrics: List[List[str]] = field(default_factory=list)
-    ratio_terms: Optional[ParsedRatioTerms] = None
     config: SourceConfig = field(default_factory=SourceConfig)
     created_at: float = field(default_factory=lambda: time.time())
-
-    def resolve_metric_references(self, context):
-        from dbt.clients.jinja import get_rendered
-        if self.ratio_terms is None:
-            return
-
-        numerator = get_rendered(
-            self.ratio_terms.numerator.sql,
-            context,
-            node=self,
-            native=True,
-        )
-
-        denominator = get_rendered(
-            self.ratio_terms.denominator.sql,
-            context,
-            node=self,
-            native=True,
-        )
-
-        self.ratio_terms.numerator.unique_id = numerator.unique_id
-        self.ratio_terms.denominator.unique_id = denominator.unique_id
-
-    @classmethod
-    def parse_from_args(cls, unparsed_node, data):
-        if unparsed_node.type == "ratio":
-            data = data.copy()
-            data["ratio_terms"] = ParsedRatioTerms.parse_from_raw(
-                unparsed_node.ratio_terms
-            ).to_dict()
-
-        return ParsedMetric.from_dict(data)
-
-    def _postprocess_generic_metric(self, parse_func):
-        # Capture ref to parent model
-        model_ref = "{{ " + self.model + " }}"
-        parse_func(model_ref)
-
-        # Render the .sql property of the metric
-        rendered_sql = parse_func(self.sql)
-        self.sql = rendered_sql
-
-    def _postprocess_ratio_metric(self, parse_func):
-        # Capture metric() calls in numerator and denominator
-        numerator = self.ratio_terms.numerator.sql
-        parse_func(numerator)
-
-        denominator = self.ratio_terms.denominator.sql
-        parse_func(denominator)
-
-        # assign reasonable SQL
-        self.sql = f"{numerator} / {denominator}"
-
-    def postprocess_depends_on(self, parse_func):
-        if self.type == 'ratio':
-            self._postprocess_ratio_metric(parse_func)
-        else:
-            self._postprocess_generic_metric(parse_func)
 
     @property
     def depends_on_nodes(self):
@@ -904,10 +830,6 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     @property
     def search_name(self):
         return self.name
-
-    def same_ratio_terms(self, old: "ParsedMetric") -> bool:
-        # TODO: Do we need a deep compare b/c this is a dict?
-        return self.ratio_terms == old.ratio_terms
 
     def same_model(self, old: "ParsedMetric") -> bool:
         return self.model == old.model
@@ -959,7 +881,6 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
             and self.same_timestamp(old)
             and self.same_time_grains(old)
             and self.same_config(old)
-            and self.same_ratio_terms(old)
             and True
         )
 
