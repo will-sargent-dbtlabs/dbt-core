@@ -73,6 +73,8 @@ def populated_node_config_dict():
         'on_schema_change': 'ignore',
         'meta': {},
         'grants': {},
+        'language': 'sql',
+        'packages': [],
     }
 
 
@@ -153,6 +155,8 @@ def base_parsed_model_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'deferred': False,
         'docs': {'show': True},
@@ -247,6 +251,8 @@ def complex_parsed_model_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'docs': {'show': True},
         'columns': {
@@ -441,6 +447,8 @@ def basic_parsed_seed_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'deferred': False,
         'docs': {'show': True},
@@ -537,6 +545,8 @@ def complex_parsed_seed_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'deferred': False,
         'docs': {'show': True},
@@ -789,6 +799,8 @@ def base_parsed_hook_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'docs': {'show': True},
         'columns': {},
@@ -862,6 +874,8 @@ def complex_parsed_hook_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'docs': {'show': True},
         'columns': {
@@ -1200,6 +1214,8 @@ def basic_timestamp_snapshot_config_dict():
         'on_schema_change': 'ignore',
         'meta': {},
         'grants': {},
+        'language': 'sql',
+        'packages': [],
     }
 
 
@@ -1234,6 +1250,8 @@ def complex_timestamp_snapshot_config_dict():
         'on_schema_change': 'ignore',
         'meta': {},
         'grants': {},
+        'language': 'sql',
+        'packages': [],
     }
 
 
@@ -1292,6 +1310,8 @@ def basic_check_snapshot_config_dict():
         'on_schema_change': 'ignore',
         'meta': {},
         'grants': {},
+        'language': 'sql',
+        'packages': [],
     }
 
 
@@ -1326,6 +1346,8 @@ def complex_set_snapshot_config_dict():
         'on_schema_change': 'ignore',
         'meta': {},
         'grants': {},
+        'language': 'sql',
+        'packages': [],
     }
 
 
@@ -1433,6 +1455,8 @@ def basic_timestamp_snapshot_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'docs': {'show': True},
         'columns': {},
@@ -1568,6 +1592,8 @@ def basic_check_snapshot_dict():
             'on_schema_change': 'ignore',
             'meta': {},
             'grants': {},
+            'language': 'sql',
+        'packages': [],
         },
         'docs': {'show': True},
         'columns': {},

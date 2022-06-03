@@ -31,6 +31,8 @@ def get_rendered_model_config(**updates):
         "meta": {},
         "unique_key": None,
         "grants": {},
+        "language": "sql",
+        "packages": [],
     }
     result.update(updates)
     return result
@@ -59,6 +61,8 @@ def get_rendered_seed_config(**updates):
         "meta": {},
         "unique_key": None,
         "grants": {},
+        "language": "sql",
+        "packages": [],
     }
     result.update(updates)
     return result
@@ -91,6 +95,8 @@ def get_rendered_snapshot_config(**updates):
         "target_schema": None,
         "meta": {},
         "grants": {},
+        "language": "sql",
+        "packages": [],
     }
     result.update(updates)
     return result
