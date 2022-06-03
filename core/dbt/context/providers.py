@@ -576,7 +576,7 @@ class RuntimeMetricResolver(BaseMetricResolver):
                 disabled=isinstance(target_metric, Disabled),
             )
 
-        return ResolvedMetricReference(target_metric)
+        return ResolvedMetricReference(target_metric, self.manifest, self.Relation)
 
 
 # `var` implementations.

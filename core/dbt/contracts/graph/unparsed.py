@@ -461,7 +461,7 @@ class UnparsedMetric(dbtClassMixin, Replaceable):
     type: str
     model: Optional[str] = None
     description: str = ""
-    sql: Optional[str] = None
+    sql: Optional[Union[str, int]] = None
     timestamp: Optional[str] = None
     time_grains: List[str] = field(default_factory=list)
     dimensions: List[str] = field(default_factory=list)
