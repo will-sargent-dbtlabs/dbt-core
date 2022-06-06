@@ -66,6 +66,6 @@ class RunHookType(StrEnum):
     End = "on-run-end"
 
 
-class ModelLanugage(StrEnum):
+class ModelLanguage(StrEnum):
     python = "python"
     sql = "sql"
