@@ -31,6 +31,7 @@ class UniqueKeyLoader(SafeLoader):
 
     def construct_mapping(self, node, deep=False):
         mapping = set()
+        self.flatten_mapping(node)  # This processes yaml anchors / merge keys (<<).
         for key_node, value_node in node.value:
             key = self.construct_object(key_node, deep=deep)
             if key in mapping:
@@ -68,13 +69,16 @@ def contextualized_yaml_error(raw_contents, error):
     )
 
 
-def safe_load(contents) -> Optional[Dict[str, Any]]:
-    return yaml.load(contents, Loader=UniqueKeyLoader)
+def safe_load(contents, unique=False) -> Optional[Dict[str, Any]]:
+    if unique:
+        return yaml.load(contents, Loader=UniqueKeyLoader)
+    else:
+        return yaml.load(contents, Loader=SafeLoader)
 
 
 def load_yaml_text(contents, path=None):
     try:
-        return safe_load(contents)
+        return safe_load(contents, unique=True)
     except (yaml.scanner.ScannerError, yaml.YAMLError) as e:
         if hasattr(e, "problem_mark"):
             error = contextualized_yaml_error(contents, e)
@@ -84,5 +88,7 @@ def load_yaml_text(contents, path=None):
         raise dbt.exceptions.ValidationException(error)
     except dbt.exceptions.DuplicateYamlKeyException as e:
         # TODO: We may want to raise an exception instead of a warning in the future.
-        e.msg = f"{e} {path.searched_path}/{path.relative_path}."
+        if path:
+            e.msg = f"{e} {path.searched_path}/{path.relative_path}."
         dbt.exceptions.warn_or_raise(e, log_fmt=warning_tag("{}"))
+        return safe_load(contents)
