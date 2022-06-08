@@ -1041,8 +1041,6 @@ class MetricParser(YamlReader):
             }
         )
 
-        import ipdb; ipdb.set_trace()
-
         ctx = generate_parse_metrics(
             parsed,
             self.root_project,
