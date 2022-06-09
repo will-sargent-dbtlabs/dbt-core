@@ -410,14 +410,19 @@ class Compiler:
         for metric in manifest.metrics.values():
             self.link_node(linker, metric, manifest)
 
-        cycle = linker.find_cycles()
-
-        if cycle:
-            raise RuntimeError("Found a cycle: {}".format(cycle))
+        self.check_cycles(linker)
 
         if add_test_edges:
             manifest.build_parent_and_child_maps()
             self.add_test_edges(linker, manifest)
+
+        self.check_cycles(linker)
+
+    @staticmethod
+    def check_cycles(linker: Linker):
+        cycle = linker.find_cycles()
+        if cycle:
+            raise RuntimeError("Found a cycle: {}".format(cycle))
 
     def add_test_edges(self, linker: Linker, manifest: Manifest) -> None:
         """This method adds additional edges to the DAG. For a given non-test
@@ -465,10 +470,16 @@ class Compiler:
                     # node(s) it depends on.
                     test_depends_on = set(manifest.nodes[upstream_test].depends_on_nodes)
 
+                    all_depends_on_node = set()
+                    for depends_on_node in test_depends_on:
+                        all_depends_on_node.update(
+                            nx.traversal.bfs_tree(linker.graph, depends_on_node, reverse=True)
+                        )
+
                     # If the set of nodes that an upstream test depends on
                     # is a subset of all upstream nodes of the current node,
                     # add an edge from the upstream test to the current node.
-                    if test_depends_on.issubset(upstream_nodes):
+                    if node_id not in all_depends_on_node:
                         linker.graph.add_edge(upstream_test, node_id)
 
     def compile(self, manifest: Manifest, write=True, add_test_edges=False) -> Graph:
