@@ -45,6 +45,7 @@ from dbt.contracts.graph.unparsed import (
     UnparsedMetric,
     UnparsedSourceDefinition,
 )
+from dbt.contracts.graph.model_config import SourceConfig
 from dbt.exceptions import (
     warn_invalid_patch,
     validator_error_message,
@@ -1017,28 +1018,26 @@ class MetricParser(YamlReader):
         fqn = self.schema_parser.get_fqn_prefix(path)
         fqn.append(unparsed.name)
 
-        parsed = ParsedMetric.from_dict(
-            {
-                "package_name": package_name,
-                "root_path": self.project.project_root,
-                "path": path,
-                "original_file_path": self.yaml.path.original_file_path,
-                "unique_id": unique_id,
-                "fqn": fqn,
-                "model": unparsed.model,
-                "name": unparsed.name,
-                "description": unparsed.description,
-                "label": unparsed.label,
-                "type": unparsed.type,
-                "sql": unparsed.sql,
-                "timestamp": unparsed.timestamp,
-                "dimensions": unparsed.dimensions,
-                "time_grains": unparsed.time_grains,
-                "filters": unparsed.filters,
-                "meta": unparsed.meta,
-                "tags": unparsed.tags,
-                "config": unparsed.config,
-            }
+        parsed = ParsedMetric(
+            package_name=package_name,
+            root_path=self.project.project_root,
+            path=path,
+            original_file_path=self.yaml.path.original_file_path,
+            unique_id=unique_id,
+            fqn=fqn,
+            model=unparsed.model,
+            name=unparsed.name,
+            description=unparsed.description,
+            label=unparsed.label,
+            type=unparsed.type,
+            sql=str(unparsed.sql),
+            timestamp=unparsed.timestamp,
+            dimensions=unparsed.dimensions,
+            time_grains=unparsed.time_grains,
+            filters=unparsed.filters,
+            meta=unparsed.meta,
+            tags=unparsed.tags,
+            config=SourceConfig(unparsed.config),
         )
 
         ctx = generate_parse_metrics(

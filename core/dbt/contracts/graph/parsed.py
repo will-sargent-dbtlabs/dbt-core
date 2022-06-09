@@ -806,7 +806,7 @@ class ParsedMetric(UnparsedBaseNode, HasUniqueID, HasFqn):
     description: str
     label: str
     type: str
-    sql: Optional[str]
+    sql: str
     timestamp: Optional[str]
     filters: List[MetricFilter]
     time_grains: List[str]
