@@ -26,12 +26,14 @@ revoke "select" on {{ relation }} from {{ grant_config["select"].join(", ") }}
 {{ return(adapter.dispatch("apply_grants", "dbt")(relation, grant_config, should_revoke)) }}
 {% endmacro %}
 
-{% macro default__apply_grants(relation, grant_config, should_revoke) %}
-{% if "select" not in grant_config %}
-get_show_grant_sql(relation)
-    {% if should_revoke %}
-    get_revoke_sql(relation, grant_config)
+{% macro default__apply_grants(relation, grant_config, should_revoke=True) %}
+{% if grant_config %}
+    {% if "select" not in grant_config %}
+    get_show_grant_sql(relation)
+        {% if should_revoke %}
+        get_revoke_sql(relation, grant_config)
+        {% endif%}
+    get_grant_sql(relation, grant_config)
     {% endif%}
-get_grant_sql(relation, grant_config)
 {% endif%}
 {% endmacro %}
