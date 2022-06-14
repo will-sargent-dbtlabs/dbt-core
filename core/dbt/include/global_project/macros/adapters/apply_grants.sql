@@ -3,7 +3,7 @@
 {% endmacro %}
 
 {% macro default__get_show_grant_sql(relation) %}
-{{ return('show grants on table'(relation.schema)) }}
+show grants on {{ relation.type }} {{ relation }}
 {% endmacro %}
 
 {% macro get_grant_sql(relation, grant_config) %}
@@ -11,7 +11,7 @@
 {% endmacro %}
 
 {% macro default__get_grant_sql(relation, grant_config) %}
-{{ return(relation) }}
+grant {{ privalage }} on {{ relation.type }} {{ relation }} to {{ recipients }}
 {% endmacro %}
 
 {% macro get_revoke_sql(relation, grant_config) %}
@@ -19,15 +19,11 @@
 {% endmacro %}
 
 {% macro default__get_revoke_sql(relation, grant_config) %}
-return
 {% endmacro %}
 
-
-{% macro apply_grants(revoke, relation, grant_config) %}
-{{ return(adapter.dispatch('apply_grant', 'dbt')(revoke, relation, grant_config)) }}
+{% macro apply_grants(relation, grant_config, should_revoke) %}
+{{ return(adapter.dispatch('apply_grant', 'dbt')(relation, grant_config, should_revoke)) }}
 {% endmacro %}
 
 {% macro default__apply_grants(revoke, relation, grant_config) %}
-{{ get_show_grant_sql() }}
-{% return %}
 {% endmacro %}
