@@ -11,10 +11,10 @@ show grants on {{ relation.type }} {{ relation }}
 {% endmacro %}
 
 {% macro default__get_grant_sql(relation, grant_config) %}
-{% for privilege in grant_config.keys() %}
-     {% set recipients = grant_config[privilege] %}
-     grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ recipients | join(', ') }}
-  {% endfor %}
+    {% for privilege in grant_config.keys() %}
+        {% set recipients = grant_config[privilege] %}
+        grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ recipients | join(', ') }}
+    {% endfor %}
 {% endmacro %}
 
 {% macro get_revoke_sql(relation, grant_config) %}
