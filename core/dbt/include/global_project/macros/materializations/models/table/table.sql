@@ -39,7 +39,8 @@
   {% do create_indexes(target_relation) %}
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
-
+  {{ log(config.get('grants'), "what grants are we passing") }}
+  {% do apply_grants(target_relation, config.get('grants'))%}
   {% do persist_docs(target_relation, model) %}
 
   -- `COMMIT` happens here

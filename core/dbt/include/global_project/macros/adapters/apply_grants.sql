@@ -11,7 +11,10 @@ show grants on {{ relation.type }} {{ relation }}
 {% endmacro %}
 
 {% macro default__get_grant_sql(relation, grant_config) %}
-grant "select" on {{ relation.type }} {{ relation }} to {{ grant_config["select"].join(", ") }}
+{% for privilege in grant_config.keys() %}
+     {% set recipients = grant_config[privilege] %}
+     grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ recipients | join(', ') }}
+  {% endfor %}
 {% endmacro %}
 
 {% macro get_revoke_sql(relation, grant_config) %}
@@ -19,7 +22,8 @@ grant "select" on {{ relation.type }} {{ relation }} to {{ grant_config["select"
 {% endmacro %}
 
 {% macro default__get_revoke_sql(relation, grant_config) %}
-revoke "select" on {{ relation }} from {{ grant_config["select"].join(", ") }}
+revoke all on {{ relation }} from {{ grant_config["select"].join(", ") }}
+where grantee != {{ target.user }}
 {% endmacro %}
 
 {% macro apply_grants(relation, grant_config, should_revoke) %}
@@ -27,13 +31,18 @@ revoke "select" on {{ relation }} from {{ grant_config["select"].join(", ") }}
 {% endmacro %}
 
 {% macro default__apply_grants(relation, grant_config, should_revoke=True) %}
+{{ log("In apply grants ===") }}
 {% if grant_config %}
-    {% if "select" not in grant_config %}
-    get_show_grant_sql(relation)
+   {{ log("got grant config ===") }}
+   {% set current_grants =  get_show_grant_sql(relation) %}
+    {% call statement('grants') %}
         {% if should_revoke %}
-        get_revoke_sql(relation, grant_config)
-        {% endif%}
-    get_grant_sql(relation, grant_config)
-    {% endif%}
-{% endif%}
+            {{ get_revoke_sql(relation, grant_config) }}
+            {{ log("should revoke ===") }}
+        {% endif %}
+        {{ log(current_grants) }}
+        {{ get_grant_sql(relation, grant_config) }}
+    {% endcall %}
+    {{ log("after call ===") }}
+{% endif %}
 {% endmacro %}
