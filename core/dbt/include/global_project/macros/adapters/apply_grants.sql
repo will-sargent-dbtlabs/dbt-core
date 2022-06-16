@@ -31,18 +31,13 @@ where grantee != {{ target.user }}
 {% endmacro %}
 
 {% macro default__apply_grants(relation, grant_config, should_revoke=True) %}
-{{ log("In apply grants ===") }}
 {% if grant_config %}
-   {{ log("got grant config ===") }}
-   {% set current_grants =  get_show_grant_sql(relation) %}
     {% call statement('grants') %}
         {% if should_revoke %}
+            {% set current_grants =  run_query(get_show_grant_sql(relation)) %}
             {{ get_revoke_sql(relation, grant_config) }}
-            {{ log("should revoke ===") }}
         {% endif %}
-        {{ log(current_grants) }}
         {{ get_grant_sql(relation, grant_config) }}
     {% endcall %}
-    {{ log("after call ===") }}
 {% endif %}
 {% endmacro %}
