@@ -37,4 +37,4 @@ class YamlLoadingUnitTest(unittest.TestCase):
 
     def test_load_duped_var(self):
         dbt_project_yml = load_yaml_text(project_with_duped_var)
-        assert(dbt_project_yml)
+        assert(dbt_project_yml) == {'var': {'foo': 'bar'}}
