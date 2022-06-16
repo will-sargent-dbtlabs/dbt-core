@@ -21,20 +21,8 @@ postgres:
   target: dev
 """
 
-project_with_duped_var = """
-# dbt_project.yml
-
-vars:
-  foo: bar
-  foo: bar
-"""
-
 class YamlLoadingUnitTest(unittest.TestCase):
 
     def test_load_yaml_anchors(self):
         profile_yml = load_yaml_text(profile_with_anchor)
         assert(profile_yml)
-
-    def test_load_duped_var(self):
-        dbt_project_yml = load_yaml_text(project_with_duped_var)
-        assert(dbt_project_yml) == {'var': {'foo': 'bar'}}
