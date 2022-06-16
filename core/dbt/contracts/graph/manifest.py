@@ -1135,6 +1135,10 @@ class WritableManifest(ArtifactMixin):
         )
     )
 
+    @classmethod
+    def compatible_previous_versions(self):
+        return [("manifest", 4)]
+
 
 def _check_duplicates(value: HasUniqueID, src: Mapping[str, HasUniqueID]):
     if value.unique_id in src:
