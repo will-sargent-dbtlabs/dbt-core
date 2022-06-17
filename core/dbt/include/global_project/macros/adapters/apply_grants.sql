@@ -40,7 +40,6 @@ show grants on {{ relation.type }} {{ relation }}
             {% set current_grants =  run_query(get_show_grant_sql(relation)) %}
              {{ log(current_grants, info = true) }}
             {% set diff_grants = { k: current_grants[k] for k in set(current_grants) - set(grant_config) } %}
-
              {{ log(diff_grants, info = true) }}
             {{ get_revoke_sql(relation, diff_grants) }}
         {% endif %}
