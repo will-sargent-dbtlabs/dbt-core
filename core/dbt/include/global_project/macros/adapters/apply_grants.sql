@@ -12,8 +12,8 @@ show grants on {{ relation.type }} {{ relation }}
 
 {% macro default__get_grant_sql(relation, grant_config) %}
     {% for privilege in grant_config.keys() %}
-        {% set recipients = grant_config[privilege] %}
-        grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ recipients | join(', ') }}
+        {% set grantee = grant_config[privilege] %}
+        grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ grantee | join(', ') }}
     {% endfor %}
 {% endmacro %}
 
@@ -23,9 +23,9 @@ show grants on {{ relation.type }} {{ relation }}
 
 {% macro default__get_revoke_sql(relation, grant_config) %}
     {% for privilege in grant_config.keys() %}
-        {% set recipients = grant_config[privilege] %}
-        revoke {{ privilege }} on {{ relation.type }} {{ relation }} from {{ recipients | join(', ') }}
-        where {{ recipients }} != {{ target.user }}
+        {% set grantee = grant_config[privilege] %}
+        revoke {{ privilege }} on {{ relation.type }} {{ relation }} from {{ grantee | join(', ') }}
+        where {{ grantee }} != {{ target.user }}
     {% endfor %}
 {% endmacro %}
 
@@ -40,6 +40,7 @@ show grants on {{ relation.type }} {{ relation }}
             {% set current_grants =  run_query(get_show_grant_sql(relation)) %}
              {{ log(current_grants, info = true) }}
             {% set diff_grants = { k: current_grants[k] for k in set(current_grants) - set(grant_config) } %}
+
              {{ log(diff_grants, info = true) }}
             {{ get_revoke_sql(relation, diff_grants) }}
         {% endif %}
