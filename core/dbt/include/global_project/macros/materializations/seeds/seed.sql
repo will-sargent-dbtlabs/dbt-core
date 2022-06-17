@@ -9,6 +9,9 @@
   {%- set exists_as_view = (old_relation is not none and old_relation.is_view) -%}
 
   {%- set agate_table = load_agate_table() -%}
+  -- grab current tables grants config for comparision later on
+  {% set  grant_config = config.get('grants') %}
+
   {%- do store_result('agate_table', response='OK', agate_table=agate_table) -%}
 
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
@@ -35,6 +38,8 @@
   {% endcall %}
 
   {% set target_relation = this.incorporate(type='table') %}
+  {{ log(grant_config, "what grants are we passing") }}
+  {% do apply_grants(target_relation, grant_config) %}
   {% do persist_docs(target_relation, model) %}
 
   {% if full_refresh_mode or not exists_as_table %}
