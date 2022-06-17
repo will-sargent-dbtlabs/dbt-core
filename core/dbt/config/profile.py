@@ -23,6 +23,7 @@ from .renderer import ProfileRenderer
 
 DEFAULT_THREADS = 1
 
+LOCAL_PROFILES_DIR = os.getcwd()
 DEFAULT_PROFILES_DIR = os.path.join(os.path.expanduser('~'), '.dbt')
 
 INVALID_PROFILE_MESSAGE = """

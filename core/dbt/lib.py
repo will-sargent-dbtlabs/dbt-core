@@ -17,7 +17,7 @@ def get_dbt_config(project_dir, single_threaded=False):
     if os.getenv('DBT_PROFILES_DIR'):
         profiles_dir = os.getenv('DBT_PROFILES_DIR')
     else:
-        profiles_dir = os.path.expanduser("~/.dbt")
+        profiles_dir = flags.PROFILES_DIR
 
     # Construct a phony config
     config = RuntimeConfig.from_args(RuntimeArgs(

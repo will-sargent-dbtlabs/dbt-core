@@ -10,6 +10,9 @@ from typing import Optional
 # It also gets set in main.py and in set_from_args because the rpc server
 # doesn't go through exactly the same main arg processing.
 DEFAULT_PROFILES_DIR = os.path.join(os.path.expanduser('~'), '.dbt')
+LOCAL_PROFILES_DIR = os.getcwd()
+if os.path.exists(Path(LOCAL_PROFILES_DIR) / Path("profiles.yml")):
+    DEFAULT_PROFILES_DIR = LOCAL_PROFILES_DIR
 PROFILES_DIR = os.path.expanduser(
     os.getenv('DBT_PROFILES_DIR', DEFAULT_PROFILES_DIR)
 )

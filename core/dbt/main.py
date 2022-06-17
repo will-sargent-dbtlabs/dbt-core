@@ -37,7 +37,7 @@ from dbt.adapters.factory import reset_adapters, cleanup_connections
 import dbt.tracking
 
 from dbt.utils import ExitCodes
-from dbt.config.profile import DEFAULT_PROFILES_DIR, read_user_config
+from dbt.config.profile import LOCAL_PROFILES_DIR, DEFAULT_PROFILES_DIR, read_user_config
 from dbt.exceptions import (
     InternalException,
     NotImplementedException,
@@ -266,8 +266,8 @@ def _build_base_subparser():
         dest='sub_profiles_dir',  # Main cli arg precedes subcommand
         type=str,
         help='''
-        Which directory to look in for the profiles.yml file. Default = {}
-        '''.format(DEFAULT_PROFILES_DIR)
+        Which directory to look in for the profiles.yml file. Default = {} then {}
+        '''.format(LOCAL_PROFILES_DIR, DEFAULT_PROFILES_DIR)
     )
 
     base_subparser.add_argument(
@@ -1051,8 +1051,8 @@ def parse_args(args, cls=DBTArgumentParser):
         dest='profiles_dir',
         type=str,
         help='''
-        Which directory to look in for the profiles.yml file. Default = {}
-        '''.format(DEFAULT_PROFILES_DIR)
+        Which directory to look in for the profiles.yml file. Default = {} then {}
+        '''.format(LOCAL_PROFILES_DIR, DEFAULT_PROFILES_DIR)
     )
 
     p.add_argument(
