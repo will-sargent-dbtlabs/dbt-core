@@ -80,6 +80,11 @@ class UnparsedRunHook(UnparsedNode):
 @dataclass
 class Docs(dbtClassMixin, Replaceable):
     show: bool = True
+
+
+# is this the right way to maintain backwards compatibility?
+@dataclass
+class ModelDocs(Docs):
     node_color: Optional[str] = None
 
 

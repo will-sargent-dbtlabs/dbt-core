@@ -7,7 +7,7 @@ from dbt.dataclass_schema import (
     ValidationError,
     register_pattern,
 )
-from dbt.contracts.graph.unparsed import AdditionalPropertiesAllowed
+from dbt.contracts.graph.unparsed import AdditionalPropertiesAllowed, ModelDocs
 from dbt.exceptions import InternalException, CompilationException
 from dbt.contracts.util import Replaceable, list_str
 from dbt import hooks
@@ -286,7 +286,7 @@ class BaseConfig(AdditionalPropertiesAllowed, Replaceable):
     mergebehavior = {
         "append": ["pre-hook", "pre_hook", "post-hook", "post_hook", "tags"],
         "update": ["quoting", "column_types", "meta"],
-        "dict_key_append": ["grants"],
+        "dict_key_append": ["grants", "docs"],
     }
 
     @classmethod
@@ -460,6 +460,7 @@ class NodeConfig(NodeAndTestConfig):
     grants: Dict[str, Any] = field(
         default_factory=dict, metadata=MergeBehavior.DictKeyAppend.meta()
     )
+    docs: ModelDocs = field(default_factory=ModelDocs)
 
     @classmethod
     def __pre_deserialize__(cls, data):
