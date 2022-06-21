@@ -662,3 +662,10 @@ def generate_base_context(cli_vars: Dict[str, Any]) -> Dict[str, Any]:
     ctx = BaseContext(cli_vars)
     # This is not a Mashumaro to_dict call
     return ctx.to_dict()
+
+
+def diff_of_two_dicts(
+    grant_config: Dict[str, Any], current_grants: Dict[str, Any]
+) -> Dict[str, Any]:
+    diff_dict = {k: current_grants[k] for k in set(current_grants) - set(grant_config)}
+    return diff_dict
