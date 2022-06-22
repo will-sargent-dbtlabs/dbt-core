@@ -438,7 +438,8 @@ class InvalidSelectorException(RuntimeException):
 
 
 class DuplicateYamlKeyException(CompilationException):
-    pass
+    def __str__(self):
+        return self.msg
 
 
 def raise_compiler_error(msg, node=None) -> NoReturn:
