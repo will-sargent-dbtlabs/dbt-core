@@ -74,7 +74,7 @@
   {% call statement('main') %}
       {{ final_sql }}
   {% endcall %}
-  {{ log(grant_config, "what grants are we passing") }}
+
   {% do apply_grants(target_relation, grant_config) %}
   {% do persist_docs(target_relation, model) %}
 

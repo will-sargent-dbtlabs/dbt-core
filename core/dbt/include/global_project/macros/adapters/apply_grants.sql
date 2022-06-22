@@ -38,6 +38,7 @@ show grants on {{ relation.type }} {{ relation }}
     {% call statement('grants') %}
         {% if should_revoke %}
             {% set current_grants =  run_query(get_show_grant_sql(relation)) %}
+            {{ log(current_grants, info=True) }}
             {% for privilege in grant_config.keys() %}
                 {% if privilege not in current_grants.keys() %}
                     {% set diff_grants = diff_of_two_dicts(grant_config, current_grants) %}

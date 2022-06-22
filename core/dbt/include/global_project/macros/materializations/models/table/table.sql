@@ -41,7 +41,7 @@
   {% do create_indexes(target_relation) %}
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
-  {{ log(grant_config, "what grants are we passing") }}
+
   {% do apply_grants(target_relation, grant_config) %}
   {% do persist_docs(target_relation, model) %}
 

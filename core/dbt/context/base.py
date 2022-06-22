@@ -668,4 +668,5 @@ def diff_of_two_dicts(
     grant_config: Dict[str, Any], current_grants: Dict[str, Any]
 ) -> Dict[str, Any]:
     diff_dict = {k: current_grants[k] for k in set(current_grants) - set(grant_config)}
+    print("************", diff_dict)
     return diff_dict
