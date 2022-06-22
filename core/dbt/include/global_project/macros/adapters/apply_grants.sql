@@ -30,7 +30,7 @@ show grants on {{ relation.type }} {{ relation }}
 {% endmacro %}
 
 {% macro apply_grants(relation, grant_config, should_revoke) %}
-{{ return(adapter.dispatch("apply_grants", "dbt")(relation, grant_config, should_revoke)) }}
+{{ return(adapter.dispatch("apply_grants", "dbt")(relation, grant_config, should_revoke=True)) }}
 {% endmacro %}
 
 {% macro default__apply_grants(relation, grant_config, should_revoke=True) %}

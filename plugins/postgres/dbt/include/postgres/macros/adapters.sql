@@ -202,3 +202,14 @@
     comment on column {{ relation }}.{{ adapter.quote(column_name) if column_dict[column_name]['quote'] else column_name }} is {{ escaped_comment }};
   {% endfor %}
 {% endmacro %}
+
+{% macro postgres__get_show_grant_sql(relation) %}
+ {% call statement('get_show_grant_sql', fetch_result=True) -%}
+  select grantee
+  from information_schema.role_table_grants
+      where grantor = current_role
+        and grantee != current_role
+        and table_schema = '{{ relation.schema }}'
+        and table_name = '{{ relation.identifier }}'
+ {% endcall -%}
+{% endmacro %}
