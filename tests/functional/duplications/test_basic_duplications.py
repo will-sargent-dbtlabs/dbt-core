@@ -39,7 +39,7 @@ class TestBasicDuplications:
 
     def test_warning_in_stdout(self, project):
         results, stdout = run_dbt_and_capture(["run"])
-        assert "Duplicate 'models' key found in yaml file models/schema.yml" in stdout
+        assert "Duplicate 'models' key found in yaml" in stdout
 
     def test_exception_is_raised_with_warn_error_flag(self, project):
         with pytest.raises(DuplicateYamlKeyException):
