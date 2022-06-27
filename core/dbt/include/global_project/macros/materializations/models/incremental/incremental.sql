@@ -61,7 +61,7 @@
       {% do to_drop.append(backup_relation) %}
   {% endif %}
 
-  {% do apply_grants(target_relation, grant_config) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
 
   {% do persist_docs(target_relation, model) %}
 

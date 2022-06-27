@@ -657,16 +657,18 @@ class BaseContext(metaclass=ContextMeta):
             print(msg)
         return ""
 
+    @contextmember
+    @staticmethod
+    def diff_of_two_dicts(grant_config, current_grants):
+        """compares list of current grants and any changes made to grants on a model in a
+        current run and returns the diff as a new object
+        """
+        diff_dict = {k: grant_config[k] for k in set(grant_config) - set(current_grants)}
+        print("diff_dict ==", diff_dict)
+        return diff_dict
+
 
 def generate_base_context(cli_vars: Dict[str, Any]) -> Dict[str, Any]:
     ctx = BaseContext(cli_vars)
     # This is not a Mashumaro to_dict call
     return ctx.to_dict()
-
-
-def diff_of_two_dicts(
-    grant_config: Dict[str, Any], current_grants: Dict[str, Any]
-) -> Dict[str, Any]:
-    diff_dict = {k: current_grants[k] for k in set(current_grants) - set(grant_config)}
-    print("************", diff_dict)
-    return diff_dict

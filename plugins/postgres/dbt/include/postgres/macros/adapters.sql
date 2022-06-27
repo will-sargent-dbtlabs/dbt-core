@@ -207,6 +207,7 @@
  {% call statement('get_show_grant_sql', fetch_result=True) -%}
   select grantee
   from information_schema.role_table_grants
+      {{ log(grantee, info=True) }}
       where grantor = current_role
         and grantee != current_role
         and table_schema = '{{ relation.schema }}'

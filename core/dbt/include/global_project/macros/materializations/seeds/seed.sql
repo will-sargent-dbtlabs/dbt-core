@@ -38,7 +38,7 @@
   {% endcall %}
 
   {% set target_relation = this.incorporate(type='table') %}
-  {% do apply_grants(target_relation, grant_config) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
   {% do persist_docs(target_relation, model) %}
 
   {% if full_refresh_mode or not exists_as_table %}

@@ -75,7 +75,7 @@
       {{ final_sql }}
   {% endcall %}
 
-  {% do apply_grants(target_relation, grant_config) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
   {% do persist_docs(target_relation, model) %}
 
   {% if not target_relation_exists %}
