@@ -11,10 +11,10 @@ version: 2
 
 metrics:
 
-  - model: "ref('people')"
-    name: number_of_people
-    description: Total count of people
+  - name: number_of_people
     label: "Number of people"
+    description: Total count of people
+    model: "ref('people')"
     type: count
     sql: "*"
     timestamp: created_at
@@ -25,17 +25,17 @@ metrics:
     meta:
         my_meta: 'testing'
 
-  - model: "ref('people')"
-    name: collective_tenure
-    description: Total number of years of team experience
+  - name: collective_tenure
     label: "Collective tenure"
+    description: Total number of years of team experience
+    model: "ref('people')"
     type: sum
     sql: tenure
     timestamp: created_at
     time_grains: [day]
     filters:
       - field: loves_dbt
-        operator: is
+        operator: 'is'
         value: 'true'
 
 """
@@ -44,7 +44,8 @@ models__people_sql = """
 select 1 as id, 'Drew' as first_name, 'Banin' as last_name, 'yellow' as favorite_color, true as loves_dbt, 5 as tenure, current_timestamp as created_at
 union all
 select 1 as id, 'Jeremy' as first_name, 'Cohen' as last_name, 'indigo' as favorite_color, true as loves_dbt, 4 as tenure, current_timestamp as created_at
-
+union all
+select 1 as id, 'Callum' as first_name, 'McCann' as last_name, 'emerald' as favorite_color, true as loves_dbt, 0 as tenure, current_timestamp as created_at
 """
 
 
@@ -74,10 +75,10 @@ version: 2
 
 metrics:
 
-  - model: "ref(people)"
-    name: number_of_people
-    description: Total count of people
+  - name: number_of_people
     label: "Number of people"
+    description: Total count of people
+    model: "ref(people)"
     type: count
     sql: "*"
     timestamp: created_at
@@ -88,17 +89,17 @@ metrics:
     meta:
         my_meta: 'testing'
 
-  - model: "ref(people)"
-    name: collective_tenure
-    description: Total number of years of team experience
+  - name: collective_tenure
     label: "Collective tenure"
+    description: Total number of years of team experience
+    model: "ref(people)"
     type: sum
     sql: tenure
     timestamp: created_at
     time_grains: [day]
     filters:
       - field: loves_dbt
-        operator: is
+        operator: 'is'
         value: 'true'
 
 """
@@ -128,10 +129,10 @@ version: 2
 
 metrics:
 
-  - model: "ref('people')"
-    name: number of people
-    description: Total count of people
+  - name: number of people
     label: "Number of people"
+    description: Total count of people
+    model: "ref('people')"
     type: count
     sql: "*"
     timestamp: created_at
@@ -142,17 +143,17 @@ metrics:
     meta:
         my_meta: 'testing'
 
-  - model: "ref('people')"
-    name: collective tenure
-    description: Total number of years of team experience
+  - name: collective tenure
     label: "Collective tenure"
+    description: Total number of years of team experience
+    model: "ref('people')"
     type: sum
     sql: tenure
     timestamp: created_at
     time_grains: [day]
     filters:
       - field: loves_dbt
-        operator: is
+        operator: 'is'
         value: 'true'
 
 """
@@ -202,7 +203,7 @@ metrics:
       label: Average Order Value
 
       type: expression
-      sql:  "{{metric('count_orders')}} / {{metric('sum_order_revenue')}}"
+      sql:  "{{metric('sum_order_revenue')}} / {{metric('count_orders')}} "
       timestamp: purchased_at
       time_grains: [day, week, month, quarter, year]
 
