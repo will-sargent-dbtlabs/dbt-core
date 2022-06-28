@@ -663,6 +663,7 @@ class BaseContext(metaclass=ContextMeta):
         """compares list of current grants and any changes made to grants on a model in a
         current run and returns the diff as a new object
         """
+
         diff_dict = {k: grant_config[k] for k in set(grant_config) - set(current_grants)}
         return diff_dict
 

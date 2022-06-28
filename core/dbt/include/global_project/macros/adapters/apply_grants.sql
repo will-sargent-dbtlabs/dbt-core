@@ -41,7 +41,8 @@ show grants on {{ relation.type }} {{ relation }}
     {% if grant_config %}
         {% call statement('grants') %}
             {% if should_revoke %}
-                {% set current_grants =  get_show_grant_sql(relation) %}
+                {% set current_grants =  run_query(get_show_grant_sql(relation)) %}
+                {{ log(current_grants.print_table()) }}
                 {% set diff_grants = diff_of_two_dicts(grant_config, current_grants) %}
                 {% set revoke_grants = get_revoke_sql(relation, diff_grants) %}
             {% endif %}
