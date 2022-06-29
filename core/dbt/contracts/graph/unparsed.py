@@ -467,3 +467,6 @@ class UnparsedMetric(dbtClassMixin, Replaceable):
         # TODO: Expressions _cannot_ have `model` properties
         if data.get("model") is None and data.get("type") != "expression":
             raise ValidationError("Non-expression metrics require a 'model' property")
+
+        if data.get("model") is not None and data.get("type") == "expression":
+            raise ValidationError("Expression metrics cannot have a 'model' property")

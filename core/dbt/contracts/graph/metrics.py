@@ -7,8 +7,7 @@ class MetricReference(object):
         self.package_name = package_name
 
     def __str__(self):
-        # TODO : Qualify the metric name as a CTE or field?
-        return f"{self.metric_name}.metric_value"
+        return f"{self.metric_name}"
 
 
 class ResolvedMetricReference(MetricReference):
@@ -28,8 +27,7 @@ class ResolvedMetricReference(MetricReference):
         return getattr(self.node, key)
 
     def __str__(self):
-        # TODO : Qualify the metric name as a CTE or field?
-        return f"{self.node.name}.metric_value"
+        return f"{self.node.name}"
 
     @classmethod
     def parent_metrics(cls, metric_node, manifest):

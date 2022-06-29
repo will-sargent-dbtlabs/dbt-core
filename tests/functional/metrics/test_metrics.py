@@ -104,7 +104,6 @@ metrics:
 
 """
 
-
 class TestInvalidRefMetrics:
     @pytest.fixture(scope="class")
     def models(self):
@@ -121,6 +120,56 @@ class TestInvalidRefMetrics:
     ):
         # initial run
         with pytest.raises(ParsingException):
+            run_dbt(["run"])
+
+invalid_metrics__missing_model_yml = """
+version: 2
+
+metrics:
+
+  - name: number_of_people
+    label: "Number of people"
+    description: Total count of people
+    type: count
+    sql: "*"
+    timestamp: created_at
+    time_grains: [day, week, month]
+    dimensions:
+      - favorite_color
+      - loves_dbt
+    meta:
+        my_meta: 'testing'
+
+  - name: collective_tenure
+    label: "Collective tenure"
+    description: Total number of years of team experience
+    type: sum
+    sql: tenure
+    timestamp: created_at
+    time_grains: [day]
+    filters:
+      - field: loves_dbt
+        operator: 'is'
+        value: 'true'
+
+"""
+
+class TestInvalidMetricMissingModel:
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "people_metrics.yml": invalid_metrics__missing_model_yml,
+            "people.sql": models__people_sql,
+        }
+
+    # tests that we get a ParsingException with an invalid model ref, where
+    # the model name does not have quotes
+    def test_simple_metric(
+        self,
+        project,
+    ):
+        # initial run
+        with pytest.raises(ValidationException):
             run_dbt(["run"])
 
 
@@ -172,45 +221,6 @@ class TestNamesWithSpaces:
             run_dbt(["run"])
 
 
-expression_metric_yml = """
-version: 2
-metrics:
-    - name: count_orders
-      label: Count orders
-      model: ref('mock_purchase_data')
-
-      type: count
-      sql: "*"
-      timestamp: purchased_at
-      time_grains: [day, week, month, quarter, year]
-
-      dimensions:
-        - payment_type
-
-    - name: sum_order_revenue
-      label: Total order revenue
-      model: ref('mock_purchase_data')
-
-      type: sum
-      sql: "payment_total"
-      timestamp: purchased_at
-      time_grains: [day, week, month, quarter, year]
-
-      dimensions:
-        - payment_type
-
-    - name: average_order_value
-      label: Average Order Value
-
-      type: expression
-      sql:  "{{metric('sum_order_revenue')}} / {{metric('count_orders')}} "
-      timestamp: purchased_at
-      time_grains: [day, week, month, quarter, year]
-
-      dimensions:
-        - payment_type
-"""
-
 downstream_model_sql = """
 -- this model will depend on these three metrics
 {% set some_metrics = [
@@ -252,6 +262,98 @@ downstream_model_sql = """
 {% endif %}
 
 select 1 as id
+"""
+
+invalid_expression_metric__contains_model_yml = """
+version: 2
+metrics:
+    - name: count_orders
+      label: Count orders
+      model: ref('mock_purchase_data')
+
+      type: count
+      sql: "*"
+      timestamp: purchased_at
+      time_grains: [day, week, month, quarter, year]
+
+      dimensions:
+        - payment_type
+
+    - name: sum_order_revenue
+      label: Total order revenue
+      model: ref('mock_purchase_data')
+
+      type: sum
+      sql: "payment_total"
+      timestamp: purchased_at
+      time_grains: [day, week, month, quarter, year]
+
+      dimensions:
+        - payment_type
+
+    - name: average_order_value
+      label: Average Order Value
+
+      type: expression
+      sql:  "{{metric('sum_order_revenue')}} / {{metric('count_orders')}} "
+      model: ref('mock_purchase_data')
+      timestamp: purchased_at
+      time_grains: [day, week, month, quarter, year]
+
+      dimensions:
+        - payment_type
+"""
+
+class TestInvalidExpressionMetrics:
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "expression_metric.yml": invalid_expression_metric__contains_model_yml,
+            "downstream_model.sql": downstream_model_sql,
+        }
+
+    def test_invalid_expression_metrics(self, project):
+        with pytest.raises(ValidationError):
+            run_dbt(["run"])
+
+
+expression_metric_yml = """
+version: 2
+metrics:
+    - name: count_orders
+      label: Count orders
+      model: ref('mock_purchase_data')
+
+      type: count
+      sql: "*"
+      timestamp: purchased_at
+      time_grains: [day, week, month, quarter, year]
+
+      dimensions:
+        - payment_type
+
+    - name: sum_order_revenue
+      label: Total order revenue
+      model: ref('mock_purchase_data')
+
+      type: sum
+      sql: "payment_total"
+      timestamp: purchased_at
+      time_grains: [day, week, month, quarter, year]
+
+      dimensions:
+        - payment_type
+
+    - name: average_order_value
+      label: Average Order Value
+
+      type: expression
+      sql:  "{{metric('sum_order_revenue')}} / {{metric('count_orders')}} "
+      timestamp: purchased_at
+      time_grains: [day, week, month, quarter, year]
+
+      dimensions:
+        - payment_type
 """
 
 
