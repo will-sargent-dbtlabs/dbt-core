@@ -1,7 +1,7 @@
 import pytest
 
 from dbt.tests.util import run_dbt, get_manifest
-from dbt.exceptions import ParsingException
+from dbt.exceptions import ParsingException, ValidationException
 
 from tests.functional.metrics.fixture_metrics import mock_purchase_data_csv
 
@@ -169,7 +169,7 @@ class TestInvalidMetricMissingModel:
         project,
     ):
         # initial run
-        with pytest.raises(ValidationException):
+        with pytest.raises(ParsingException):
             run_dbt(["run"])
 
 
@@ -313,7 +313,7 @@ class TestInvalidExpressionMetrics:
         }
 
     def test_invalid_expression_metrics(self, project):
-        with pytest.raises(ValidationError):
+        with pytest.raises(ParsingException):
             run_dbt(["run"])
 
 
