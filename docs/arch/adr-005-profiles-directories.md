@@ -25,9 +25,6 @@ Search order for `dbt_project.yml`:
 1. `DBT_PROJECT_DIR` environment variable (**NEW**)
 1. current working directory
 
-
-
-
 ### General design requirements
 There's two necessary pieces for dbt to use a profile to connect to a target database:
 - property definitions for the desired target database
@@ -71,10 +68,6 @@ This requires doing all of the following for local development:
 ##### Cons
 - Still need to configure the `profiles.yml` somehow (`~/.dbt/` or `DBT_PROJECT_DIR` or `--profiles-dir`)
     - There is _no way_ to clone a repo and have it "just work"
-
-
-
-
 
 ### Options
 
@@ -147,11 +140,6 @@ The most straight-forward solution to this currently is to just set the `DBT_PRO
 - They are isolated from each other
 ##### Cons
 - The end user needs to install Docker for their host operating system
-
-
-
-
-
 
 ## Decision
 Default to current working directory for `profiles.yml`. Fall back to `~/.dbt/`.
