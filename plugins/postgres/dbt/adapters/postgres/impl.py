@@ -100,6 +100,11 @@ class PostgresAdapter(SQLAdapter):
         return grants_dict
 
 
+    @available
+    def do_i_carry_over_grants_when_an_object_is_replaced(self) -> bool:
+        return False
+
+
     def _link_cached_database_relations(self, schemas: Set[str]):
         """
         :param schemas: The set of schemas that should have links added.

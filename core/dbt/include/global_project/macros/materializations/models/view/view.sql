@@ -49,7 +49,8 @@
   {% endif %}
   {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
-  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
+  {% set should_revoke = existing_relation and adapter.do_i_carry_over_grants_when_an_object_is_replaced() %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
 
   {% do persist_docs(target_relation, model) %}
 

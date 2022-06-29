@@ -38,6 +38,9 @@
   {% endcall %}
 
   {% set target_relation = this.incorporate(type='table') %}
+  {% set should_revoke = (not full_refresh_mode) or (
+    old_relation is not none and adapter.do_i_carry_over_grants_when_an_object_is_replaced()
+  ) %}
   {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
   {% do persist_docs(target_relation, model) %}
 
