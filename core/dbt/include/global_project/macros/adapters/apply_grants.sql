@@ -14,8 +14,9 @@ show grants on {{ relation.type }} {{ relation }}
     {% for privilege in grant_config.keys() %}
         {% set grantees = grant_config[privilege] %}
         {% if grantees %}
-            {{ log(privilege, info=True)}}
-            grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ grantees | join(', ')}};
+            {% for grantee in grantees %}
+                grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ grantee}};
+            {% endfor %}
         {% endif %}
     {% endfor %}
 {% endmacro %}
@@ -26,10 +27,17 @@ show grants on {{ relation.type }} {{ relation }}
 
 {% macro default__get_revoke_sql(relation, grant_config) %}
     {% for privilege in grant_config.keys() %}
-        {% set grantees = grant_config[privilege] %}
+        {% set grantees = [] %}
+        {% set all_grantees = grant_config[privilege] %}
+        {% for grantee in all_grantees %}
+            {% if grantee != target.user %}
+                {% do grantees.append(grantee) %}
+            {% endif %}
+        {% endfor%}
         {% if grantees %}
-            {{ log(privilege, info=True)}}
-            revoke {{ privilege }} on {{ relation.type }} {{ relation }} from {{ grantees | join(', ') }};
+                {% for grantee in grantees %}
+                    revoke {{ privilege }} on {{ relation.type }} {{ relation }} from {{ grantee }};
+                {% endfor %}
         {% endif %}
     {% endfor %}
 {% endmacro %}

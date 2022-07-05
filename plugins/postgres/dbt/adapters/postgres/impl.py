@@ -90,8 +90,8 @@ class PostgresAdapter(SQLAdapter):
     def standardize_grants_dict(self, grants_table: agate.Table) -> dict:
         grants_dict = {}
         for row in grants_table:
-            grantee = row["grantee"].lower()
-            privilege = row["privilege"].lower()
+            grantee = row["grantee"]
+            privilege = row["privilege"]
             if privilege in grants_dict.keys():
                 grants_dict[privilege].append(grantee)
             else:

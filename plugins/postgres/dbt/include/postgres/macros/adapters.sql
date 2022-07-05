@@ -204,7 +204,6 @@
 {% endmacro %}
 
 {% macro postgres__get_show_grant_sql(relation) %}
- {% ('get_show_grant_sql', fetch_result=True) -%}
   select grantee, privilege_type
   from information_schema.role_table_grants
       {{ log(grantee, info=True) }}

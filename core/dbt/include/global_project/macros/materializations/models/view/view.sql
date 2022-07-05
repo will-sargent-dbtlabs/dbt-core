@@ -49,7 +49,7 @@
   {% endif %}
   {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
-  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=False) %}
 
   {% do persist_docs(target_relation, model) %}
 
