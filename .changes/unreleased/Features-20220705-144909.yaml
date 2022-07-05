@@ -1,0 +1,7 @@
+kind: Features
+body: Improve support for Metric nodes in the dbt Docs site
+time: 2022-07-05T14:49:09.990377-04:00
+custom:
+  Author: drewbanin
+  Issue: "4884"
+  PR: "5438"
