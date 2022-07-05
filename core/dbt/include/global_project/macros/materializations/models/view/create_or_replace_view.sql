@@ -13,12 +13,12 @@
   {%- set identifier = model['alias'] -%}
 
   {%- set old_relation = adapter.get_relation(database=database, schema=schema, identifier=identifier) -%}
-
   {%- set exists_as_view = (old_relation is not none and old_relation.is_view) -%}
 
   {%- set target_relation = api.Relation.create(
       identifier=identifier, schema=schema, database=database,
       type='view') -%}
+  {% set  grant_config = config.get('grants') %}
 
   {{ run_hooks(pre_hooks) }}
 
@@ -34,6 +34,7 @@
     {{ get_create_view_as_sql(target_relation, sql) }}
   {%- endcall %}
 
+  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
   {{ run_hooks(post_hooks) }}
 
   {{ return({'relations': [target_relation]}) }}

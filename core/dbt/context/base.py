@@ -659,13 +659,23 @@ class BaseContext(metaclass=ContextMeta):
 
     @contextmember
     @staticmethod
-    def diff_of_two_dicts(grant_config, current_grants):
-        """compares list of current grants and any changes made to grants on a model in a
-        current run and returns the diff as a new object
+    def diff_of_two_dicts(dict_a, dict_b):
+        """
+        Given two dictionaries:
+            dict_a: {'key_x': ['value_1', 'value_2'], 'key_y': ['value_3']}
+            dict_b: {'key_x': ['value_1'], 'key_z': ['value_4']}
+        Return the same dictionary representation of dict_a MINUS dict_b
         """
 
-        diff_dict = {k: grant_config[k] for k in set(grant_config) - set(current_grants)}
-        return diff_dict
+        dict_diff = {}
+        for k in dict_a:
+            if k in dict_b:
+                diff = list(set(dict_a[k]) - set(dict_b[k]))
+                if diff:
+                    dict_diff.update({k: diff})
+            else:
+                dict_diff.update({k: dict_a[k]})
+        return dict_diff
 
 
 def generate_base_context(cli_vars: Dict[str, Any]) -> Dict[str, Any]:
