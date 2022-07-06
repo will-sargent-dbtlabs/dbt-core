@@ -75,7 +75,9 @@
       {{ final_sql }}
   {% endcall %}
 
-  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
+  {% set should_revoke = do_we_need_to_show_and_revoke_grants(target_relation_exists, full_refresh_mode=False) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
+
   {% do persist_docs(target_relation, model) %}
 
   {% if not target_relation_exists %}

@@ -538,7 +538,12 @@ class BaseAdapter(metaclass=AdapterMeta):
 
     @abc.abstractclassmethod
     def standardize_grants_dict(cls, grants_table: agate.Table) -> dict:
-        """Return standardized grants received from database, to match format of grants_config."""
+        """Translate the result of `show grants` (or equivalent) to match the
+        grants which a user would configure in their project.
+
+        If relevant -- filter down to grants made BY the current user role,
+        and filter OUT any grants TO the current user/role (e.g. OWNERSHIP).
+        """
         raise NotImplementedException(
             "`standardize_grants_dict` is not implemented for this adapter!"
         )

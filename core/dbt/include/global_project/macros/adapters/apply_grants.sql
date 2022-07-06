@@ -1,19 +1,42 @@
+{% macro are_grants_copied_over_when_replaced() %}
+    {{ return(adapter.dispatch('are_grants_copied_over_when_replaced', 'dbt')()) }}
+{% endmacro %}
+
+{% macro default__are_grants_copied_over_when_replaced() %}
+    {{ return(True) }}
+{% endmacro %}
+
+{% macro do_we_need_to_show_and_revoke_grants(existing_relation, full_refresh_mode=True) %}
+
+    {% if not existing_relation %}
+        {#-- The table doesn't already exist, so no grants to copy over --#}
+        {{ return(False) }}
+    {% elif full_refresh_mode %}
+        {#-- The object is being REPLACED -- whether grants are copied over depends on the value of user config --#}
+        {{ return(are_grants_copied_over_when_replaced()) }}
+    {% else %}
+        {#-- The table is being merged/upserted/inserted -- grants will be carried over --#}
+        {{ return(True) }}
+    {% endif %}
+
+{% endmacro %}
+
 {% macro get_show_grant_sql(relation) %}
-{{ return(adapter.dispatch("get_show_grant_sql", "dbt")(relation)) }}
+    {{ return(adapter.dispatch("get_show_grant_sql", "dbt")(relation)) }}
 {% endmacro %}
 
 {% macro default__get_show_grant_sql(relation) %}
-show grants on {{ relation.type }} {{ relation }}
+    show grants on {{ relation.type }} {{ relation }}
 {% endmacro %}
 
 {% macro get_grant_sql(relation, grant_config) %}
-{{ return(adapter.dispatch('get_grant_sql', 'dbt')(relation, grant_config)) }}
+    {{ return(adapter.dispatch('get_grant_sql', 'dbt')(relation, grant_config)) }}
 {% endmacro %}
 
-{% macro default__get_grant_sql(relation, grant_config) %}
+{%- macro default__get_grant_sql(relation, grant_config) -%}
     {%- for privilege in grant_config.keys() -%}
-        {% set grantees = grant_config[privilege] %}
-        {% if grantees %}
+        {%- set grantees = grant_config[privilege] -%}
+        {%- if grantees -%}
             {%- for grantee in grantees -%}
                 grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ grantee}};
             {%- endfor -%}
@@ -22,28 +45,28 @@ show grants on {{ relation.type }} {{ relation }}
 {%- endmacro %}
 
 {% macro get_revoke_sql(relation, grant_config) %}
-{{ return(adapter.dispatch("get_revoke_sql", "dbt")(relation, grant_config)) }}
+    {{ return(adapter.dispatch("get_revoke_sql", "dbt")(relation, grant_config)) }}
 {% endmacro %}
 
 {% macro default__get_revoke_sql(relation, grant_config) %}
     {%- for privilege in grant_config.keys() -%}
-        {% set grantees = [] %}
-        {% set all_grantees = grant_config[privilege] %}
+        {%- set grantees = [] -%}
+        {%- set all_grantees = grant_config[privilege] -%}
         {%- for grantee in all_grantees -%}
             {%- if grantee != target.user -%}
                 {% do grantees.append(grantee) %}
             {%- endif -%}
-        {%- endfor -%}
+        {% endfor -%}
         {%- if grantees -%}
                 {%- for grantee in grantees -%}
                     revoke {{ privilege }} on {{ relation.type }} {{ relation }} from {{ grantee }};
-                {%- endfor -%}
+                {% endfor -%}
         {%- endif -%}
     {%- endfor -%}
-{%- endmacro %}
+{%- endmacro -%}
 
 {% macro apply_grants(relation, grant_config, should_revoke) %}
-{{ return(adapter.dispatch("apply_grants", "dbt")(relation, grant_config, should_revoke)) }}
+    {{ return(adapter.dispatch("apply_grants", "dbt")(relation, grant_config, should_revoke)) }}
 {% endmacro %}
 
 {% macro default__apply_grants(relation, grant_config, should_revoke=True) %}
