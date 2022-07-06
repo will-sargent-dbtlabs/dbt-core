@@ -159,6 +159,7 @@ class BaseAdapter(metaclass=AdapterMeta):
         - convert_datetime_type
         - convert_date_type
         - convert_time_type
+        - standardize_grants_dict
 
     Macros:
         - get_catalog
@@ -538,13 +539,21 @@ class BaseAdapter(metaclass=AdapterMeta):
             "`list_relations_without_caching` is not implemented for this " "adapter!"
         )
 
+    ###
+    # Abstract methods about grants
+    ###
     @abc.abstractmethod
-    def standardize_grants_dict(cls, grants_table: agate.Table) -> dict:
+    def standardize_grants_dict(self, grants_table: agate.Table) -> dict:
         """Translate the result of `show grants` (or equivalent) to match the
         grants which a user would configure in their project.
 
         If relevant -- filter down to grants made BY the current user role,
         and filter OUT any grants TO the current user/role (e.g. OWNERSHIP).
+
+        :param grants_table: An agate table containing the query result of
+            the SQL returned by get_show_grant_sql
+        :return: A standardized dictionary matching the `grants` config
+        :rtype: dict
         """
         raise NotImplementedException(
             "`standardize_grants_dict` is not implemented for this adapter!"
