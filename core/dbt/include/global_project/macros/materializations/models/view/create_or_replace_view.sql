@@ -35,7 +35,7 @@
     {{ get_create_view_as_sql(target_relation, sql) }}
   {%- endcall %}
 
-  {% set should_revoke = do_we_need_to_show_and_revoke_grants(existing_relation, full_refresh_mode=True) %}
+  {% set should_revoke = do_we_need_to_show_and_revoke_grants(old_relation, full_refresh_mode=True) %}
   {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
 
   {{ run_hooks(post_hooks) }}

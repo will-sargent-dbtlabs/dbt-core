@@ -1,5 +1,5 @@
 {% macro are_grants_copied_over_when_replaced() %}
-    {{ adapter.dispatch('are_grants_copied_over_when_replaced', 'dbt')() }}
+    {{ return(adapter.dispatch('are_grants_copied_over_when_replaced', 'dbt')()) }}
 {% endmacro %}
 
 {% macro default__are_grants_copied_over_when_replaced() %}
@@ -13,7 +13,7 @@
         {{ return(False) }}
     {% elif full_refresh_mode %}
         {#-- The object is being REPLACED -- whether grants are copied over depends on the value of user config --#}
-        {{ return(are_grants_copied_over_when_an_object_is_replaced) }}
+        {{ return(are_grants_copied_over_when_replaced()) }}
     {% else %}
         {#-- The table is being merged/upserted/inserted -- grants will be carried over --#}
         {{ return(True) }}
@@ -71,7 +71,7 @@
                 {% set needs_granting = diff_of_two_dicts(grant_config, current_grants_dict) %}
                 {% set needs_revoking = diff_of_two_dicts(current_grants_dict, grant_config) %}
                 {% if not (needs_granting or needs_revoking) %}
-                    {{ log('All grants are in place, no revocation or granting needed.')}}
+                    {{ log('On ' ~ relation ~ ': All grants are in place, no revocation or granting needed.')}}
                 {% endif %}
             {% else %}
                 {% set needs_revoking = {} %}
