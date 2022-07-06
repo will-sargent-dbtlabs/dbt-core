@@ -544,6 +544,26 @@ class BaseAdapter(metaclass=AdapterMeta):
         )
 
     ###
+    # Abstract methods about grants
+    ###
+    @abc.abstractmethod
+    def standardize_grants_dict(self, grants_table: agate.Table) -> dict:
+        """Translate the result of `show grants` (or equivalent) to match the
+        grants which a user would configure in their project.
+
+        If relevant -- filter down to grants made BY the current user role,
+        and filter OUT any grants TO the current user/role (e.g. OWNERSHIP).
+
+        :param grants_table: An agate table containing the query result of
+            the SQL returned by get_show_grant_sql
+        :return: A standardized dictionary matching the `grants` config
+        :rtype: dict
+        """
+        raise NotImplementedException(
+            "`standardize_grants_dict` is not implemented for this " "adapter!"
+        )
+
+    ###
     # Provided methods about relations
     ###
     @available.parse_list
@@ -1069,11 +1089,6 @@ class BaseAdapter(metaclass=AdapterMeta):
         from dbt.compilation import Compiler
 
         return Compiler(self.config)
-
-    # used in apply_grants -- True is a safe default
-    @available
-    def do_i_carry_over_grants_when_an_object_is_replaced(self) -> bool:
-        return True
 
     # Methods used in adapter tests
     def update_column_sql(

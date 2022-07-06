@@ -42,7 +42,8 @@
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
 
-  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
+  {#-- because we're alter-rename-swapping, grants do not carry over --#}
+  {% do apply_grants(target_relation, grant_config, should_revoke=False) %}
   {% do persist_docs(target_relation, model) %}
 
   -- `COMMIT` happens here

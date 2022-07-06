@@ -8,7 +8,7 @@
   {%- set exists_as_table = (old_relation is not none and old_relation.is_table) -%}
   {%- set exists_as_view = (old_relation is not none and old_relation.is_view) -%}
 
-  {%- set  grant_config = config.get('grants') -%}
+  {%- set grant_config = config.get('grants') -%}
   {%- set agate_table = load_agate_table() -%}
   -- grab current tables grants config for comparision later on
 
@@ -38,7 +38,11 @@
   {% endcall %}
 
   {% set target_relation = this.incorporate(type='table') %}
-  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
+
+  {#-- If the relation already exists, we need to check its grants for revocation --#}
+  {#-- Unless it doesn't already exist, or we're fully replacing it --#}
+  {% do apply_grants(target_relation, grant_config, should_revoke=(exists_as_table and not full_refresh_mode)) %}
+
   {% do persist_docs(target_relation, model) %}
 
   {% if full_refresh_mode or not exists_as_table %}

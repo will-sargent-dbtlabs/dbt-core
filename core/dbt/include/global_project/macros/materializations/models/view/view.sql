@@ -49,6 +49,7 @@
   {% endif %}
   {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
+  {#-- because we're alter-rename-swapping, grants do not carry over --#}
   {% do apply_grants(target_relation, grant_config, should_revoke=False) %}
 
   {% do persist_docs(target_relation, model) %}

@@ -6,7 +6,7 @@
   {%- set strategy_name = config.get('strategy') -%}
   {%- set unique_key = config.get('unique_key') %}
   -- grab current tables grants config for comparision later on
-  {%- set  grant_config = config.get('grants') -%}
+  {%- set grant_config = config.get('grants') -%}
 
   {% set target_relation_exists, target_relation = get_or_create_relation(
           database=model.database,
@@ -75,7 +75,8 @@
       {{ final_sql }}
   {% endcall %}
 
-  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
+  {#-- If the relation already exists, we need to check its grants for revocation --#}
+  {% do apply_grants(target_relation, grant_config, should_revoke=target_relation_exists) %}
   {% do persist_docs(target_relation, model) %}
 
   {% if not target_relation_exists %}

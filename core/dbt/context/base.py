@@ -668,9 +668,13 @@ class BaseContext(metaclass=ContextMeta):
         """
 
         dict_diff = {}
+        dict_a = {k.lower(): v for k, v in dict_a.items()}
+        dict_b = {k.lower(): v for k, v in dict_b.items()}
         for k in dict_a:
             if k in dict_b:
-                diff = list(set(dict_a[k]) - set(dict_b[k]))
+                a_lowered = map(lambda x: x.lower(), dict_a[k])
+                b_lowered = map(lambda x: x.lower(), dict_b[k])
+                diff = list(set(a_lowered) - set(b_lowered))
                 if diff:
                     dict_diff.update({k: diff})
             else:

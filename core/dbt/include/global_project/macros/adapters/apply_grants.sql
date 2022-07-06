@@ -1,46 +1,40 @@
 {% macro get_show_grant_sql(relation) %}
-{{ return(adapter.dispatch("get_show_grant_sql", "dbt")(relation)) }}
+    {{ return(adapter.dispatch("get_show_grant_sql", "dbt")(relation)) }}
 {% endmacro %}
 
 {% macro default__get_show_grant_sql(relation) %}
-show grants on {{ relation.type }} {{ relation }}
+    show grants on {{ relation.type }} {{ relation }}
 {% endmacro %}
 
 {% macro get_grant_sql(relation, grant_config) %}
-{{ return(adapter.dispatch('get_grant_sql', 'dbt')(relation, grant_config)) }}
+    {{ return(adapter.dispatch('get_grant_sql', 'dbt')(relation, grant_config)) }}
 {% endmacro %}
 
-{% macro default__get_grant_sql(relation, grant_config) %}
+{%- macro default__get_grant_sql(relation, grant_config) -%}
     {%- for privilege in grant_config.keys() -%}
-        {% set grantees = grant_config[privilege] %}
-        {% if grantees %}
-            {%- for grantee in grantees -%}
+        {%- set grantees = grant_config[privilege] -%}
+        {%- if grantees -%}
+            {%- for grantee in grantees %}
                 grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ grantee}};
-            {%- endfor -%}
+            {% endfor -%}
         {%- endif -%}
     {%- endfor -%}
-{%- endmacro %}
+{%- endmacro -%}
 
 {% macro get_revoke_sql(relation, grant_config) %}
-{{ return(adapter.dispatch("get_revoke_sql", "dbt")(relation, grant_config)) }}
+    {{ return(adapter.dispatch("get_revoke_sql", "dbt")(relation, grant_config)) }}
 {% endmacro %}
 
-{% macro default__get_revoke_sql(relation, grant_config) %}
+{%- macro default__get_revoke_sql(relation, grant_config) -%}
     {%- for privilege in grant_config.keys() -%}
-        {% set grantees = [] %}
-        {% set all_grantees = grant_config[privilege] %}
-        {%- for grantee in all_grantees -%}
-            {%- if grantee != target.user -%}
-                {% do grantees.append(grantee) %}
-            {%- endif -%}
-        {%- endfor -%}
+        {%- set grantees = grant_config[privilege] -%}
         {%- if grantees -%}
-                {%- for grantee in grantees -%}
-                    revoke {{ privilege }} on {{ relation.type }} {{ relation }} from {{ grantee }};
-                {%- endfor -%}
+            {%- for grantee in grantees %}
+                revoke {{ privilege }} on {{ relation.type }} {{ relation }} from {{ grantee }};
+            {% endfor -%}
         {%- endif -%}
     {%- endfor -%}
-{%- endmacro %}
+{%- endmacro -%}
 
 {% macro apply_grants(relation, grant_config, should_revoke) %}
 {{ return(adapter.dispatch("apply_grants", "dbt")(relation, grant_config, should_revoke)) }}
