@@ -49,8 +49,8 @@
   {% endif %}
   {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
-  {#-- because we're alter-rename-swapping, grants do not carry over --#}
-  {% do apply_grants(target_relation, grant_config, should_revoke=False) %}
+  {% set should_revoke = do_we_need_to_show_and_revoke_grants(existing_relation, full_refresh_mode=True) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
 
   {% do persist_docs(target_relation, model) %}
 

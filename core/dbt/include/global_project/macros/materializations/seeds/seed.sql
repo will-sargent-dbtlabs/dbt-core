@@ -39,9 +39,8 @@
 
   {% set target_relation = this.incorporate(type='table') %}
 
-  {#-- If the relation already exists, we need to check its grants for revocation --#}
-  {#-- Unless it doesn't already exist, or we're fully replacing it --#}
-  {% do apply_grants(target_relation, grant_config, should_revoke=(exists_as_table and not full_refresh_mode)) %}
+  {% set should_revoke = do_we_need_to_show_and_revoke_grants(old_relation, full_refresh_mode) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
 
   {% do persist_docs(target_relation, model) %}
 

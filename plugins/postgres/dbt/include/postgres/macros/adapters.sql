@@ -223,3 +223,7 @@
         {%- endif -%}
     {%- endfor -%}
 {%- endmacro -%}
+
+{% macro postgres__are_grants_copied_over_when_replaced() %}
+    {{ return(False) }}
+{% endmacro %}

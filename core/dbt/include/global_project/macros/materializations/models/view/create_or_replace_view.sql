@@ -9,7 +9,7 @@
        `create or replace view`, the materialization becomes atomic in nature.
 #} */
 
-{% macro create_or_replace_view(are_grants_copied_over=True) %}
+{% macro create_or_replace_view() %}
   {%- set identifier = model['alias'] -%}
 
   {%- set old_relation = adapter.get_relation(database=database, schema=schema, identifier=identifier) -%}
@@ -35,9 +35,8 @@
     {{ get_create_view_as_sql(target_relation, sql) }}
   {%- endcall %}
 
-  {#-- If grants are copied over, we need to check to see if any need to be revoked --#}
-  {#-- Otherwise, they won't, so no need to revoke --#}
-  {% do apply_grants(target_relation, grant_config, should_revoke=are_grants_copied_over) %}
+  {% set should_revoke = do_we_need_to_show_and_revoke_grants(existing_relation, full_refresh_mode=True) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
 
   {{ run_hooks(post_hooks) }}
 

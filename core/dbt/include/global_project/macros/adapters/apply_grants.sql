@@ -1,3 +1,26 @@
+{% macro are_grants_copied_over_when_replaced() %}
+    {{ adapter.dispatch('are_grants_copied_over_when_replaced', 'dbt')() }}
+{% endmacro %}
+
+{% macro default__are_grants_copied_over_when_replaced() %}
+    {{ return(True) }}
+{% endmacro %}
+
+{% macro do_we_need_to_show_and_revoke_grants(existing_relation, full_refresh_mode=True) %}
+
+    {% if not existing_relation %}
+        {#-- The table doesn't already exist, so no grants to copy over --#}
+        {{ return(False) }}
+    {% elif full_refresh_mode %}
+        {#-- The object is being REPLACED -- whether grants are copied over depends on the value of user config --#}
+        {{ return(are_grants_copied_over_when_an_object_is_replaced) }}
+    {% else %}
+        {#-- The table is being merged/upserted/inserted -- grants will be carried over --#}
+        {{ return(True) }}
+    {% endif %}
+
+{% endmacro %}
+
 {% macro get_show_grant_sql(relation) %}
     {{ return(adapter.dispatch("get_show_grant_sql", "dbt")(relation)) }}
 {% endmacro %}

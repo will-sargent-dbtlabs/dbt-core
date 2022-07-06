@@ -61,10 +61,8 @@
       {% do to_drop.append(backup_relation) %}
   {% endif %}
 
-  {#-- if we're fully replacing the table via alter-rename-swap, grants will not carry over: should_revoke=False --#}
-  {#-- if we're upserting an existing table, we need to check for any grants that need to be revoked: should_revoke=True --#}
-  {% set is_replaced = (full_refresh_mode or existing_relation is none) %}
-  {% do apply_grants(target_relation, grant_config, should_revoke=(not is_replaced)) %}
+  {% set should_revoke = do_we_need_to_show_and_revoke_grants(existing_relation, full_refresh_mode) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
 
   {% do persist_docs(target_relation, model) %}
 
