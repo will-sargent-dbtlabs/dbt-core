@@ -91,7 +91,7 @@ class PostgresAdapter(SQLAdapter):
         grants_dict = {}
         for row in grants_table:
             grantee = row["grantee"]
-            privilege = row["privilege"]
+            privilege = row["privilege_type"]
             if privilege in grants_dict.keys():
                 grants_dict[privilege].append(grantee)
             else:

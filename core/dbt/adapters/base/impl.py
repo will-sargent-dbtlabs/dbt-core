@@ -536,6 +536,13 @@ class BaseAdapter(metaclass=AdapterMeta):
             "`list_relations_without_caching` is not implemented for this " "adapter!"
         )
 
+    @abc.abstractclassmethod
+    def standardize_grants_dict(cls, grants_table: agate.Table) -> dict:
+        """Return standardized grants received from database, to match format of grants_config."""
+        raise NotImplementedException(
+            "`standardize_grants_dict` is not implemented for this adapter!"
+        )
+
     ###
     # Provided methods about relations
     ###

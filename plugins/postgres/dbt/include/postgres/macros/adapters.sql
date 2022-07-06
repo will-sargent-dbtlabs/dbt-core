@@ -203,12 +203,23 @@
   {% endfor %}
 {% endmacro %}
 
-{% macro postgres__get_show_grant_sql(relation) %}
+{%- macro postgres__get_show_grant_sql(relation) -%}
   select grantee, privilege_type
   from information_schema.role_table_grants
-      {{ log(grantee, info=True) }}
       where grantor = current_role
         and grantee != current_role
         and table_schema = '{{ relation.schema }}'
         and table_name = '{{ relation.identifier }}'
-{% endmacro %}
+{%- endmacro -%}
+
+
+{%- macro postgres__get_grant_sql(relation, grant_config) -%}
+    {%- for privilege in grant_config.keys() -%}
+        {%- set grantees = grant_config[privilege] -%}
+        {%- if grantees -%}
+            {%- for grantee in grantees %}
+                grant {{ privilege }} on table {{ relation }} to {{ grantee}};
+            {% endfor -%}
+        {%- endif -%}
+    {%- endfor -%}
+{%- endmacro -%}
