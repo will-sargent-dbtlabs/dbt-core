@@ -7,7 +7,10 @@ from dbt.tests.util import (
     relation_from_name,
     rm_file,
     write_file,
+    get_connection,
 )
+
+from dbt.context.base import BaseContext  # diff_of_two_dicts only
 
 TEST_USER_ENV_VARS = ["DBT_TEST_USER_1", "DBT_TEST_USER_2", "DBT_TEST_USER_3"]
 
@@ -33,6 +36,7 @@ models:
         select: ["dbt_test_user_2"]
 """
 
+
 class TestModelGrants:
     @pytest.fixture(scope="class")
     def models(self):
@@ -52,6 +56,16 @@ class TestModelGrants:
             pytest.skip(f"Test requires env vars with test users. Missing {', '.join(missing)}.")
         return test_users
 
+    def get_grants_on_relation(self, project, relation_name):
+        relation = relation_from_name(project.adapter, relation_name)
+        adapter = project.adapter
+        with get_connection(adapter):
+            kwargs = {"relation": relation}
+            show_grant_sql = adapter.execute_macro("get_show_grant_sql", kwargs=kwargs)
+            _, grant_table = adapter.execute(show_grant_sql, fetch=True)
+            actual_grants = adapter.standardize_grants_dict(grant_table)
+        return actual_grants
+
     def test_basic(self, project, get_test_users, logs_dir):
         # Tests a project with a single model, view materialization
         results = run_dbt(["run"])
@@ -63,10 +77,19 @@ class TestModelGrants:
         assert model.config.grants == expected
         assert model.config.materialized == "view"
 
+        # validate grant statements in logs
         log_contents = read_file(logs_dir, "dbt.log")
         my_model_relation = relation_from_name(project.adapter, "my_model")
         grant_log_line = f"grant select on table {my_model_relation} to dbt_test_user_1;"
         assert grant_log_line in log_contents
+
+        # validate actual grants in database
+        actual_grants = self.get_grants_on_relation(project, "my_model")
+        # actual_grants: {'SELECT': ['dbt_test_user_1']}
+        # need a case-insensitive comparison
+        # so just a simple "assert expected == actual_grants" won't work
+        diff = BaseContext.diff_of_two_dicts(expected, actual_grants)
+        assert diff == {}
 
         # Switch to a different user, still view materialization
         rm_file(logs_dir, "dbt.log")
@@ -79,4 +102,7 @@ class TestModelGrants:
         assert grant_log_line in log_contents
         # Note: We are not revoking grants here, so there is no revoke in the log
 
-
+        expected = {"select": ["dbt_test_user_2"]}
+        actual_grants = self.get_grants_on_relation(project, "my_model")
+        diff = BaseContext.diff_of_two_dicts(expected, actual_grants)
+        assert diff == {}
