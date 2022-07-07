@@ -14,7 +14,7 @@ from dbt import flags
 from dbt.version import _get_adapter_plugin_names
 from dbt.adapters.factory import load_plugin, get_include_paths
 
-from dbt.contracts.project import Name as ProjectName
+from dbt.contracts.util import Identifier as ProjectName
 
 from dbt.events.functions import fire_event
 from dbt.events.types import (
@@ -299,6 +299,10 @@ class InitTask(BaseTask):
 
         # When dbt init is run outside of an existing project,
         # create a new project and set up the user's profile.
+        available_adapters = list(_get_adapter_plugin_names())
+        if not len(available_adapters):
+            print("No adapters available. Go to https://docs.getdbt.com/docs/available-adapters")
+            exit(1)
         project_name = self.get_valid_project_name()
         project_path = Path(project_name)
         if project_path.exists():
