@@ -38,7 +38,7 @@
         {%- set grantees = grant_config[privilege] -%}
         {%- if grantees -%}
             {%- for grantee in grantees -%}
-                grant {{ privilege }} on {{ relation.type }} {{ relation }} to {{ grantee}};
+                grant {{ privilege }} on {{ relation }} to {{ grantee}};
             {%- endfor -%}
         {%- endif -%}
     {%- endfor -%}
