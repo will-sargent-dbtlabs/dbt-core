@@ -237,7 +237,7 @@ REQUIRED_MACRO_KEYS = REQUIRED_QUERY_HEADER_KEYS | {
     "adapter_macro",
     "selected_resources",
 }
-REQUIRED_MODEL_KEYS = REQUIRED_MACRO_KEYS | {"this"}
+REQUIRED_MODEL_KEYS = REQUIRED_MACRO_KEYS | {"this", "compiled_code",}
 MAYBE_KEYS = frozenset({"debug"})
 
 
