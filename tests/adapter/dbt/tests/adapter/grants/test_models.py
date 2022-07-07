@@ -24,7 +24,7 @@ models:
   - name: my_model
     config:
       grants:
-        select: ["dbt_test_user_1"]
+        select: ["{{ env_var('DBT_TEST_USER_1') }}"]
 """
 
 user2_model_schema_yml = """
@@ -33,7 +33,7 @@ models:
   - name: my_model
     config:
       grants:
-        select: ["dbt_test_user_2"]
+        select: ["{{ env_var('DBT_TEST_USER_2') }}"]
 """
 
 
@@ -73,14 +73,14 @@ class TestModelGrants:
         manifest = get_manifest(project.project_root)
         model_id = "model.test.my_model"
         model = manifest.nodes[model_id]
-        expected = {"select": ["dbt_test_user_1"]}
+        expected = {"select": [get_test_users[0]]}
         assert model.config.grants == expected
         assert model.config.materialized == "view"
 
         # validate grant statements in logs
         log_contents = read_file(logs_dir, "dbt.log")
         my_model_relation = relation_from_name(project.adapter, "my_model")
-        grant_log_line = f"grant select on table {my_model_relation} to dbt_test_user_1;"
+        grant_log_line = f"grant select on {my_model_relation} to {get_test_users[0]};"
         assert grant_log_line in log_contents
 
         # validate actual grants in database
@@ -98,11 +98,11 @@ class TestModelGrants:
         assert len(results) == 1
         log_contents = read_file(logs_dir, "dbt.log")
         print(log_contents)
-        grant_log_line = f"grant select on table {my_model_relation} to dbt_test_user_2;"
+        grant_log_line = f"grant select on {my_model_relation} to {get_test_users[1]};"
         assert grant_log_line in log_contents
         # Note: We are not revoking grants here, so there is no revoke in the log
 
-        expected = {"select": ["dbt_test_user_2"]}
+        expected = {"select": [get_test_users[1]]}
         actual_grants = self.get_grants_on_relation(project, "my_model")
         diff = BaseContext.diff_of_two_dicts(expected, actual_grants)
         assert diff == {}
