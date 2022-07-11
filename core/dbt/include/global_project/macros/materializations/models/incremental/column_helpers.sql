@@ -51,8 +51,11 @@
 
 {% endmacro %}
 
-
 {% macro get_merge_update_columns(merge_update_columns, merge_exclude_columns, dest_columns) %}
+  {{ return(adapter.dispatch('get_merge_update_columns', 'dbt')(merge_update_columns, merge_exclude_columns, dest_columns)) }}
+{% endmacro %}
+
+{% macro default__get_merge_update_columns(merge_update_columns, merge_exclude_columns, dest_columns) %}
   {%- set default_cols = dest_columns | map(attribute="quoted") | list -%}
 
   {%- if merge_update_columns and merge_exclude_columns -%}
