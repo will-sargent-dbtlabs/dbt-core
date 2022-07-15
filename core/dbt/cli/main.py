@@ -1,6 +1,7 @@
 import click
 import dbt.cli.global_params as global_params
 import inspect  # This is temporary for RAT-ing
+from pprint import pformat as pf
 import sys
 
 
@@ -36,7 +37,7 @@ def cli(ctx, **kwargs):
     """
 
     if kwargs.get("version", False):
-        click.echo(f"`version` called\n ctx.params: {ctx.params}")
+        click.echo(f"`version` called\n ctx.params: {pf(ctx.params)}")
         sys.exit()
     else:
         del ctx.params["version"]
@@ -47,7 +48,9 @@ def cli(ctx, **kwargs):
 @click.pass_context
 def build(ctx, **kwargs):
     """Run all Seeds, Models, Snapshots, and tests in DAG order"""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt clean
@@ -55,7 +58,9 @@ def build(ctx, **kwargs):
 @click.pass_context
 def clean(ctx, **kwargs):
     """Delete all folders in the clean-targets list (usually the dbt_packages and target directories.)"""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt docs
@@ -71,7 +76,7 @@ def docs(ctx, **kwargs):
 def docs_generate(ctx, **kwargs):
     """Generate the documentation website for your project"""
     click.echo(
-        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.parent.params}"
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.parent.params)}"
     )
 
 
@@ -81,7 +86,7 @@ def docs_generate(ctx, **kwargs):
 def docs_serve(ctx, **kwargs):
     """Serve the documentation website for your project"""
     click.echo(
-        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.parent.params}"
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.parent.params)}"
     )
 
 
@@ -90,7 +95,9 @@ def docs_serve(ctx, **kwargs):
 @click.pass_context
 def compile(ctx, **kwargs):
     """Generates executable SQL from source, model, test, and analysis files. Compiled SQL files are written to the target/ directory."""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt debug
@@ -98,7 +105,9 @@ def compile(ctx, **kwargs):
 @click.pass_context
 def debug(ctx, **kwargs):
     """Show some helpful information about dbt for debugging. Not to be confused with the --debug option which increases verbosity."""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt deps
@@ -106,7 +115,9 @@ def debug(ctx, **kwargs):
 @click.pass_context
 def deps(ctx, **kwargs):
     """Pull the most recent version of the dependencies listed in packages.yml"""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt init
@@ -114,7 +125,9 @@ def deps(ctx, **kwargs):
 @click.pass_context
 def init(ctx, **kwargs):
     """Initialize a new DBT project."""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt list
@@ -123,7 +136,9 @@ def init(ctx, **kwargs):
 @click.pass_context
 def list(ctx, **kwargs):
     """List the resources in your project"""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt parse
@@ -131,7 +146,9 @@ def list(ctx, **kwargs):
 @click.pass_context
 def parse(ctx, **kwargs):
     """Parses the project and provides information on performance"""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt run
@@ -139,7 +156,9 @@ def parse(ctx, **kwargs):
 @click.pass_context
 def run(ctx, **kwargs):
     """Compile SQL and execute against the current target database."""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt run operation
@@ -147,7 +166,9 @@ def run(ctx, **kwargs):
 @click.pass_context
 def run_operation(ctx, **kwargs):
     """Run the named macro with any supplied arguments."""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt seed
@@ -155,7 +176,9 @@ def run_operation(ctx, **kwargs):
 @click.pass_context
 def seed(ctx, **kwargs):
     """Load data from csv files into your data warehouse."""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt snapshot
@@ -163,7 +186,9 @@ def seed(ctx, **kwargs):
 @click.pass_context
 def snapshot(ctx, **kwargs):
     """Execute snapshots defined in your project"""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
 
 
 # dbt source
@@ -179,7 +204,7 @@ def source(ctx, **kwargs):
 def freshness(ctx, **kwargs):
     """Snapshots the current freshness of the project's sources"""
     click.echo(
-        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.parent.params}"
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.parent.params)}"
     )
 
 
@@ -188,4 +213,6 @@ def freshness(ctx, **kwargs):
 @click.pass_context
 def test(ctx, **kwargs):
     """Runs tests on data in deployed models. Run this after `dbt run`"""
-    click.echo(f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {ctx.parent.params}")
+    click.echo(
+        f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
+    )
