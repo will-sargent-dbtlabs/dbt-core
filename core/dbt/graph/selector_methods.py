@@ -356,7 +356,7 @@ class ConfigSelectorMethod(SelectorMethod):
             except AttributeError:
                 continue
             else:
-                if selector == value:
+                if selector == value or (isinstance(value, list) and selector in value):
                     yield node
 
 
