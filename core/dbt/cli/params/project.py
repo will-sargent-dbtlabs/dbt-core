@@ -1,5 +1,6 @@
 import click
 from pathlib import Path, PurePath
+from dbt.cli.params.types import YAML
 
 project_dir = click.option(
     "--project-dir",
@@ -28,4 +29,5 @@ target = click.option("-t", "--target", help="Which target to load for the given
 vars = click.option(
     "--vars",
     help="Supply variables to the project. This argument overrides variables defined in your dbt_project.yml file. This argument should be a YAML string, eg. '{my_variable: my_value}'",
+    type=YAML(),
 )

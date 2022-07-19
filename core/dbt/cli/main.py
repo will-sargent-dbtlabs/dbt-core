@@ -1,6 +1,7 @@
 import click
 from dbt.cli.params import _global as global_params
 from dbt.cli.params import project as project_params
+from dbt.cli.params import run as run_params
 import inspect  # This is temporary for RAT-ing
 from pprint import pformat as pf
 import sys
@@ -158,6 +159,22 @@ def parse(ctx, **kwargs):
 # dbt run
 @cli.command("run")
 @click.pass_context
+@global_params.fail_fast
+@global_params.version_check
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@run_params.log_path
+@run_params.target_path
+@run_params.threads
+@run_params.models
+@run_params.exclude
+@run_params.selector
+@run_params.state
+@run_params.defer
+@run_params.full_refresh
 def run(ctx, **kwargs):
     """Compile SQL and execute against the current target database."""
     click.echo(
