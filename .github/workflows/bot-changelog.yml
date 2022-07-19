@@ -43,6 +43,6 @@ jobs:
     - name: Create and commit changelog on bot PR
       if: "contains(github.event.pull_request.labels.*.name, ${{ matrix.label }})"
       id: bot_changelog
-      uses: dbt-labs/actions/bot-changelog@changie-bots
+      uses: dbt-labs/actions/.github/workflows/bot-changelog.yml@changie-bots
       with:
         GITHUB_TOKEN: ${{ secrets.FISHTOWN_BOT_PAT }}
