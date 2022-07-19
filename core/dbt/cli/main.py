@@ -1,5 +1,6 @@
 import click
-import dbt.cli.global_params as global_params
+from dbt.cli.params import _global as global_params
+from dbt.cli.params import project as project_params
 import inspect  # This is temporary for RAT-ing
 from pprint import pformat as pf
 import sys
@@ -12,7 +13,6 @@ import sys
     epilog="Specify one of these sub-commands and you can find more help from there.",
 )
 @click.pass_context
-@global_params.profiles_dir
 @global_params.version
 @global_params.cache_selected_only
 @global_params.debug
@@ -35,7 +35,6 @@ def cli(ctx, **kwargs):
     """An ELT tool for managing your SQL transformations and data models.
     For more documentation on these commands, visit: docs.getdbt.com
     """
-
     if kwargs.get("version", False):
         click.echo(f"`version` called\n ctx.params: {pf(ctx.params)}")
         sys.exit()
@@ -56,6 +55,11 @@ def build(ctx, **kwargs):
 # dbt clean
 @cli.command("clean")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
 def clean(ctx, **kwargs):
     """Delete all folders in the clean-targets list (usually the dbt_packages and target directories.)"""
     click.echo(

@@ -1,14 +1,6 @@
 import click
-from os import path
 
-# Commonly used global options (sort alphabeticaly)
-profiles_dir = click.option(
-    "--profiles-dir",
-    help="Which directory to look in for the profiles.yml file. Default = "
-    + path.join(path.expanduser("~"), ".dbt"),
-    default=path.join(path.expanduser("~"), ".dbt"),
-)
-
+# Version is a special snowflake, list it first
 version = click.option("--version", help="Show version information", is_flag=True, default=False)
 
 # Global options that override config (sort alphabeticaly)
