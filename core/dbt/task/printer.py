@@ -99,7 +99,10 @@ def print_run_result_error(result, newline: bool = True, is_warning: bool = Fals
             )
 
         if result.message:
-            fire_event(RunResultError(msg=result.message))
+            if is_warning:
+                fire_event(RunResultWarning(msg=result.message))
+            else:
+                fire_event(RunResultError(msg=result.message))
         else:
             fire_event(RunResultErrorNoMessage(status=result.status))
 
