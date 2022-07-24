@@ -311,18 +311,22 @@ class BaseContext(metaclass=ContextMeta):
             msg = f"Env var required but not provided: '{var}'"
             raise_parsing_error(msg)
 
-    if os.environ.get("DBT_MACRO_DEBUGGING"):
+    @contextmember
+    @staticmethod
+    def debug(frame_level=3):
 
-        @contextmember
-        @staticmethod
-        def debug():
-            """Enter a debugger at this line in the compiled jinja code."""
-            import sys
-            import ipdb  # type: ignore
+        """Enter a debugger at this line in the compiled jinja code."""
+        import sys
+        import ipdb  # type: ignore
 
-            frame = sys._getframe(3)
-            ipdb.set_trace(frame)
-            return ""
+        frame = sys._getframe(frame_level)
+        ipdb.set_trace(frame)
+        return ""
+
+    @contextmember
+    @staticmethod
+    def breakpoint():
+        BaseContext.debug(frame_level=4)
 
     @contextmember("return")
     @staticmethod
