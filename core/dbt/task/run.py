@@ -433,6 +433,10 @@ class RunTask(CompileTask):
             other=deferred_manifest,
             selected=selected_uids,
         )
+        # (Option B)
+        # Rebuild the flat_graph, which powers the 'graph' context variable,
+        # now that we've deferred some nodes
+        self.manifest.build_flat_graph()
         # TODO: is it wrong to write the manifest here? I think it's right...
         self.write_manifest()
 
