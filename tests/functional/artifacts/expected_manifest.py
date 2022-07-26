@@ -218,7 +218,7 @@ def expected_seeded_manifest(project, model_database=None, quote_model=False):
     model_raw_sql = read_file_replace_returns(model_sql_path).rstrip("\r\n")
 
     return {
-        "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v6.json",
+        "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v7.json",
         "dbt_version": dbt.version.__version__,
         "nodes": {
             "model.test.model": {
@@ -833,7 +833,7 @@ def expected_references_manifest(project):
     alternate_schema = project.test_schema + "_test"
 
     return {
-        "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v6.json",
+        "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v7.json",
         "dbt_version": dbt.version.__version__,
         "nodes": {
             "model.test.ephemeral_copy": {
