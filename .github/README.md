@@ -112,7 +112,7 @@ Some triggers of note that we use:
 
   ```yaml
   job1:
-    - name: [DEBUG] Print Variables
+    - name: "[DEBUG] Print Variables"
       run: |
         echo "all variables defined as inputs"
         echo The last commit sha in the release: ${{ inputs.sha }}
@@ -132,7 +132,7 @@ Some triggers of note that we use:
 
   job2:
     needs: [job1]
-      - name: '[DEBUG] Print Variables'
+      - name: "[DEBUG] Print Variables"
       run: |
         echo "all variables defined in job1 > Set Variables > outputs"
         echo "important_path: ${{ needs.job1.outputs.important_path }}"
