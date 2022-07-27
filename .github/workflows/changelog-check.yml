@@ -33,10 +33,9 @@ permissions:
 
 jobs:
   changelog:
-    if: "!contains(github.event.pull_request.labels.*.name, 'Skip Changelog')"
     runs-on: ubuntu-latest
 
     steps:
       - name: Check Changelog Exists
         id: check-changelog
-        uses: dbt-labs/actions/check-changelog@er/changelog-check
+        uses: dbt-labs/actions/.gtihub/workflows/changelog-check.yml@er/changelog-check
