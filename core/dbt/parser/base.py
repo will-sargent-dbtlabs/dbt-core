@@ -17,7 +17,7 @@ from dbt.config import Project, RuntimeConfig
 from dbt.context.context_config import ContextConfig
 from dbt.contracts.graph.manifest import Manifest
 from dbt.contracts.graph.parsed import HasUniqueID, ManifestNodes
-from dbt.contracts.graph.unparsed import UnparsedNode
+from dbt.contracts.graph.unparsed import UnparsedNode, Docs
 from dbt.exceptions import ParsingException, validator_error_message, InternalException
 from dbt import hooks
 from dbt.node_types import NodeType
@@ -290,7 +290,7 @@ class ConfiguredParser(
         # If we have docs in the config, copy to node level, for backwards
         # compatibility with earlier node-only config.
         if "docs" in config_dict and config_dict["docs"]:
-            parsed_node.docs = config_dict["docs"]
+            parsed_node.docs = Docs(config_dict["docs"])
 
         # unrendered_config is used to compare the original database/schema/alias
         # values and to handle 'same_config' and 'same_contents' calls
