@@ -37,4 +37,4 @@ jobs:
     steps:
       - name: Check Changelog Exists
         id: check-changelog
-        uses: dbt-labs/actions/check-changelog@changelog-check
+        uses: dbt-labs/actions/check-changelog@er/changelog-check
