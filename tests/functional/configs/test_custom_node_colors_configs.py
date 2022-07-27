@@ -53,7 +53,7 @@ class TestCustomNodeColorConfigs(BaseConfigProject):
 
 # python3 -m pytest tests/functional/configs/test_custom_node_colors_configs.py
 # TODO: node_color at model level creates a docs object underneath config within the node manifest, and a root level docs object in the node manifest as well
-class TestGrantConfigs:
+class TestNodeColorConfigs:
     @pytest.fixture(scope="class")
     def models(self):
         return {"my_model.sql": models__custom_node_colors__model_sql}
@@ -74,7 +74,7 @@ class TestGrantConfigs:
         model_node_config = manifest.nodes[model_id]
         node_color_actual = model_node_config.config.docs["node_color"]
 
-        node_color_expected = "#c0c0c0"
+        node_color_expected = "#000000"
 
         # assert the node_color is as expected
         assert node_color_actual == node_color_expected
