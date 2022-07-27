@@ -52,7 +52,6 @@ models:
 
 
 # python3 -m pytest tests/functional/configs/test_custom_node_colors_configs.py
-# TODO: node_color at model level creates a docs object underneath config within the node manifest, and a root level docs object in the node manifest as well
 class TestNodeColorConfigs:
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -74,11 +73,14 @@ class TestNodeColorConfigs:
 
         model_id = "model.test.my_model"
         model_node_config = manifest.nodes[model_id].config
-        node_color_actual = model_node_config._extra["node_color"]
+        node_color_model_actual = model_node_config._extra["node_color"]
+        node_color_root_actual = model_node_config.docs["node_color"]
 
-        node_color_expected = "#c0c0c0"
+        node_color_model_expected = "#c0c0c0"
+        node_color_root_expected = "#000000"
 
-        assert node_color_actual == node_color_expected
+        assert node_color_model_actual == node_color_model_expected
+        assert node_color_root_actual == node_color_root_expected
 
 
 # TODO: node_color in schema.yml overrides dbt_project.yml creates a docs object underneath config within the node manifest, and a root level docs object in the node manifest as well
