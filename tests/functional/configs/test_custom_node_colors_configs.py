@@ -70,9 +70,7 @@ class TestNodeColorConfigs:
             "my_model.sql",
         )
         run_dbt(["compile"])
-
         manifest = get_manifest(project.project_root)
-        print(f"HELLO {manifest.nodes}")
 
         model_id = "model.test.my_model"
         model_node_config = manifest.nodes[model_id].config
