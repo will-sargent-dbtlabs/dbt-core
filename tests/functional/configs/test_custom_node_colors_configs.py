@@ -16,14 +16,25 @@ select 1 as id
 
 """
 
+models__no_node_colors__model_sql = """
+{{
+    config(
+        materialized='view'
+    )
+}}
+
+select 1 as id
+
+"""
+
 models__custom_node_colors__schema_yml = """
 version: 2
 
 models:
-  - name: model
+  - name: my_model
     description: "This is a model description"
     config:
-        node_color: '#c0c0c0'
+        node_color: 'pink'
 """
 
 dbt_project_yml = """
@@ -57,10 +68,6 @@ class TestNodeColorConfigs:
     def project_config_update(self):
         return dbt_project_yml
 
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {"my_model.sql": models__custom_node_colors__model_sql}
-
     def test_model_node_color_config(self, project):
         write_file(
             models__custom_node_colors__model_sql,
@@ -77,6 +84,33 @@ class TestNodeColorConfigs:
         node_color_root_actual = model_node_config.docs.node_color
 
         node_color_model_expected = "#c0c0c0"
+        node_color_root_expected = "#000000"
+
+        assert node_color_model_actual == node_color_model_expected
+        assert node_color_root_actual == node_color_root_expected
+
+    def test_schema_node_color_config(self, project):
+        write_file(
+            models__no_node_colors__model_sql,
+            project.project_root,
+            "models",
+            "my_model.sql",
+        )
+        write_file(
+            models__custom_node_colors__schema_yml,
+            project.project_root,
+            "models",
+            "schema.yml",
+        )
+        run_dbt(["compile"])
+        manifest = get_manifest(project.project_root)
+
+        model_id = "model.test.my_model"
+        model_node_config = manifest.nodes[model_id].config
+        node_color_model_actual = model_node_config._extra["node_color"]
+        node_color_root_actual = model_node_config.docs.node_color
+
+        node_color_model_expected = "pink"
         node_color_root_expected = "#000000"
 
         assert node_color_model_actual == node_color_model_expected
