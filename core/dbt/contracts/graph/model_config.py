@@ -462,7 +462,7 @@ class NodeConfig(NodeAndTestConfig):
         default_factory=dict, metadata=MergeBehavior.DictKeyAppend.meta()
     )
     docs: Docs = field(
-        default_factory=lambda: Docs(show=True),
+        default_factory=Docs,
         metadata=MergeBehavior.Update.meta(),
     )
 
