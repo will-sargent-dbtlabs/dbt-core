@@ -127,12 +127,6 @@ class TestNodeColorConfigs:
             model_dir,
             "my_subfolder_model.sql",
         )
-        write_file(
-            models__custom_node_colors__schema_yml,
-            project.project_root,
-            "models",
-            "schema.yml",
-        )
         run_dbt(["compile"])
         manifest = get_manifest(project.project_root)
         print(f"manifest: {manifest.nodes}")
