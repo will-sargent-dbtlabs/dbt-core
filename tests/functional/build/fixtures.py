@@ -1,3 +1,5 @@
+import pytest
+
 snapshots__snap_1_sql = """
 {% snapshot snap_1 %}
 
@@ -350,3 +352,79 @@ models_interdependent__model_a_sql = """
 select 1 as id
 
 """
+
+
+@pytest.fixture(scope="class")
+def snapshots():
+    return {
+        "snap_1.sql": snapshots__snap_1_sql,
+        "snap_0.sql": snapshots__snap_0_sql,
+        "snap_99.sql": snapshots__snap_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def tests_failing():
+    return {
+        "model_2.sql": tests_failing__model_2_sql,
+        "test.yml": tests_failing__test_yml,
+        "model_0.sql": tests_failing__model_0_sql,
+        "model_1.sql": tests_failing__model_1_sql,
+        "model_99.sql": tests_failing__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models():
+    return {
+        "model_2.sql": models__model_2_sql,
+        "test.yml": models__test_yml,
+        "model_0.sql": models__model_0_sql,
+        "model_1.sql": models__model_1_sql,
+        "model_99.sql": models__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models_failing():
+    return {
+        "model_3.sql": models_failing__model_3_sql,
+        "model_2.sql": models_failing__model_2_sql,
+        "test.yml": models_failing__test_yml,
+        "model_0.sql": models_failing__model_0_sql,
+        "model_1.sql": models_failing__model_1_sql,
+        "model_99.sql": models_failing__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def seeds():
+    return {"countries.csv": seeds__countries_csv}
+
+
+@pytest.fixture(scope="class")
+def models_circular_relationship():
+    return {
+        "test.yml": models_circular_relationship__test_yml,
+        "model_0.sql": models_circular_relationship__model_0_sql,
+        "model_1.sql": models_circular_relationship__model_1_sql,
+        "model_99.sql": models_circular_relationship__model_99_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models_simple_blocking():
+    return {
+        "schema.yml": models_simple_blocking__schema_yml,
+        "model_b.sql": models_simple_blocking__model_b_sql,
+        "model_a.sql": models_simple_blocking__model_a_sql,
+    }
+
+
+@pytest.fixture(scope="class")
+def models_interdependent():
+    return {
+        "schema.yml": models_interdependent__schema_yml,
+        "model_c.sql": models_interdependent__model_c_sql,
+        "model_a.sql": models_interdependent__model_a_sql,
+    }
