@@ -383,10 +383,11 @@ class FailedToConnectException(DatabaseException):
 
 class CommandError(RuntimeException):
     def __init__(self, cwd, cmd, message="Error running command"):
+        cmd_scrubbed = list(scrub_secrets(cmd_txt, env_secrets()) for cmd_txt in cmd)
         super().__init__(message)
         self.cwd = cwd
-        self.cmd = cmd
-        self.args = (cwd, cmd, message)
+        self.cmd = cmd_scrubbed
+        self.args = (cwd, cmd_scrubbed, message)
 
     def __str__(self):
         if len(self.cmd) == 0:
@@ -411,9 +412,9 @@ class CommandResultError(CommandError):
     def __init__(self, cwd, cmd, returncode, stdout, stderr, message="Got a non-zero returncode"):
         super().__init__(cwd, cmd, message)
         self.returncode = returncode
-        self.stdout = stdout
-        self.stderr = stderr
-        self.args = (cwd, cmd, returncode, stdout, stderr, message)
+        self.stdout = scrub_secrets(stdout.decode("utf-8"), env_secrets())
+        self.stderr = scrub_secrets(stderr.decode("utf-8"), env_secrets())
+        self.args = (cwd, self.cmd, returncode, self.stdout, self.stderr, message)
 
     def __str__(self):
         return "{} running: {}".format(self.msg, self.cmd)
@@ -434,6 +435,10 @@ class InvalidSelectorException(RuntimeException):
     def __init__(self, name: str):
         self.name = name
         super().__init__(name)
+
+
+class DuplicateYamlKeyException(CompilationException):
+    pass
 
 
 def raise_compiler_error(msg, node=None) -> NoReturn:
@@ -513,6 +518,12 @@ def invalid_bool_error(got_value, macro_name) -> NoReturn:
 
 def ref_invalid_args(model, args) -> NoReturn:
     raise_compiler_error("ref() takes at most two arguments ({} given)".format(len(args)), model)
+
+
+def metric_invalid_args(model, args) -> NoReturn:
+    raise_compiler_error(
+        "metric() takes at most two arguments ({} given)".format(len(args)), model
+    )
 
 
 def ref_bad_context(model, args) -> NoReturn:
@@ -645,6 +656,23 @@ def source_target_not_found(
     raise_compiler_error(msg, model)
 
 
+def get_metric_not_found_msg(
+    model,
+    target_name: str,
+    target_package: Optional[str],
+) -> str:
+    reason = "was not found"
+    return _get_target_failure_msg(
+        model, target_name, target_package, include_path=True, reason=reason, target_kind="metric"
+    )
+
+
+def metric_target_not_found(metric, target_name: str, target_package: Optional[str]) -> NoReturn:
+    msg = get_metric_not_found_msg(metric, target_name, target_package)
+
+    raise_compiler_error(msg, metric)
+
+
 def dependency_not_found(model, target_model_name):
     raise_compiler_error(
         "'{}' depends on '{}' which is not in the graph!".format(
@@ -704,7 +732,6 @@ def missing_materialization(model, adapter_type):
 
 def bad_package_spec(repo, spec, error_message):
     msg = "Error checking out spec='{}' for repo {}\n{}".format(spec, repo, error_message)
-
     raise InternalException(scrub_secrets(msg, env_secrets()))
 
 
@@ -903,7 +930,8 @@ def raise_ambiguous_alias(node_1, node_2, duped_name=None):
 def raise_ambiguous_catalog_match(unique_id, match_1, match_2):
     def get_match_string(match):
         return "{}.{}".format(
-            match.get("metadata", {}).get("schema"), match.get("metadata", {}).get("name")
+            match.get("metadata", {}).get("schema"),
+            match.get("metadata", {}).get("name"),
         )
 
     raise_compiler_error(

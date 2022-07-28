@@ -34,6 +34,7 @@ def basic_uncompiled_model():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         deferred=False,
         description='',
@@ -65,6 +66,7 @@ def basic_compiled_model():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         deferred=True,
         description='',
@@ -120,6 +122,7 @@ def basic_uncompiled_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'deferred': False,
@@ -138,6 +141,7 @@ def basic_uncompiled_dict():
             'tags': [],
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'docs': {'show': True},
         'columns': {},
@@ -146,7 +150,8 @@ def basic_uncompiled_dict():
         'extra_ctes': [],
         'extra_ctes_injected': False,
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
-        'unrendered_config': {}
+        'unrendered_config': {},
+        'config_call_dict': {},
     }
 
 
@@ -165,6 +170,7 @@ def basic_compiled_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'deferred': True,
@@ -183,6 +189,7 @@ def basic_compiled_dict():
             'tags': [],
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'docs': {'show': True},
         'columns': {},
@@ -192,7 +199,8 @@ def basic_compiled_dict():
         'extra_ctes_injected': True,
         'compiled_sql': 'with whatever as (select * from other) select * from whatever',
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
-        'unrendered_config': {}
+        'unrendered_config': {},
+        'config_call_dict': {},
     }
 
 
@@ -347,6 +355,7 @@ def basic_uncompiled_schema_test_node():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         deferred=False,
         depends_on=DependsOn(),
         description='',
@@ -379,6 +388,7 @@ def basic_compiled_schema_test_node():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         deferred=False,
         description='',
@@ -416,6 +426,7 @@ def basic_uncompiled_schema_test_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'description': '',
@@ -445,7 +456,8 @@ def basic_uncompiled_schema_test_dict():
             'kwargs': {},
         },
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
-        'unrendered_config': {}
+        'unrendered_config': {},
+        'config_call_dict': {},
     }
 
 
@@ -464,6 +476,7 @@ def basic_compiled_schema_test_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'deferred': False,
         'database': 'test_db',
@@ -497,7 +510,8 @@ def basic_compiled_schema_test_dict():
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
         'unrendered_config': {
             'severity': 'warn',
-        }
+        },
+        'config_call_dict': {},
     }
 
 

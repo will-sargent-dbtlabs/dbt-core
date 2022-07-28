@@ -112,7 +112,8 @@ class ConfiguredParser(
             manifest=manifest, config=root_project, component="alias"
         )
 
-    @abc.abstractclassmethod
+    @classmethod
+    @abc.abstractmethod
     def get_compiled_path(cls, block: ConfiguredBlockType) -> str:
         pass
 
@@ -271,7 +272,7 @@ class ConfiguredParser(
 
         # build_config_dict takes the config_call_dict in the ContextConfig object
         # and calls calculate_node_config to combine dbt_project configs and
-        # config calls from SQL files
+        # config calls from SQL files, plus patch configs (from schema files)
         config_dict = config.build_config_dict(patch_config_dict=patch_config_dict)
 
         # Set tags on node provided in config blocks. Tags are additive, so even if

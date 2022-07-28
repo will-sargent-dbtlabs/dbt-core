@@ -72,6 +72,7 @@ def populated_node_config_dict():
         'extra': 'even more',
         'on_schema_change': 'ignore',
         'meta': {},
+        'grants': {},
     }
 
 
@@ -134,6 +135,7 @@ def base_parsed_model_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'description': '',
@@ -151,6 +153,7 @@ def base_parsed_model_dict():
             'tags': [],
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'deferred': False,
         'docs': {'show': True},
@@ -158,6 +161,7 @@ def base_parsed_model_dict():
         'meta': {},
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
         'unrendered_config': {},
+        'config_call_dict': {},
     }
 
 
@@ -175,6 +179,7 @@ def basic_parsed_model_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='',
         database='test_db',
@@ -224,6 +229,7 @@ def complex_parsed_model_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': ['model.test.bar']},
         'database': 'test_db',
         'deferred': True,
@@ -243,6 +249,7 @@ def complex_parsed_model_dict():
             'tags': [],
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'docs': {'show': True},
         'columns': {
@@ -259,6 +266,7 @@ def complex_parsed_model_dict():
             'materialized': 'ephemeral',
             'post_hook': ['insert into blah(a, b) select "1", 1'],
         },
+        'config_call_dict': {},
     }
 
 
@@ -276,6 +284,7 @@ def complex_parsed_model_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(nodes=['model.test.bar']),
         deferred=True,
         description='My parsed node',
@@ -418,6 +427,7 @@ def basic_parsed_seed_dict():
         'fqn': ['test', 'seeds', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'description': '',
@@ -435,6 +445,7 @@ def basic_parsed_seed_dict():
             'tags': [],
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'deferred': False,
         'docs': {'show': True},
@@ -442,6 +453,7 @@ def basic_parsed_seed_dict():
         'meta': {},
         'checksum': {'name': 'path', 'checksum': 'seeds/seed.csv'},
         'unrendered_config': {},
+        'config_call_dict': {},
     }
 
 
@@ -459,6 +471,7 @@ def basic_parsed_seed_object():
         fqn=['test', 'seeds', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         database='test_db',
         description='',
@@ -511,6 +524,7 @@ def complex_parsed_seed_dict():
         'fqn': ['test', 'seeds', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'description': 'a description',
@@ -529,6 +543,7 @@ def complex_parsed_seed_dict():
             'quote_columns': True,
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'deferred': False,
         'docs': {'show': True},
@@ -538,6 +553,7 @@ def complex_parsed_seed_dict():
         'unrendered_config': {
             'persist_docs': {'relation': True, 'columns': True},
         },
+        'config_call_dict': {},
     }
 
 
@@ -555,6 +571,7 @@ def complex_parsed_seed_object():
         fqn=['test', 'seeds', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         database='test_db',
         description='a description',
@@ -703,6 +720,7 @@ def patched_model_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='The foo model',
         database='test_db',
@@ -761,6 +779,7 @@ def base_parsed_hook_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'deferred': False,
@@ -779,12 +798,14 @@ def base_parsed_hook_dict():
             'tags': [],
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'docs': {'show': True},
         'columns': {},
         'meta': {},
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
         'unrendered_config': {},
+        'config_call_dict': {},
     }
 
 
@@ -802,6 +823,7 @@ def base_parsed_hook_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='',
         deferred=False,
@@ -831,6 +853,7 @@ def complex_parsed_hook_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': ['model.test.bar']},
         'deferred': False,
         'database': 'test_db',
@@ -850,6 +873,7 @@ def complex_parsed_hook_dict():
             'tags': [],
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'docs': {'show': True},
         'columns': {
@@ -866,6 +890,7 @@ def complex_parsed_hook_dict():
             'column_types': {'a': 'text'},
             'materialized': 'table',
         },
+        'config_call_dict': {},
     }
 
 
@@ -883,6 +908,7 @@ def complex_parsed_hook_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(nodes=['model.test.bar']),
         description='My parsed node',
         deferred=False,
@@ -957,6 +983,7 @@ def minimal_parsed_schema_test_dict():
             'kwargs': {},
         },
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+        'config_call_dict': {},
     }
 
 
@@ -975,6 +1002,7 @@ def basic_parsed_schema_test_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'deferred': False,
         'database': 'test_db',
@@ -1002,6 +1030,7 @@ def basic_parsed_schema_test_dict():
         },
         'checksum': {'name': 'sha256', 'checksum': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
         'unrendered_config': {},
+        'config_call_dict': {},
     }
 
 
@@ -1019,6 +1048,7 @@ def basic_parsed_schema_test_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='',
         database='test_db',
@@ -1047,6 +1077,7 @@ def complex_parsed_schema_test_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': ['model.test.bar']},
         'database': 'test_db',
         'deferred': False,
@@ -1086,6 +1117,7 @@ def complex_parsed_schema_test_dict():
             'materialized': 'table',
             'severity': 'WARN'
         },
+        'config_call_dict': {},
     }
 
 
@@ -1108,6 +1140,7 @@ def complex_parsed_schema_test_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(nodes=['model.test.bar']),
         description='My parsed node',
         database='test_db',
@@ -1183,6 +1216,7 @@ def basic_timestamp_snapshot_config_dict():
         'target_schema': 'some_snapshot_schema',
         'on_schema_change': 'ignore',
         'meta': {},
+        'grants': {},
     }
 
 
@@ -1216,6 +1250,7 @@ def complex_timestamp_snapshot_config_dict():
         'updated_at': 'last_update',
         'on_schema_change': 'ignore',
         'meta': {},
+        'grants': {},
     }
 
 
@@ -1273,6 +1308,7 @@ def basic_check_snapshot_config_dict():
         'check_cols': 'all',
         'on_schema_change': 'ignore',
         'meta': {},
+        'grants': {},
     }
 
 
@@ -1306,6 +1342,7 @@ def complex_set_snapshot_config_dict():
         'check_cols': ['a', 'b'],
         'on_schema_change': 'ignore',
         'meta': {},
+        'grants': {},
     }
 
 
@@ -1389,6 +1426,7 @@ def basic_timestamp_snapshot_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'deferred': False,
         'database': 'test_db',
@@ -1412,6 +1450,7 @@ def basic_timestamp_snapshot_dict():
             'updated_at': 'last_update',
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'docs': {'show': True},
         'columns': {},
@@ -1424,6 +1463,7 @@ def basic_timestamp_snapshot_dict():
             'target_database': 'some_snapshot_db',
             'target_schema': 'some_snapshot_schema',
         },
+        'config_call_dict': {},
     }
 
 
@@ -1441,6 +1481,7 @@ def basic_timestamp_snapshot_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='',
         database='test_db',
@@ -1488,6 +1529,7 @@ def basic_intermediate_timestamp_snapshot_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='',
         database='test_db',
@@ -1522,6 +1564,7 @@ def basic_check_snapshot_dict():
         'fqn': ['test', 'models', 'foo'],
         'refs': [],
         'sources': [],
+        'metrics': [],
         'depends_on': {'macros': [], 'nodes': []},
         'database': 'test_db',
         'deferred': False,
@@ -1545,6 +1588,7 @@ def basic_check_snapshot_dict():
             'check_cols': 'all',
             'on_schema_change': 'ignore',
             'meta': {},
+            'grants': {},
         },
         'docs': {'show': True},
         'columns': {},
@@ -1557,6 +1601,7 @@ def basic_check_snapshot_dict():
             'strategy': 'check',
             'check_cols': 'all',
         },
+        'config_call_dict': {},
     }
 
 
@@ -1574,6 +1619,7 @@ def basic_check_snapshot_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='',
         database='test_db',
@@ -1621,6 +1667,7 @@ def basic_intermediate_check_snapshot_object():
         fqn=['test', 'models', 'foo'],
         refs=[],
         sources=[],
+        metrics=[],
         depends_on=DependsOn(),
         description='',
         database='test_db',
@@ -2233,6 +2280,7 @@ def basic_parsed_metric_dict():
         'resource_type': 'metric',
         'refs': [['dim_customers']],
         'sources': [],
+        'metrics': [],
         'fqn': ['test', 'metrics', 'my_metric'],
         'unique_id': 'metric.test.my_metric',
         'package_name': 'test',
