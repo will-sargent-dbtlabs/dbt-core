@@ -37,7 +37,7 @@ env:
 
 jobs:
   changelog:
-    if: "!contains(github.event.pull_request.labels.*.name, env.skip_label)"
+    if: "!contains(github.event.pull_request.labels.*.name, 'Skip Changelog')"
 
     runs-on: ubuntu-latest
 
