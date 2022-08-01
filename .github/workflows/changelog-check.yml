@@ -51,6 +51,9 @@ jobs:
           echo "Input Comment Text:        ${{ env.changelog_comment }}"
           echo "Input Label for Skipping:  ${{ env.skip_label }}"
 
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
       - name: Determine if changelog exists
         shell: bash
         id: changelog_check
