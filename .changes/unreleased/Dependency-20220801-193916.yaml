@@ -1,8 +1,0 @@
-kind: Dependency
-body: "convert to reusable action"
-time: 2022-08-01T19:39:16.00000Z
-custom:
-  Author: emmyoop
-  Issue: 4904
-  PR: 5565
-
