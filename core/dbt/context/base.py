@@ -6,6 +6,7 @@ from dbt import flags
 from dbt import tracking
 from dbt.clients.jinja import get_rendered
 from dbt.clients.yaml_helper import yaml, safe_load, SafeLoader, Loader, Dumper  # noqa: F401
+from dbt.constants import SECRET_ENV_PREFIX, DEFAULT_ENV_PLACEHOLDER
 from dbt.contracts.graph.compiled import CompiledResource
 from dbt.exceptions import (
     CompilationException,
@@ -14,7 +15,6 @@ from dbt.exceptions import (
     raise_parsing_error,
     disallow_secret_env_var,
 )
-from dbt.logger import SECRET_ENV_PREFIX
 from dbt.events.functions import fire_event, get_invocation_id
 from dbt.events.types import MacroEventInfo, MacroEventDebug
 from dbt.version import __version__ as dbt_version
@@ -305,7 +305,12 @@ class BaseContext(metaclass=ContextMeta):
             return_value = default
 
         if return_value is not None:
-            self.env_vars[var] = return_value
+            # If the environment variable is set from a default, store a string indicating
+            # that so we can skip partial parsing.  Otherwise the file will be scheduled for
+            # reparsing. If the default changes, the file will have been updated and therefore
+            # will be scheduled for reparsing anyways.
+            self.env_vars[var] = return_value if var in os.environ else DEFAULT_ENV_PLACEHOLDER
+
             return return_value
         else:
             msg = f"Env var required but not provided: '{var}'"
@@ -474,19 +479,17 @@ class BaseContext(metaclass=ContextMeta):
 
     @contextmember
     @staticmethod
-    def try_set(value: Iterable[Any]) -> Set[Any]:
-        """The `try_set` context method can be used to convert any iterable
+    def set_strict(value: Iterable[Any]) -> Set[Any]:
+        """The `set_strict` context method can be used to convert any iterable
         to a sequence of iterable elements that are unique (a set). The
-        difference to the `set` context method is that the `try_set` method
+        difference to the `set` context method is that the `set_strict` method
         will raise an exception on a TypeError.
 
         :param value: The iterable
-        :param default: A default value to return if the `value` argument
-            is not an iterable
 
         Usage:
             {% set my_list = [1, 2, 2, 3] %}
-            {% set my_set = try_set(my_list) %}
+            {% set my_set = set_strict(my_list) %}
             {% do log(my_set) %}  {# {1, 2, 3} #}
         """
         try:
@@ -497,7 +500,7 @@ class BaseContext(metaclass=ContextMeta):
     @contextmember("zip")
     @staticmethod
     def _zip(*args: Iterable[Any], default: Any = None) -> Optional[Iterable[Any]]:
-        """The `try_zip` context method can be used to used to return
+        """The `zip` context method can be used to used to return
         an iterator of tuples, where the i-th tuple contains the i-th
         element from each of the argument iterables.
 
@@ -518,21 +521,19 @@ class BaseContext(metaclass=ContextMeta):
 
     @contextmember
     @staticmethod
-    def try_zip(*args: Iterable[Any]) -> Iterable[Any]:
-        """The `try_zip` context method can be used to used to return
+    def zip_strict(*args: Iterable[Any]) -> Iterable[Any]:
+        """The `zip_strict` context method can be used to used to return
         an iterator of tuples, where the i-th tuple contains the i-th
         element from each of the argument iterables. The difference to the
-        `zip` context method is that the `try_zip` method will raise an
+        `zip` context method is that the `zip_strict` method will raise an
         exception on a TypeError.
 
         :param *args: Any number of iterables
-        :param default: A default value to return if `*args` is not
-            iterable
 
         Usage:
             {% set my_list_a = [1, 2] %}
             {% set my_list_b = ['alice', 'bob'] %}
-            {% set my_zip = try_zip(my_list_a, my_list_b) | list %}
+            {% set my_zip = zip_strict(my_list_a, my_list_b) | list %}
             {% do log(my_set) %}  {# [(1, 'alice'), (2, 'bob')] #}
         """
         try:

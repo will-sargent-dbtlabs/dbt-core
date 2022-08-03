@@ -3,9 +3,10 @@ import dbt.events.functions as this  # don't worry I hate it too.
 from dbt.events.base_types import NoStdOut, Event, NoFile, ShowException, Cache
 from dbt.events.types import EventBufferFull, T_Event, MainReportVersion, EmptyLine
 import dbt.flags as flags
+from dbt.constants import SECRET_ENV_PREFIX
 
 # TODO this will need to move eventually
-from dbt.logger import SECRET_ENV_PREFIX, make_log_dir_if_missing, GLOBAL_LOGGER
+from dbt.logger import make_log_dir_if_missing, GLOBAL_LOGGER
 from datetime import datetime
 import json
 import io
@@ -116,7 +117,7 @@ def stop_capture_stdout_logs() -> None:
 
 
 def env_secrets() -> List[str]:
-    return [v for k, v in os.environ.items() if k.startswith(SECRET_ENV_PREFIX)]
+    return [v for k, v in os.environ.items() if k.startswith(SECRET_ENV_PREFIX) and v.strip()]
 
 
 def scrub_secrets(msg: str, secrets: List[str]) -> str:
@@ -218,7 +219,7 @@ def create_log_line(e: T_Event, file_output=False) -> Optional[str]:
         return create_info_text_log_line(e)  # console output
 
 
-# allows for resuse of this obnoxious if else tree.
+# allows for reuse of this obnoxious if else tree.
 # do not use for exceptions, it doesn't pass along exc_info, stack_info, or extra
 def send_to_logger(l: Union[Logger, logbook.Logger], level_tag: str, log_line: str):
     if not log_line:
