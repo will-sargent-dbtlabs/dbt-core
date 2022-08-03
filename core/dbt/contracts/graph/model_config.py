@@ -433,6 +433,7 @@ class NodeConfig(NodeAndTestConfig):
     # Note: if any new fields are added with MergeBehavior, also update the
     # 'mergebehavior' dictionary
     materialized: str = "view"
+    incremental_strategy: Optional[str] = None
     persist_docs: Dict[str, Any] = field(default_factory=dict)
     post_hook: List[Hook] = field(
         default_factory=list,
@@ -459,6 +460,10 @@ class NodeConfig(NodeAndTestConfig):
     on_schema_change: Optional[str] = "ignore"
     grants: Dict[str, Any] = field(
         default_factory=dict, metadata=MergeBehavior.DictKeyAppend.meta()
+    )
+    packages: List[str] = field(
+        default_factory=list,
+        metadata=MergeBehavior.Append.meta(),
     )
 
     @classmethod
