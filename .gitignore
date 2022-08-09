@@ -97,3 +97,7 @@ venv/
 
 # vscode
 .vscode/
+
+# poetry
+pyproject.toml
+poetry.lock
