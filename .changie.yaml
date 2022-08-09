@@ -34,12 +34,12 @@ custom:
   minLength: 3
 - key: Issue
   label: GitHub Issue Number
-  type: int
-  minInt: 1
+  type: string
+  minLength: 4
 - key: PR
   label: GitHub Pull Request Number
-  type: int
-  minInt: 1
+  type: string
+  minLength: 4
 
 footerFormat: |
   {{- $contributorDict := dict }}
