@@ -1,5 +1,5 @@
 from dbt.helper_types import Lazy
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassJSONMixin
 from mashumaro.config import BaseConfig as MashBaseConfig
 from mashumaro.types import SerializationStrategy
 from typing import Dict, List
@@ -44,7 +44,7 @@ class LazySerialization1(SerializationStrategy):
 # This class is the equivalent of dbtClassMixin that's used for serialization
 # in other parts of the code. That class did extra things which we didn't want
 # to use for events, so this class is a simpler version of dbtClassMixin.
-class EventSerialization(DataClassDictMixin):
+class EventSerialization(DataClassJSONMixin):
 
     # This is where we register serializtion strategies per type.
     class Config(MashBaseConfig):
