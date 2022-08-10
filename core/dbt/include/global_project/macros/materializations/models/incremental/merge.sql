@@ -1,4 +1,4 @@
-{% macro get_merge_sql(target, source, unique_key, dest_columns, predicates=none) -%}
+{% macro get_merge_sql(target, source, unique_key, dest_columns, predicates) -%}
   {{ adapter.dispatch('get_merge_sql', 'dbt')(target, source, unique_key, dest_columns, predicates) }}
 {%- endmacro %}
 
