@@ -1,8 +1,8 @@
-{% macro get_merge_sql(target, source, unique_key, dest_columns, predicates) -%}
-  {{ adapter.dispatch('get_merge_sql', 'dbt')(target, source, unique_key, dest_columns, predicates) }}
+{% macro get_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) -%}
+  {{ adapter.dispatch('get_merge_sql', 'dbt')(target, source, unique_key, dest_columns, incremental_predicates) }}
 {%- endmacro %}
 
-{% macro default__get_merge_sql(target, source, unique_key, dest_columns, predicates) -%}
+{% macro default__get_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) -%}
     {%- set predicates = [] if predicates is none else [] + predicates -%}
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
     {%- set update_columns = config.get('merge_update_columns', default = dest_columns | map(attribute="quoted") | list) -%}
@@ -48,11 +48,11 @@
 {% endmacro %}
 
 
-{% macro get_delete_insert_merge_sql(target, source, unique_key, dest_columns) -%}
-  {{ adapter.dispatch('get_delete_insert_merge_sql', 'dbt')(target, source, unique_key, dest_columns) }}
+{% macro get_delete_insert_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) -%}
+  {{ adapter.dispatch('get_delete_insert_merge_sql', 'dbt')(target, source, unique_key, dest_columns, incremental_predicates) }}
 {%- endmacro %}
 
-{% macro default__get_delete_insert_merge_sql(target, source, unique_key, dest_columns) -%}
+{% macro default__get_delete_insert_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) -%}
 
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
 
@@ -65,6 +65,11 @@
                     {{ source }}.{{ key }} = {{ target }}.{{ key }}
                     {{ "and " if not loop.last }}
                 {% endfor %}
+                {%- if incremental_predicates %}
+                    {% for condition in incremental_predicates %}
+                    and {{ target.name }}.{{ condition.target_col }} {{ condition.expression }}
+                    {% endfor %}
+                {%- endif -%}
             );
         {% else %}
             delete from {{ target }}
@@ -72,7 +77,12 @@
                 {{ unique_key }}) in (
                 select ({{ unique_key }})
                 from {{ source }}
-            );
+            )
+            {%- if incremental_predicates %}
+                {% for condition in incremental_predicates %}
+                    and {{ target }}.{{ condition.target_col }} {{ condition.expression }}
+                {% endfor %}
+            {%- endif -%};
 
         {% endif %}
     {% endif %}
