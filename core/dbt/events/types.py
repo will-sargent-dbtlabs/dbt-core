@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from dbt.adapters.reference_keys import _ReferenceKey
 from dbt import ui
-from dbt.helper_types import Lazy
 from dbt.events.base_types import (
     Event,
     NoFile,
@@ -9,7 +8,6 @@ from dbt.events.base_types import (
     InfoLevel,
     WarnLevel,
     ErrorLevel,
-    ShowException,
     NodeInfo,
     Cache,
 )
@@ -74,22 +72,22 @@ class AdapterEventBase(EventSerialization, Event):
 
 
 @dataclass
-class AdapterEventDebug(DebugLevel, AdapterEventBase, ShowException):
+class AdapterEventDebug(DebugLevel, AdapterEventBase):
     code: str = "E001"
 
 
 @dataclass
-class AdapterEventInfo(InfoLevel, AdapterEventBase, ShowException):
+class AdapterEventInfo(InfoLevel, AdapterEventBase):
     code: str = "E002"
 
 
 @dataclass
-class AdapterEventWarning(WarnLevel, AdapterEventBase, ShowException):
+class AdapterEventWarning(WarnLevel, AdapterEventBase):
     code: str = "E003"
 
 
 @dataclass
-class AdapterEventError(ErrorLevel, AdapterEventBase, ShowException):
+class AdapterEventError(ErrorLevel, AdapterEventBase):
     code: str = "E004"
 
 
@@ -103,11 +101,11 @@ class MainKeyboardInterrupt(InfoLevel):
 
 @dataclass
 class MainEncounteredError(ErrorLevel):
-    e: BaseException
+    exc: BaseException
     code: str = "Z002"
 
     def message(self) -> str:
-        return f"Encountered an error:\n{self.e}"
+        return f"Encountered an error:\n{self.exc}"
 
 
 @dataclass
@@ -121,11 +119,11 @@ class MainStackTrace(ErrorLevel):
 
 @dataclass
 class MainReportVersion(InfoLevel):
-    v: str  # could be VersionSpecifier instead if we resolved some circular imports
+    version: str  # could be VersionSpecifier instead if we resolved some circular imports
     code: str = "A001"
 
     def message(self):
-        return f"Running with dbt{self.v}"
+        return f"Running with dbt{self.version}"
 
 
 @dataclass
@@ -498,7 +496,7 @@ class ConnectionClosed(DebugLevel):
 
 
 @dataclass
-class RollbackFailed(ShowException, DebugLevel):
+class RollbackFailed(DebugLevel):
     conn_name: Optional[str]
     code: str = "E009"
 
@@ -726,38 +724,38 @@ class RenameSchema(DebugLevel, Cache):
 
 @dataclass
 class DumpBeforeAddGraph(DebugLevel, Cache):
-    dump: Lazy[Dict[str, List[str]]]
+    dump: Dict[str, List[str]]
     code: str = "E031"
 
     def message(self) -> str:
-        return f"before adding : {self.dump.force()}"
+        return f"before adding : {self.dump}"
 
 
 @dataclass
 class DumpAfterAddGraph(DebugLevel, Cache):
-    dump: Lazy[Dict[str, List[str]]]
+    dump: Dict[str, List[str]]
     code: str = "E032"
 
     def message(self) -> str:
-        return f"after adding: {self.dump.force()}"
+        return f"after adding: {self.dump}"
 
 
 @dataclass
 class DumpBeforeRenameSchema(DebugLevel, Cache):
-    dump: Lazy[Dict[str, List[str]]]
+    dump: Dict[str, List[str]]
     code: str = "E033"
 
     def message(self) -> str:
-        return f"before rename: {self.dump.force()}"
+        return f"before rename: {self.dump}"
 
 
 @dataclass
 class DumpAfterRenameSchema(DebugLevel, Cache):
-    dump: Lazy[Dict[str, List[str]]]
+    dump: Dict[str, List[str]]
     code: str = "E034"
 
     def message(self) -> str:
-        return f"after rename: {self.dump.force()}"
+        return f"after rename: {self.dump}"
 
 
 @dataclass
@@ -770,7 +768,7 @@ class AdapterImportError(InfoLevel):
 
 
 @dataclass
-class PluginLoadError(ShowException, DebugLevel):
+class PluginLoadError(DebugLevel):
     code: str = "E036"
 
     def message(self):
@@ -1006,7 +1004,7 @@ class PartialParsingNotEnabled(DebugLevel):
 
 
 @dataclass
-class ParsedFileLoadFailed(ShowException, DebugLevel):
+class ParsedFileLoadFailed(DebugLevel):
     path: str
     exc: Exception
     code: str = "I029"
@@ -1312,7 +1310,7 @@ https://docs.getdbt.com/docs/configure-your-profile
 
 
 @dataclass
-class CatchableExceptionOnRun(ShowException, DebugLevel):
+class CatchableExceptionOnRun(DebugLevel):
     exc: Exception
     code: str = "W002"
 
@@ -1341,7 +1339,7 @@ the error persists, open an issue at https://github.com/dbt-labs/dbt-core
 # This prints the stack trace at the debug level while allowing just the nice exception message
 # at the error level - or whatever other level chosen.  Used in multiple places.
 @dataclass
-class PrintDebugStackTrace(ShowException, DebugLevel):
+class PrintDebugStackTrace(DebugLevel):
     code: str = "Z011"
 
     def message(self) -> str:
@@ -1364,7 +1362,7 @@ class GenericExceptionOnRun(ErrorLevel):
 
 
 @dataclass
-class NodeConnectionReleaseError(ShowException, DebugLevel):
+class NodeConnectionReleaseError(DebugLevel):
     node_name: str
     exc: Exception
     code: str = "W005"
@@ -1690,7 +1688,7 @@ class SQLCompiledPath(InfoLevel):
 
 
 @dataclass
-class SQlRunnerException(ShowException, DebugLevel):
+class SQlRunnerException(DebugLevel):
     exc: Exception
     code: str = "Q006"
 
@@ -2420,7 +2418,7 @@ class FlushEventsFailure(DebugLevel):
 
 
 @dataclass
-class TrackingInitializeFailure(ShowException, DebugLevel):
+class TrackingInitializeFailure(DebugLevel):
     code: str = "Z044"
 
     def message(self) -> str:
@@ -2484,9 +2482,9 @@ class RecordRetryException(DebugLevel):
 #
 # TODO remove these lines once we run mypy everywhere.
 if 1 == 0:
-    MainReportVersion(v="")
+    MainReportVersion(version="")
     MainKeyboardInterrupt()
-    MainEncounteredError(e=BaseException(""))
+    MainEncounteredError(exc=BaseException(""))
     MainStackTrace(stack_trace="")
     MainTrackingUserState(user_state="")
     ParsingStart()
@@ -2567,10 +2565,10 @@ if 1 == 0:
         old_key=_ReferenceKey(database="", schema="", identifier=""),
         new_key=_ReferenceKey(database="", schema="", identifier=""),
     )
-    DumpBeforeAddGraph(Lazy.defer(lambda: dict()))
-    DumpAfterAddGraph(Lazy.defer(lambda: dict()))
-    DumpBeforeRenameSchema(Lazy.defer(lambda: dict()))
-    DumpAfterRenameSchema(Lazy.defer(lambda: dict()))
+    DumpBeforeAddGraph(dump=dict())
+    DumpAfterAddGraph(dump=dict())
+    DumpBeforeRenameSchema(dump=dict())
+    DumpAfterRenameSchema(dump=dict())
     AdapterImportError(exc=Exception())
     PluginLoadError()
     SystemReportReturnCode(returncode=0)

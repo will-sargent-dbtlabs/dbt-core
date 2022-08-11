@@ -1,6 +1,6 @@
 from colorama import Style
 import dbt.events.functions as this  # don't worry I hate it too.
-from dbt.events.base_types import NoStdOut, Event, NoFile, ShowException, Cache
+from dbt.events.base_types import NoStdOut, Event, NoFile, Cache
 from dbt.events.types import EventBufferFull, T_Event, MainReportVersion, EmptyLine
 import dbt.flags as flags
 from dbt.constants import SECRET_ENV_PREFIX
@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import uuid
 import threading
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
 from collections import deque
 
 global LOG_VERSION
@@ -135,32 +135,15 @@ def event_to_serializable_dict(
     e: T_Event,
 ) -> Dict[str, Any]:
 
-    log_line = dict()
+    event_dict = dict()
     code: str
     try:
-        log_line = e.to_dict()
+        event_dict = e.to_dict()
     except AttributeError as exc:
         event_type = type(e).__name__
         raise Exception(  # TODO this may hang async threads
             f"type {event_type} is not serializable. {str(exc)}"
         )
-
-    # We get the code from the event object, so we don't need it in the data
-    if "code" in log_line:
-        del log_line["code"]
-
-    event_dict = {
-        "type": "log_line",
-        "log_version": LOG_VERSION,
-        "ts": get_ts_rfc3339(),
-        "pid": e.get_pid(),
-        "msg": e.message(),
-        "level": e.level_tag(),
-        "data": log_line,
-        "invocation_id": e.get_invocation_id(),
-        "thread_name": e.get_thread_name(),
-        "code": e.code,
-    }
 
     return event_dict
 
@@ -173,7 +156,7 @@ def reset_color() -> str:
 
 def create_info_text_log_line(e: T_Event) -> str:
     color_tag: str = reset_color()
-    ts: str = get_ts().strftime("%H:%M:%S")
+    ts: str = get_ts().strftime("%H:%M:%S")  # TODO: get this from the event.ts?
     scrubbed_msg: str = scrub_secrets(e.message(), env_secrets())
     log_line: str = f"{color_tag}{ts}  {scrubbed_msg}"
     return log_line
@@ -188,7 +171,9 @@ def create_debug_text_log_line(e: T_Event) -> str:
     color_tag: str = reset_color()
     ts: str = get_ts().strftime("%H:%M:%S.%f")
     scrubbed_msg: str = scrub_secrets(e.message(), env_secrets())
-    level: str = e.level_tag() if len(e.level_tag()) == 5 else f"{e.level_tag()} "
+    # What's the point of this?
+    # level: str = e.level_tag() if len(e.level_tag()) == 5 else f"{e.level_tag()} "
+    level: str = e.level
     thread = ""
     if threading.current_thread().name:
         thread_name = threading.current_thread().name
@@ -241,24 +226,11 @@ def send_to_logger(l: Union[Logger, logbook.Logger], level_tag: str, log_line: s
         )
 
 
-def send_exc_to_logger(
-    l: Logger, level_tag: str, log_line: str, exc_info=True, stack_info=False, extra=False
-):
-    if level_tag == "test":
-        # TODO after implmenting #3977 send to new test level
-        l.debug(log_line, exc_info=exc_info, stack_info=stack_info, extra=extra)
-    elif level_tag == "debug":
-        l.debug(log_line, exc_info=exc_info, stack_info=stack_info, extra=extra)
-    elif level_tag == "info":
-        l.info(log_line, exc_info=exc_info, stack_info=stack_info, extra=extra)
-    elif level_tag == "warn":
-        l.warning(log_line, exc_info=exc_info, stack_info=stack_info, extra=extra)
-    elif level_tag == "error":
-        l.error(log_line, exc_info=exc_info, stack_info=stack_info, extra=extra)
-    else:
-        raise AssertionError(
-            f"While attempting to log {log_line}, encountered the unhandled level: {level_tag}"
-        )
+# an alternative to fire_event which only creates and logs the event value
+# if the condition is met. Does nothing otherwise.
+def fire_event_if(conditional: bool, lazy_e: Callable[[], Event]) -> None:
+    if conditional:
+        fire_event(lazy_e())
 
 
 # top-level method for accessing the new eventing system
@@ -305,17 +277,7 @@ def fire_event(e: Event) -> None:
 
         log_line = create_log_line(e)
         if log_line:
-            if not isinstance(e, ShowException):
-                send_to_logger(STDOUT_LOG, level_tag=e.level_tag(), log_line=log_line)
-            else:
-                send_exc_to_logger(
-                    STDOUT_LOG,
-                    level_tag=e.level_tag(),
-                    log_line=log_line,
-                    exc_info=e.exc_info,
-                    stack_info=e.stack_info,
-                    extra=e.extra,
-                )
+            send_to_logger(STDOUT_LOG, level_tag=e.level_tag(), log_line=log_line)
 
 
 def get_invocation_id() -> str:
@@ -336,10 +298,3 @@ def set_invocation_id() -> None:
 def get_ts() -> datetime:
     ts = datetime.utcnow()
     return ts
-
-
-# preformatted time stamp
-def get_ts_rfc3339() -> str:
-    ts = get_ts()
-    ts_rfc3339 = ts.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return ts_rfc3339

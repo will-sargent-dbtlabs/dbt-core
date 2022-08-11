@@ -4,6 +4,7 @@ from dbt.events.serialization import EventSerialization
 import os
 import threading
 from typing import Any, Dict
+from datetime import datetime
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -17,22 +18,47 @@ class Cache:
     pass
 
 
-@dataclass
-class ShowException:
-    # N.B.:
-    # As long as we stick with the current convention of setting the member vars in the
-    # `message` method of subclasses, this is a safe operation.
-    # If that ever changes we'll want to reassess.
-    def __post_init__(self):
-        self.exc_info: Any = True
-        self.stack_info: Any = None
-        self.extra: Any = None
+def get_invocation_id() -> str:
+    from dbt.events.functions import get_invocation_id
+
+    return get_invocation_id()
 
 
-# TODO add exhaustiveness checking for subclasses
+# exactly one pid per concrete event
+def get_pid() -> int:
+    return os.getpid()
+
+
+# preformatted time stamp
+def get_ts_rfc3339() -> str:
+    ts = datetime.utcnow()
+    ts_rfc3339 = ts.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    return ts_rfc3339
+
+
+# in theory threads can change so we don't cache them.
+def get_thread_name() -> str:
+    return threading.current_thread().name
+
+
 # top-level superclass for all events
 class Event(metaclass=ABCMeta):
-    # Do not define fields with defaults here
+    # Do not define fields with defaults here, it will break subclasses
+    msg: str
+    invocation_id: str
+    ts: str
+    pid: int
+    level: str
+    thread_name: str
+
+    def __post_init__(self):
+        if not hasattr(self, "msg") or not self.msg:
+            self.msg = self.message()
+        self.level = self.level_tag()
+        self.invocation_id = get_invocation_id()
+        self.ts = get_ts_rfc3339()
+        self.pid = get_pid()
+        self.thread_name = get_thread_name()
 
     # four digit string code that uniquely identifies this type of event
     # uniqueness and valid characters are enforced by tests
@@ -57,20 +83,6 @@ class Event(metaclass=ABCMeta):
     @abstractmethod
     def message(self) -> str:
         raise Exception("msg not implemented for Event")
-
-    # exactly one pid per concrete event
-    def get_pid(self) -> int:
-        return os.getpid()
-
-    # in theory threads can change so we don't cache them.
-    def get_thread_name(self) -> str:
-        return threading.current_thread().name
-
-    @classmethod
-    def get_invocation_id(cls) -> str:
-        from dbt.events.functions import get_invocation_id
-
-        return get_invocation_id()
 
 
 # in preparation for #3977

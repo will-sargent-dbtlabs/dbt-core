@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from dbt.events.types import InfoLevel, DebugLevel, WarnLevel, ErrorLevel, ShowException
+from dbt.events.types import InfoLevel, DebugLevel, WarnLevel, ErrorLevel
 from dbt.events.base_types import NoFile
 
 
@@ -44,7 +44,7 @@ class IntegrationTestError(ErrorLevel, NoFile):
 
 
 @dataclass
-class IntegrationTestException(ShowException, ErrorLevel, NoFile):
+class IntegrationTestException(ErrorLevel, NoFile):
     msg: str
     code: str = "T005"
 

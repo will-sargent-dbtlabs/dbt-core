@@ -11,9 +11,9 @@ message A001 {
     string level = 3;
     string invocation_id = 4;
     int32 pid = 5;
-    int32 thread = 6;
+    string thread_name = 6;
     google.protobuf.Timestamp ts = 7;
-    string v = 10;
+    string version = 10;
 }
 
 message A002 {
@@ -22,7 +22,7 @@ message A002 {
     string level = 3;
     string invocation_id = 4;
     int32 pid = 5;
-    int32 thread = 6;
+    string thread_name = 6;
     google.protobuf.Timestamp ts = 7;
     map<string, string> args = 10;  // Dict[str, str]
 }
