@@ -1,5 +1,5 @@
 from dbt.helper_types import Lazy
-from mashumaro import DataClassJSONMixin
+from mashumaro.mixins.json import DataClassJSONMixin
 from mashumaro.config import BaseConfig as MashBaseConfig
 from mashumaro.types import SerializationStrategy
 from typing import Dict, List
