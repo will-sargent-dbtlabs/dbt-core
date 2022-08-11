@@ -1,13 +1,10 @@
 import click
-from dbt.cli.params import _global as global_params
-from dbt.cli.params import docs as docs_params
-from dbt.cli.params import misc as misc_params
-from dbt.cli.params import parse as parse_params
-from dbt.cli.params import project as project_params
-from dbt.cli.params import run as run_params
-import inspect  # This is temporary for RAT-ing
-from pprint import pformat as pf
+from dbt.cli import params as p
 import sys
+
+# This is temporary for RAT-ing
+import inspect
+from pprint import pformat as pf
 
 
 # dbt
@@ -17,24 +14,24 @@ import sys
     epilog="Specify one of these sub-commands and you can find more help from there.",
 )
 @click.pass_context
-@global_params.version
-@global_params.cache_selected_only
-@global_params.debug
-@global_params.fail_fast
-@global_params.log_format
-@global_params.partial_parse
-@global_params.print
-@global_params.printer_width
-@global_params.quiet
-@global_params.send_anonymous_usage_stats
-@global_params.static_parser
-@global_params.use_colors
-@global_params.use_experimental_parser
-@global_params.version_check
-@global_params.warn_error
-@global_params.write_json
-@global_params.event_buffer_size
-@global_params.record_timing
+@p.version
+@p.cache_selected_only
+@p.debug
+@p.fail_fast
+@p.log_format
+@p.partial_parse
+@p.print
+@p.printer_width
+@p.quiet
+@p.send_anonymous_usage_stats
+@p.static_parser
+@p.use_colors
+@p.use_experimental_parser
+@p.version_check
+@p.warn_error
+@p.write_json
+@p.event_buffer_size
+@p.record_timing
 def cli(ctx, **kwargs):
     """An ELT tool for managing your SQL transformations and data models.
     For more documentation on these commands, visit: docs.getdbt.com
@@ -59,11 +56,11 @@ def build(ctx, **kwargs):
 # dbt clean
 @cli.command("clean")
 @click.pass_context
-@project_params.project_dir
-@project_params.profiles_dir
-@project_params.profile
-@project_params.target
-@project_params.vars
+@p.project_dir
+@p.profiles_dir
+@p.profile
+@p.target
+@p.vars
 def clean(ctx, **kwargs):
     """Delete all folders in the clean-targets list (usually the dbt_packages and target directories.)"""
     click.echo(
@@ -81,21 +78,21 @@ def docs(ctx, **kwargs):
 # dbt docs generate
 @docs.command("generate")
 @click.pass_context
-@global_params.version_check
-@project_params.project_dir
-@project_params.profiles_dir
-@project_params.profile
-@project_params.target
-@project_params.vars
-@docs_params.compile
-@run_params.defer
-@run_params.threads
-@run_params.target_path
-@run_params.log_path
-@run_params.models
-@run_params.exclude
-@run_params.selector
-@run_params.state
+@p.version_check
+@p.project_dir
+@p.profiles_dir
+@p.profile
+@p.target
+@p.vars
+@p.compile_docs
+@p.defer
+@p.threads
+@p.target_path
+@p.log_path
+@p.models
+@p.exclude
+@p.selector
+@p.state
 def docs_generate(ctx, **kwargs):
     """Generate the documentation website for your project"""
     click.echo(
@@ -106,13 +103,13 @@ def docs_generate(ctx, **kwargs):
 # dbt docs serve
 @docs.command("serve")
 @click.pass_context
-@project_params.project_dir
-@project_params.profiles_dir
-@project_params.profile
-@project_params.target
-@project_params.vars
-@docs_params.port
-@docs_params.browser
+@p.project_dir
+@p.profiles_dir
+@p.profile
+@p.target
+@p.vars
+@p.port
+@p.browser
 def docs_serve(ctx, **kwargs):
     """Serve the documentation website for your project"""
     click.echo(
@@ -123,22 +120,22 @@ def docs_serve(ctx, **kwargs):
 # dbt compile
 @cli.command("compile")
 @click.pass_context
-@global_params.version_check
-@project_params.project_dir
-@project_params.profiles_dir
-@project_params.profile
-@project_params.target
-@project_params.vars
-@run_params.parse_only
-@run_params.threads
-@run_params.target_path
-@run_params.log_path
-@run_params.models
-@run_params.exclude
-@run_params.selector
-@run_params.state
-@run_params.defer
-@run_params.full_refresh
+@p.version_check
+@p.project_dir
+@p.profiles_dir
+@p.profile
+@p.target
+@p.vars
+@p.parse_only
+@p.threads
+@p.target_path
+@p.log_path
+@p.models
+@p.exclude
+@p.selector
+@p.state
+@p.defer
+@p.full_refresh
 def compile(ctx, **kwargs):
     """Generates executable SQL from source, model, test, and analysis files. Compiled SQL files are written to the target/ directory."""
     click.echo(
@@ -149,13 +146,13 @@ def compile(ctx, **kwargs):
 # dbt debug
 @cli.command("debug")
 @click.pass_context
-@global_params.version_check
-@project_params.project_dir
-@project_params.profiles_dir
-@project_params.profile
-@project_params.target
-@project_params.vars
-@misc_params.config_dir
+@p.version_check
+@p.project_dir
+@p.profiles_dir
+@p.profile
+@p.target
+@p.vars
+@p.config_dir
 def debug(ctx, **kwargs):
     """Show some helpful information about dbt for debugging. Not to be confused with the --debug option which increases verbosity."""
     click.echo(
@@ -166,11 +163,11 @@ def debug(ctx, **kwargs):
 # dbt deps
 @cli.command("deps")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
 def deps(ctx, **kwargs):
     """Pull the most recent version of the dependencies listed in packages.yml"""
     click.echo(
@@ -181,12 +178,12 @@ def deps(ctx, **kwargs):
 # dbt init
 @cli.command("init")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@misc_params.skip_profile_setup
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.skip_profile_setup
 def init(ctx, **kwargs):
     """Initialize a new DBT project."""
     click.echo(
@@ -198,19 +195,19 @@ def init(ctx, **kwargs):
 # dbt TODO: Figure out aliasing for ls (or just c/p?)
 @cli.command("list")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@misc_params.output
-@misc_params.ouptut_keys
-@run_params.resource_type
-@run_params.models
-@run_params.indirect_selection
-@run_params.exclude
-@run_params.selector
-@run_params.state
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.output
+@p.ouptut_keys
+@p.resource_type
+@p.models
+@p.indirect_selection
+@p.exclude
+@p.selector
+@p.state
 def list(ctx, **kwargs):
     """List the resources in your project"""
     click.echo(
@@ -221,17 +218,17 @@ def list(ctx, **kwargs):
 # dbt parse
 @cli.command("parse")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@parse_params.write_manifest
-@parse_params.compile
-@run_params.threads
-@run_params.target_path
-@run_params.log_path
-@global_params.version_check
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.write_manifest
+@p.compile_parse
+@p.threads
+@p.target_path
+@p.log_path
+@p.version_check
 def parse(ctx, **kwargs):
     """Parses the project and provides information on performance"""
     click.echo(
@@ -242,22 +239,22 @@ def parse(ctx, **kwargs):
 # dbt run
 @cli.command("run")
 @click.pass_context
-@global_params.fail_fast
-@global_params.version_check
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@run_params.log_path
-@run_params.target_path
-@run_params.threads
-@run_params.models
-@run_params.exclude
-@run_params.selector
-@run_params.state
-@run_params.defer
-@run_params.full_refresh
+@p.fail_fast
+@p.version_check
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.log_path
+@p.target_path
+@p.threads
+@p.models
+@p.exclude
+@p.selector
+@p.state
+@p.defer
+@p.full_refresh
 def run(ctx, **kwargs):
     """Compile SQL and execute against the current target database."""
     click.echo(
@@ -268,12 +265,12 @@ def run(ctx, **kwargs):
 # dbt run operation
 @cli.command("run-operation")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@run_params.args
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.args
 def run_operation(ctx, **kwargs):
     """Run the named macro with any supplied arguments."""
     click.echo(
@@ -284,21 +281,21 @@ def run_operation(ctx, **kwargs):
 # dbt seed
 @cli.command("seed")
 @click.pass_context
-@global_params.version_check
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@run_params.full_refresh
-@run_params.log_path
-@run_params.target_path
-@run_params.threads
-@run_params.models
-@run_params.exclude
-@run_params.selector
-@run_params.state
-@misc_params.show
+@p.version_check
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.full_refresh
+@p.log_path
+@p.target_path
+@p.threads
+@p.models
+@p.exclude
+@p.selector
+@p.state
+@p.show
 def seed(ctx, **kwargs):
     """Load data from csv files into your data warehouse."""
     click.echo(
@@ -309,17 +306,17 @@ def seed(ctx, **kwargs):
 # dbt snapshot
 @cli.command("snapshot")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@run_params.threads
-@run_params.models
-@run_params.exclude
-@run_params.selector
-@run_params.state
-@run_params.defer
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.threads
+@p.models
+@p.exclude
+@p.selector
+@p.state
+@p.defer
 def snapshot(ctx, **kwargs):
     """Execute snapshots defined in your project"""
     click.echo(
@@ -337,17 +334,17 @@ def source(ctx, **kwargs):
 # dbt source freshness
 @source.command("freshness")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@run_params.threads
-@run_params.models
-@run_params.exclude
-@run_params.selector
-@run_params.state
-@misc_params.output_path  # TODO: Is this ok to re-use?  We have three different output params, how much can we consolidate?
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.threads
+@p.models
+@p.exclude
+@p.selector
+@p.state
+@p.output_path  # TODO: Is this ok to re-use?  We have three different output params, how much can we consolidate?
 def freshness(ctx, **kwargs):
     """Snapshots the current freshness of the project's sources"""
     click.echo(
@@ -358,23 +355,23 @@ def freshness(ctx, **kwargs):
 # dbt test
 @cli.command("test")
 @click.pass_context
-@global_params.fail_fast
-@global_params.version_check
-@misc_params.store_failures
-@project_params.profile
-@project_params.profiles_dir
-@project_params.project_dir
-@project_params.target
-@project_params.vars
-@run_params.indirect_selection
-@run_params.log_path
-@run_params.target_path
-@run_params.threads
-@run_params.models
-@run_params.exclude
-@run_params.selector
-@run_params.state
-@run_params.defer
+@p.fail_fast
+@p.version_check
+@p.store_failures
+@p.profile
+@p.profiles_dir
+@p.project_dir
+@p.target
+@p.vars
+@p.indirect_selection
+@p.log_path
+@p.target_path
+@p.threads
+@p.models
+@p.exclude
+@p.selector
+@p.state
+@p.defer
 def test(ctx, **kwargs):
     """Runs tests on data in deployed models. Run this after `dbt run`"""
     click.echo(
