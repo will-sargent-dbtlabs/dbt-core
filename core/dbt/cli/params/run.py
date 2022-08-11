@@ -1,4 +1,5 @@
 import click
+from dbt.cli.params.types import YAML
 
 log_path = click.option(
     "--log-path",
@@ -37,7 +38,47 @@ defer = click.option(
 )
 
 full_refresh = click.option(
-    "--full_refresh",
+    "--full-refresh",
     help="If specified, dbt will drop incremental models and fully-recalculate the incremental table from the model definition.",
     is_flag=True,
+)
+
+parse_only = click.option(
+    "--parse-only",
+    help="TODO:  No help text currently available",
+    is_flag=True,
+)
+
+resource_type = click.option(
+    "--resource-type",
+    help="TODO: No current help text",
+    type=click.Choice(
+        [
+            "metric",
+            "source",
+            "analysis",
+            "model",
+            "test",
+            "exposure",
+            "snapshot",
+            "seed",
+            "default",
+            "all",
+        ],
+        case_sensitive=False,
+    ),
+    default="default",
+)
+
+indirect_selection = click.option(
+    "--indirect_selection",
+    help="Select all tests that are adjacent to selected resources, even if they those resources have been explicitly selected.",
+    type=click.Choice(["eager", "cautious"], case_sensitive=False),
+    default="eager",
+)
+
+args = click.option(
+    "--args",
+    help="Supply arguments to the macro. This dictionary will be mapped to the keyword arguments defined in the selected macro. This argument should be a YAML string, eg. '{my_variable: my_value}'",
+    type=YAML(),
 )

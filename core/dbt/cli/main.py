@@ -1,5 +1,8 @@
 import click
 from dbt.cli.params import _global as global_params
+from dbt.cli.params import docs as docs_params
+from dbt.cli.params import misc as misc_params
+from dbt.cli.params import parse as parse_params
 from dbt.cli.params import project as project_params
 from dbt.cli.params import run as run_params
 import inspect  # This is temporary for RAT-ing
@@ -56,9 +59,9 @@ def build(ctx, **kwargs):
 # dbt clean
 @cli.command("clean")
 @click.pass_context
-@project_params.profile
-@project_params.profiles_dir
 @project_params.project_dir
+@project_params.profiles_dir
+@project_params.profile
 @project_params.target
 @project_params.vars
 def clean(ctx, **kwargs):
@@ -78,6 +81,21 @@ def docs(ctx, **kwargs):
 # dbt docs generate
 @docs.command("generate")
 @click.pass_context
+@global_params.version_check
+@project_params.project_dir
+@project_params.profiles_dir
+@project_params.profile
+@project_params.target
+@project_params.vars
+@docs_params.compile
+@run_params.defer
+@run_params.threads
+@run_params.target_path
+@run_params.log_path
+@run_params.models
+@run_params.exclude
+@run_params.selector
+@run_params.state
 def docs_generate(ctx, **kwargs):
     """Generate the documentation website for your project"""
     click.echo(
@@ -88,6 +106,13 @@ def docs_generate(ctx, **kwargs):
 # dbt docs serve
 @docs.command("serve")
 @click.pass_context
+@project_params.project_dir
+@project_params.profiles_dir
+@project_params.profile
+@project_params.target
+@project_params.vars
+@docs_params.port
+@docs_params.browser
 def docs_serve(ctx, **kwargs):
     """Serve the documentation website for your project"""
     click.echo(
@@ -98,6 +123,22 @@ def docs_serve(ctx, **kwargs):
 # dbt compile
 @cli.command("compile")
 @click.pass_context
+@global_params.version_check
+@project_params.project_dir
+@project_params.profiles_dir
+@project_params.profile
+@project_params.target
+@project_params.vars
+@run_params.parse_only
+@run_params.threads
+@run_params.target_path
+@run_params.log_path
+@run_params.models
+@run_params.exclude
+@run_params.selector
+@run_params.state
+@run_params.defer
+@run_params.full_refresh
 def compile(ctx, **kwargs):
     """Generates executable SQL from source, model, test, and analysis files. Compiled SQL files are written to the target/ directory."""
     click.echo(
@@ -108,6 +149,13 @@ def compile(ctx, **kwargs):
 # dbt debug
 @cli.command("debug")
 @click.pass_context
+@global_params.version_check
+@project_params.project_dir
+@project_params.profiles_dir
+@project_params.profile
+@project_params.target
+@project_params.vars
+@misc_params.config_dir
 def debug(ctx, **kwargs):
     """Show some helpful information about dbt for debugging. Not to be confused with the --debug option which increases verbosity."""
     click.echo(
@@ -118,6 +166,11 @@ def debug(ctx, **kwargs):
 # dbt deps
 @cli.command("deps")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
 def deps(ctx, **kwargs):
     """Pull the most recent version of the dependencies listed in packages.yml"""
     click.echo(
@@ -128,6 +181,12 @@ def deps(ctx, **kwargs):
 # dbt init
 @cli.command("init")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@misc_params.skip_profile_setup
 def init(ctx, **kwargs):
     """Initialize a new DBT project."""
     click.echo(
@@ -139,6 +198,19 @@ def init(ctx, **kwargs):
 # dbt TODO: Figure out aliasing for ls (or just c/p?)
 @cli.command("list")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@misc_params.output
+@misc_params.ouptut_keys
+@run_params.resource_type
+@run_params.models
+@run_params.indirect_selection
+@run_params.exclude
+@run_params.selector
+@run_params.state
 def list(ctx, **kwargs):
     """List the resources in your project"""
     click.echo(
@@ -149,6 +221,17 @@ def list(ctx, **kwargs):
 # dbt parse
 @cli.command("parse")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@parse_params.write_manifest
+@parse_params.compile
+@run_params.threads
+@run_params.target_path
+@run_params.log_path
+@global_params.version_check
 def parse(ctx, **kwargs):
     """Parses the project and provides information on performance"""
     click.echo(
@@ -185,6 +268,12 @@ def run(ctx, **kwargs):
 # dbt run operation
 @cli.command("run-operation")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@run_params.args
 def run_operation(ctx, **kwargs):
     """Run the named macro with any supplied arguments."""
     click.echo(
@@ -195,6 +284,21 @@ def run_operation(ctx, **kwargs):
 # dbt seed
 @cli.command("seed")
 @click.pass_context
+@global_params.version_check
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@run_params.full_refresh
+@run_params.log_path
+@run_params.target_path
+@run_params.threads
+@run_params.models
+@run_params.exclude
+@run_params.selector
+@run_params.state
+@misc_params.show
 def seed(ctx, **kwargs):
     """Load data from csv files into your data warehouse."""
     click.echo(
@@ -205,6 +309,17 @@ def seed(ctx, **kwargs):
 # dbt snapshot
 @cli.command("snapshot")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@run_params.threads
+@run_params.models
+@run_params.exclude
+@run_params.selector
+@run_params.state
+@run_params.defer
 def snapshot(ctx, **kwargs):
     """Execute snapshots defined in your project"""
     click.echo(
@@ -222,6 +337,17 @@ def source(ctx, **kwargs):
 # dbt source freshness
 @source.command("freshness")
 @click.pass_context
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@run_params.threads
+@run_params.models
+@run_params.exclude
+@run_params.selector
+@run_params.state
+@misc_params.output_path  # TODO: Is this ok to re-use?  We have three different output params, how much can we consolidate?
 def freshness(ctx, **kwargs):
     """Snapshots the current freshness of the project's sources"""
     click.echo(
@@ -232,6 +358,23 @@ def freshness(ctx, **kwargs):
 # dbt test
 @cli.command("test")
 @click.pass_context
+@global_params.fail_fast
+@global_params.version_check
+@misc_params.store_failures
+@project_params.profile
+@project_params.profiles_dir
+@project_params.project_dir
+@project_params.target
+@project_params.vars
+@run_params.indirect_selection
+@run_params.log_path
+@run_params.target_path
+@run_params.threads
+@run_params.models
+@run_params.exclude
+@run_params.selector
+@run_params.state
+@run_params.defer
 def test(ctx, **kwargs):
     """Runs tests on data in deployed models. Run this after `dbt run`"""
     click.echo(
