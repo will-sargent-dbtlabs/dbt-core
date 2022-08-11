@@ -4,6 +4,7 @@ from dbt.version import installed
 
 from google.protobuf import json_format
 
+
 def test_events():
 
     event = MainReportVersion(v=str(installed))
@@ -16,4 +17,4 @@ def test_events():
     event1 = json_format.Parse(json_event, event1)
 
     event_dict = json_format.MessageToDict(event1)
-    assert event_dict == {'code': 'A001', 'v': str(installed)}
+    assert event_dict == {"code": "A001", "v": str(installed)}

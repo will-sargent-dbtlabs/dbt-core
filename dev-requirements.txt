@@ -23,6 +23,7 @@ types-PyYAML
 types-freezegun
 types-Jinja2
 types-mock
+types-protobuf
 types-python-dateutil
 types-pytz
 types-requests
