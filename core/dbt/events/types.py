@@ -1688,7 +1688,7 @@ class SQLCompiledPath(InfoLevel):
 
 
 @dataclass
-class SQlRunnerException(DebugLevel):
+class SQLRunnerException(DebugLevel):
     exc: Exception
     code: str = "Q006"
 

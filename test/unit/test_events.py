@@ -411,7 +411,7 @@ sample_values = [
     RegistryResponseExtraNestedKeys(response=""),
     DepsUTD(),
     PartialParsingNotEnabled(),
-    SQlRunnerException(exc=Exception('')),
+    SQLRunnerException(exc=Exception('')),
     DropRelation(dropped=_ReferenceKey(database="", schema="", identifier="")),
     PartialParsingProjectEnvVarsChanged(),
     RegistryProgressGETResponse(url='', resp_code=1),

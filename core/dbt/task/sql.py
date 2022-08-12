@@ -10,7 +10,7 @@ from dbt.contracts.sql import (
     ResultTable,
 )
 from dbt.events.functions import fire_event
-from dbt.events.types import SQlRunnerException
+from dbt.events.types import SQLRunnerException
 from dbt.task.compile import CompileRunner
 
 
@@ -22,7 +22,7 @@ class GenericSqlRunner(CompileRunner, Generic[SQLResult]):
         CompileRunner.__init__(self, config, adapter, node, node_index, num_nodes)
 
     def handle_exception(self, e, ctx):
-        fire_event(SQlRunnerException(exc=e))
+        fire_event(SQLRunnerException(exc=e))
         if isinstance(e, dbt.exceptions.Exception):
             if isinstance(e, dbt.exceptions.RuntimeException):
                 e.add_node(ctx.node)
