@@ -1,3 +1,7 @@
+<!-- GitHub will publish this readme on the main repo page if the name is `README.md` so we've added the leading underscore to prevent this -->
+<!-- Do not rename this file `README.md` -->
+<!-- See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes -->
+
 ## What are GitHub Actions?
 
 GitHub Actions are used for many different purposes.  We use them to run tests in CI, validate PRs are in an expected state, and automate processes.
@@ -5,6 +9,8 @@ GitHub Actions are used for many different purposes.  We use them to run tests i
 - [Overview of GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions)
 - [What's a workflow?](https://docs.github.com/en/actions/using-workflows/about-workflows)
 - [GitHub Actions guides](https://docs.github.com/en/actions/guides)
+
+___
 
 ## Where do actions and workflows live
 
@@ -15,6 +21,35 @@ We try to maintain actions that are shared across repositories in a single place
 GitHub Actions also live locally within a repository.  The workflows can be found at `.github/workflows` from the root of the repository.  These should be specific to that code base.
 
 Note: We are actively moving actions into the central Action repository so there is currently some duplication across repositories.
+
+___
+
+## Basics of Using Actions
+
+### Viewing Output
+
+- View the detailed action output for your PR in the **Checks** tab of the PR.  This only shows the most recent run.  You can also view high level **Checks** output at the bottom on the PR.
+
+- View _all_ action output for a repository from the [**Actions**](https://github.com/dbt-labs/dbt-core/actions) tab.  Workflow results last 1 year.  Artifacts last 90 days, unless specified otherwise in individual workflows.
+
+  This view often shows what seem like duplicates of the same workflow.  This occurs when files are renamed but the workflow name has not changed.  These are in fact _not_ duplicates.
+
+  You can see the branch the workflow runs from in this view.  It is listed in the table between the workflow name and the time/duration of the run.  When blank, the workflow is running in the context of the  `main` branch.
+
+### How to view what workflow file is being referenced from a run
+
+- When viewing the output of a specific workflow run, click the 3 dots at the top right of the display.  There will be an option to `View workflow file`.
+
+### How to manually run a workflow
+
+- If a workflow has the `on: workflow_dispatch` trigger, it can be manually triggered
+- From the [**Actions**](https://github.com/dbt-labs/dbt-core/actions) tab, find the workflow you want to run, select it and fill in any inputs requied.  That's it!
+
+### How to re-run jobs
+
+- Some actions cannot be rerun in the GitHub UI.  Namely the snyk checks and the cla check.  Snyk checks are rerun by closing and reopening the PR.  You can retrigger the cla check by commenting on the PR with `@cla-bot check`
+
+___
 
 ## General Standards
 
@@ -65,7 +100,7 @@ Some triggers of note that we use:
 - `workflow_dispatch` - Gives the ability to manually trigger a workflow from the GitHub API, GitHub CLI, or GitHub browser interface.
 
 
-### General Formatting
+### Basic Formatting
 - Add a description of what your workflow does at the top in this format
 
   ```
@@ -108,19 +143,21 @@ Some triggers of note that we use:
 
 - Print out all variables you will reference as the first step of a job.  This allows for easier debugging.  The first job should log all inputs.  Subsequent jobs should reference outputs of other jobs, if present.
 
-  When possible, generate variables at the top of your workflow in a single place to reference later.  This is not always strictly possible since you may generate a value to be used lated mid-workflow.
+  When possible, generate variables at the top of your workflow in a single place to reference later.  This is not always strictly possible since you may generate a value to be used later mid-workflow.
+
+  Be sure to use quotes around these logs so special characters are not interpreted.
 
   ```yaml
   job1:
-    - name: [DEBUG] Print Variables
+    - name: "[DEBUG] Print Variables"
       run: |
         echo "all variables defined as inputs"
-        echo The last commit sha in the release: ${{ inputs.sha }}
-        echo The release version number:         ${{ inputs.version_number }}
-        echo The changelog_path:                 ${{ inputs.changelog_path }}
-        echo The build_script_path:              ${{ inputs.build_script_path }}
-        echo The s3_bucket_name:                 ${{ inputs.s3_bucket_name }}
-        echo The package_test_command:           ${{ inputs.package_test_command }}
+        echo "The last commit sha in the release: ${{ inputs.sha }}"
+        echo "The release version number:         ${{ inputs.version_number }}"
+        echo "The changelog_path:                 ${{ inputs.changelog_path }}"
+        echo "The build_script_path:              ${{ inputs.build_script_path }}"
+        echo "The s3_bucket_name:                 ${{ inputs.s3_bucket_name }}"
+        echo "The package_test_command:           ${{ inputs.package_test_command }}"
       
     # collect all the variables that need to be used in subsequent jobs
     - name: Set Variables
@@ -132,7 +169,7 @@ Some triggers of note that we use:
 
   job2:
     needs: [job1]
-      - name: '[DEBUG] Print Variables'
+      - name: "[DEBUG] Print Variables"
       run: |
         echo "all variables defined in job1 > Set Variables > outputs"
         echo "important_path: ${{ needs.job1.outputs.important_path }}"
@@ -140,7 +177,9 @@ Some triggers of note that we use:
         echo "open_prs:       ${{ needs.job1.outputs.open_prs }}"
   ```
 
+- When it's not obvious what something does, add a comment!
 
+___
 
 ## Tips
 
@@ -175,7 +214,3 @@ Some triggers of note that we use:
 ### Testing
 
 - Depending on what your action does, you may be able to use [`act`](https://github.com/nektos/act) to test the action locally.  Some features of GitHub Actions do not work with `act`, among those are reusable workflows.  If you can't use `act`, you'll have to push your changes up before being able to test.  This can be slow.
-
-- View _all_ action output from the [**Actions**](https://github.com/dbt-labs/dbt-core/actions) tab.  Workflow results last 1 year.
-
-- View the action output for your PR in the **Checks** tab of the PR.  This only shows the most recent run.
