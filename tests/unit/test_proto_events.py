@@ -1,5 +1,5 @@
-from dbt.events.types_pb2 import A001, A002
-from dbt.events.types import MainReportVersion, MainReportArgs, RollbackFailed
+from dbt.events.types_pb2 import A001, A002, E009, Z002
+from dbt.events.types import MainReportVersion, MainReportArgs, RollbackFailed, MainEncounteredError
 from dbt.version import installed
 
 from google.protobuf import json_format
@@ -68,3 +68,23 @@ def test_rollback_event():
         "conn_name",
         "code",
     }
+    event_json = event.to_json()
+
+    msg = E009()
+    msg = json_format.Parse(event_json, msg)
+    msg_dict = json_format.MessageToDict(msg, preserving_proto_field_name=True)
+    assert event_dict == msg_dict
+
+
+def test_exception_event():
+    try:
+        var = 10/0
+    except BaseException as exc:
+        event = MainEncounteredError(exc=exc)
+
+    event_dict = event.to_dict()
+    event_json = event.to_json()
+    msg = Z002()
+    msg = json_format.Parse(event_json, msg)
+    msg_dict = json_format.MessageToDict(msg, preserving_proto_field_name=True)
+    assert event_dict == msg_dict

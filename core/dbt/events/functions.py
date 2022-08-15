@@ -171,9 +171,8 @@ def create_debug_text_log_line(e: T_Event) -> str:
     color_tag: str = reset_color()
     ts: str = get_ts().strftime("%H:%M:%S.%f")
     scrubbed_msg: str = scrub_secrets(e.message(), env_secrets())
-    # What's the point of this?
-    # level: str = e.level_tag() if len(e.level_tag()) == 5 else f"{e.level_tag()} "
-    level: str = e.level
+    # Make the levels all 5 characters so they line up
+    level: str = f"{e.level:<5}"
     thread = ""
     if threading.current_thread().name:
         thread_name = threading.current_thread().name
