@@ -1,3 +1,4 @@
+betterproto[compiler]
 black==22.6.0
 bumpversion
 flake8
