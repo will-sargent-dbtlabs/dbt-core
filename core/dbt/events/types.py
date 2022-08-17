@@ -18,7 +18,8 @@ from dbt.events.base_types import (
 from dbt.events.format import format_fancy_output_line, pluralize
 from dbt.events.serialization import EventSerialization
 
-from dbt.events.core_proto_messages import A001, A002, E009, Z002, EventInfo  # noqa
+# from dbt.events.core_proto_messages import A001, A002, E009, Z002, EventInfo  # noqa
+from dbt.events.core_proto_messages import *  # noqa
 
 from dbt.node_types import NodeType
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
@@ -107,7 +108,7 @@ class MainKeyboardInterrupt(InfoLevel):
 
 
 @dataclass
-class MainEncounteredError(ErrorLvl, Z002):
+class MainEncounteredError(ErrorLvl, Z002):  # noqa
     def code(self):
         return "Z002"
 
@@ -125,7 +126,7 @@ class MainStackTrace(ErrorLevel):
 
 
 @dataclass
-class MainReportVersion(InfoLvl, A001):
+class MainReportVersion(InfoLvl, A001):  # noqa
     def code(self):
         return "A001"
 
@@ -134,7 +135,7 @@ class MainReportVersion(InfoLvl, A001):
 
 
 @dataclass
-class MainReportArgs(DebugLvl, A002):
+class MainReportArgs(DebugLvl, A002):  # noqa
     def code(self):
         return "A002"
 
@@ -503,7 +504,7 @@ class ConnectionClosed(DebugLevel):
 
 
 @dataclass
-class RollbackFailed(DebugLvl, E009):
+class RollbackFailed(DebugLvl, E009):  # noqa
     def code(self):
         return "E009"
 
