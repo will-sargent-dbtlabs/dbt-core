@@ -3,18 +3,25 @@ from dbt.adapters.reference_keys import _ReferenceKey
 from dbt import ui
 from dbt.events.base_types import (
     Event,
+    BaseEvent,
     NoFile,
     DebugLevel,
+    DebugLvl,
     InfoLevel,
+    InfoLvl,
     WarnLevel,
     ErrorLevel,
+    ErrorLvl,
     NodeInfo,
     Cache,
 )
 from dbt.events.format import format_fancy_output_line, pluralize
 from dbt.events.serialization import EventSerialization
+
+from dbt.events.core_proto_messages import *
+# from dbt.events.core_proto_messages import A001, A002, E009, Z002
 from dbt.node_types import NodeType
-from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 
 # The classes in this file represent the data necessary to describe a
@@ -25,7 +32,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
 
 
 # Type representing Event and all subclasses of Event
-T_Event = TypeVar("T_Event", bound=Event)
+T_Event = Union[Event, BaseEvent]
 
 
 # Event codes have prefixes which follow this table
@@ -100,9 +107,9 @@ class MainKeyboardInterrupt(InfoLevel):
 
 
 @dataclass
-class MainEncounteredError(ErrorLevel):
-    exc: BaseException
-    code: str = "Z002"
+class MainEncounteredError(ErrorLvl, Z002):
+    def code(self):
+        return "Z002"
 
     def message(self) -> str:
         return f"Encountered an error:\n{self.exc}"
@@ -118,18 +125,18 @@ class MainStackTrace(ErrorLevel):
 
 
 @dataclass
-class MainReportVersion(InfoLevel):
-    version: str  # could be VersionSpecifier instead if we resolved some circular imports
-    code: str = "A001"
+class MainReportVersion(InfoLvl, A001):
+    def code(self):
+        return "A001"
 
     def message(self):
         return f"Running with dbt{self.version}"
 
 
 @dataclass
-class MainReportArgs(DebugLevel):
-    args: Dict[str, str]
-    code: str = "A002"
+class MainReportArgs(DebugLvl, A002):
+    def code(self):
+        return "A002"
 
     def message(self):
         return f"running dbt with arguments {str(self.args)}"
@@ -496,9 +503,9 @@ class ConnectionClosed(DebugLevel):
 
 
 @dataclass
-class RollbackFailed(DebugLevel):
-    conn_name: Optional[str]
-    code: str = "E009"
+class RollbackFailed(DebugLvl, E009):
+    def code(self):
+        return "E009"
 
     def message(self) -> str:
         return f"Failed to rollback '{self.conn_name}'"
@@ -2484,7 +2491,7 @@ class RecordRetryException(DebugLevel):
 if 1 == 0:
     MainReportVersion(version="")
     MainKeyboardInterrupt()
-    MainEncounteredError(exc=BaseException(""))
+    MainEncounteredError(exc="")
     MainStackTrace(stack_trace="")
     MainTrackingUserState(user_state="")
     ParsingStart()

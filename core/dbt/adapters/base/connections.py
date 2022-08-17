@@ -332,7 +332,8 @@ class BaseConnectionManager(metaclass=abc.ABCMeta):
         try:
             connection.handle.rollback()
         except Exception:
-            fire_event(RollbackFailed(conn_name=connection.name))
+            conn_name = connection.name or ""
+            fire_event(RollbackFailed(conn_name=conn_name))
 
     @classmethod
     def _close_handle(cls, connection: Connection) -> None:

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from dbt.events.serialization import EventSerialization
 import os
 import threading
+import betterproto
 from typing import Any, Dict
 from datetime import datetime
 
@@ -112,6 +113,57 @@ class WarnLevel(EventSerialization, Event):
 
 @dataclass  # type: ignore[misc]
 class ErrorLevel(EventSerialization, Event):
+    def level_tag(self) -> str:
+        return "error"
+
+
+@dataclass
+class BaseEvent:
+    def __post_init__(self):
+        super().__post_init__()
+        self.info.level = self.level_tag()
+        if not hasattr(self.info, "msg") or not self.info.msg:
+            self.info.msg = self.message()
+        self.info.invocation_id = get_invocation_id()
+        self.info.ts = datetime.utcnow()
+        self.info.pid = get_pid()
+        self.info.thread_name = get_thread_name()
+        self.info.code = self.code()
+        print(f"--- end of BaseEvent.__post_init__: {self.info.code}")
+
+    def level_tag(self):
+        raise Exception("level_tag() not implemented for event")
+
+    def message(self):
+        raise Exception("message() not implemented for Event")
+
+
+@dataclass
+class TestLvl(BaseEvent):
+    def level_tag(self) -> str:
+        return "test"
+
+
+@dataclass  # type: ignore[misc]
+class DebugLvl(BaseEvent):
+    def level_tag(self) -> str:
+        return "debug"
+
+
+@dataclass  # type: ignore[misc]
+class InfoLvl(BaseEvent):
+    def level_tag(self) -> str:
+        return "info"
+
+
+@dataclass  # type: ignore[misc]
+class WarnLvl(BaseEvent):
+    def level_tag(self) -> str:
+        return "warn"
+
+
+@dataclass  # type: ignore[misc]
+class ErrorLvl(BaseEvent):
     def level_tag(self) -> str:
         return "error"
 

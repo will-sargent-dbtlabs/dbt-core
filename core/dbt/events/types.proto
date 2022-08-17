@@ -1,11 +1,10 @@
 syntax = "proto3";
 
-package dbt_core_events;
+package core_proto_messages;
 
 import "google/protobuf/timestamp.proto";
 
-
-message A001 {
+message EventInfo {
     string code = 1;
     string msg = 2;
     string level = 3;
@@ -13,38 +12,25 @@ message A001 {
     int32 pid = 5;
     string thread_name = 6;
     google.protobuf.Timestamp ts = 7;
+}
+
+
+message A001 {
+    EventInfo info = 1;
     string version = 10;
 }
 
 message A002 {
-    string code = 1;
-    string msg = 2;
-    string level = 3;
-    string invocation_id = 4;
-    int32 pid = 5;
-    string thread_name = 6;
-    google.protobuf.Timestamp ts = 7;
+    EventInfo info = 1;
     map<string, string> args = 10;  // Dict[str, str]
 }
 
 message E009 {
-    string code = 1;
-    string msg = 2;
-    string level = 3;
-    string invocation_id = 4;
-    int32 pid = 5;
-    string thread_name = 6;
-    google.protobuf.Timestamp ts = 7;
+    EventInfo info = 1;
     string conn_name = 10;
 }
 
 message Z002 {
-    string code = 1;
-    string msg = 2;
-    string level = 3;
-    string invocation_id = 4;
-    int32 pid = 5;
-    string thread_name = 6;
-    google.protobuf.Timestamp ts = 7;
+    EventInfo info = 1;
     string exc = 10;
 }

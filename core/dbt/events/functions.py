@@ -1,6 +1,6 @@
 from colorama import Style
 import dbt.events.functions as this  # don't worry I hate it too.
-from dbt.events.base_types import NoStdOut, Event, NoFile, Cache
+from dbt.events.base_types import NoStdOut, Event, BaseEvent, NoFile, Cache
 from dbt.events.types import EventBufferFull, T_Event, MainReportVersion, EmptyLine
 import dbt.flags as flags
 from dbt.constants import SECRET_ENV_PREFIX
@@ -172,7 +172,7 @@ def create_debug_text_log_line(e: T_Event) -> str:
     ts: str = get_ts().strftime("%H:%M:%S.%f")
     scrubbed_msg: str = scrub_secrets(e.message(), env_secrets())
     # Make the levels all 5 characters so they line up
-    level: str = f"{e.level:<5}"
+    level: str = f"{e.level_tag():<5}"
     thread = ""
     if threading.current_thread().name:
         thread_name = threading.current_thread().name
@@ -236,7 +236,7 @@ def fire_event_if(conditional: bool, lazy_e: Callable[[], Event]) -> None:
 # this is where all the side effects happen branched by event type
 # (i.e. - mutating the event history, printing to stdout, logging
 # to files, etc.)
-def fire_event(e: Event) -> None:
+def fire_event(e: Union[Event, BaseEvent]) -> None:
     # skip logs when `--log-cache-events` is not passed
     if isinstance(e, Cache) and not flags.LOG_CACHE_EVENTS:
         return
