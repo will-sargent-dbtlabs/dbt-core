@@ -160,7 +160,7 @@ def MockNode():
 sample_values = [
     MainReportVersion(version=''),
     MainKeyboardInterrupt(),
-    MainEncounteredError(exc=BaseException('')),
+    MainEncounteredError(exc=''),
     MainStackTrace(stack_trace=''),
     MainTrackingUserState(user_state=''),
     ParsingStart(),
