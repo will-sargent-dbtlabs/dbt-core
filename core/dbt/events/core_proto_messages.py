@@ -15,7 +15,7 @@ class EventInfo(betterproto.Message):
     level: str = betterproto.string_field(3)
     invocation_id: str = betterproto.string_field(4)
     pid: int = betterproto.int32_field(5)
-    thread_name: str = betterproto.string_field(6)
+    thread: str = betterproto.string_field(6)
     ts: datetime = betterproto.message_field(7)
 
 

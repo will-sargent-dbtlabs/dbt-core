@@ -8,7 +8,7 @@ from dbt.events.types import (
 from dbt.version import installed
 import betterproto
 
-info_keys = {"code", "msg", "level", "invocation_id", "pid", "thread_name", "ts"}
+info_keys = {"code", "msg", "level", "invocation_id", "pid", "thread", "ts"}
 
 
 def test_events():
@@ -17,6 +17,8 @@ def test_events():
     event = MainReportVersion(version=str(installed))
     event_dict = event.to_dict(casing=betterproto.Casing.SNAKE)
     event_json = event.to_json()
+    serialized = bytes(event)
+    assert "Running with dbt=" in str(serialized)
 
     assert set(event_dict.keys()) == {"version", "info"}
     assert set(event_dict["info"].keys()) == info_keys

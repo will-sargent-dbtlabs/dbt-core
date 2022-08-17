@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from dbt.events.serialization import EventSerialization
 import os
 import threading
-import betterproto
 from typing import Any, Dict
 from datetime import datetime
 
@@ -127,9 +126,8 @@ class BaseEvent:
         self.info.invocation_id = get_invocation_id()
         self.info.ts = datetime.utcnow()
         self.info.pid = get_pid()
-        self.info.thread_name = get_thread_name()
+        self.info.thread = get_thread_name()
         self.info.code = self.code()
-        print(f"--- end of BaseEvent.__post_init__: {self.info.code}")
 
     def level_tag(self):
         raise Exception("level_tag() not implemented for event")

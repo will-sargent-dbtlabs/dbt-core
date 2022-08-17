@@ -138,7 +138,7 @@ def event_to_serializable_dict(
     event_dict = dict()
     code: str
     try:
-        event_dict = e.to_dict()
+        event_dict = e.to_dict()  # type: ignore
     except AttributeError as exc:
         event_type = type(e).__name__
         raise Exception(  # TODO this may hang async threads
