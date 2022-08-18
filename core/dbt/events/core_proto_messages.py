@@ -22,6 +22,13 @@ class EventInfo(betterproto.Message):
 
 
 @dataclass
+class GenericMessage(betterproto.Message):
+    """GenericMessage"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
 class A001(betterproto.Message):
     """MainReportVersion"""
 

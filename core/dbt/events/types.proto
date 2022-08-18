@@ -15,6 +15,11 @@ message EventInfo {
     google.protobuf.Timestamp ts = 7;
 }
 
+// GenericMessage, used for deserializing only
+message GenericMessage {
+    EventInfo info = 1;
+}
+
 // MainReportVersion
 message A001 {
     EventInfo info = 1;

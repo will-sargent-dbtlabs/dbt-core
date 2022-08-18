@@ -1,4 +1,4 @@
-# from dbt.events.types_pb2 import A001, A002, E009, Z002
+import sys
 from dbt.events.types import (
     MainReportVersion,
     MainReportArgs,
@@ -6,6 +6,7 @@ from dbt.events.types import (
     MainEncounteredError,
     PluginLoadError,
 )
+from dbt.events.core_proto_messages import GenericMessage
 from dbt.version import installed
 import betterproto
 
@@ -20,11 +21,19 @@ def test_events():
     event_json = event.to_json()
     serialized = bytes(event)
     assert "Running with dbt=" in str(serialized)
-
     assert set(event_dict.keys()) == {"version", "info"}
     assert set(event_dict["info"].keys()) == info_keys
     assert event_json
     assert event.info.code == "A001"
+
+    # Extract EventInfo from serialized message
+    generic_event = GenericMessage().parse(serialized)
+    assert generic_event.info.code == "A001"
+    # get the message class for the real message from the generic message
+    message_class = getattr(sys.modules["dbt.events.core_proto_messages"], generic_event.info.code)
+    new_event = message_class().parse(serialized)
+    assert new_event.info.code == event.info.code
+    assert new_event.version == event.version
 
     # A002 event
     event = MainReportArgs(args={"one": "1", "two": "2"})
