@@ -10,19 +10,19 @@ from dbt.events.base_types import (
     InfoLevel,
     InfoLvl,
     WarnLevel,
+    WarnLvl,
     ErrorLevel,
     ErrorLvl,
     NodeInfo,
     Cache,
 )
 from dbt.events.format import format_fancy_output_line, pluralize
-from dbt.events.serialization import EventSerialization
 
 # from dbt.events.core_proto_messages import A001, A002, E009, Z002, EventInfo  # noqa
 from dbt.events.core_proto_messages import *  # noqa
 
 from dbt.node_types import NodeType
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 
 # The classes in this file represent the data necessary to describe a
@@ -52,51 +52,48 @@ T_Event = Union[Event, BaseEvent]
 #
 # The basic idea is that event codes roughly translate to the natural order of running a dbt task
 
-# TODO: remove ingore when this is fixed:
-# https://github.com/python/mypy/issues/5374
 
-
-@dataclass  # type: ignore
-class AdapterEventBase(EventSerialization, Event):
-    name: str
-    base_msg: str
-    args: Tuple[Any, ...]
-
-    # instead of having this inherit from one of the level classes
-    def level_tag(self) -> str:
-        raise Exception("level_tag should never be called on AdapterEventBase")
-
-    def message(self) -> str:
-        # this class shouldn't be createable, but we can't make it an ABC because of a mypy bug
-        if type(self).__name__ == "AdapterEventBase":
-            raise Exception(
-                "attempted to create a message for AdapterEventBase which cannot be created"
-            )
-
-        # only apply formatting if there are arguments to format.
-        # avoids issues like "dict: {k: v}".format() which results in `KeyError 'k'`
-        msg = self.base_msg if len(self.args) == 0 else self.base_msg.format(*self.args)
-        return f"{self.name} adapter: {msg}"
+def format_adapter_message(name, base_msg, args) -> str:
+    # only apply formatting if there are arguments to format.
+    # avoids issues like "dict: {k: v}".format() which results in `KeyError 'k'`
+    msg = base_msg if len(args) == 0 else base_msg.format(*args)
+    return f"{name} adapter: {msg}"
 
 
 @dataclass
-class AdapterEventDebug(DebugLevel, AdapterEventBase):
-    code: str = "E001"
+class AdapterEventDebug(DebugLvl, E001):  # noqa
+    def code(self):
+        return "E001"
+
+    def message(self):
+        return format_adapter_message(self.name, self.base_msg, self.args)
 
 
 @dataclass
-class AdapterEventInfo(InfoLevel, AdapterEventBase):
-    code: str = "E002"
+class AdapterEventInfo(InfoLvl, E002):  # noqa
+    def code(self):
+        return "E002"
+
+    def message(self):
+        return format_adapter_message(self.name, self.base_msg, self.args)
 
 
 @dataclass
-class AdapterEventWarning(WarnLevel, AdapterEventBase):
-    code: str = "E003"
+class AdapterEventWarning(WarnLvl, E003):  # noqa
+    def code(self):
+        return "E003"
+
+    def message(self):
+        return format_adapter_message(self.name, self.base_msg, self.args)
 
 
 @dataclass
-class AdapterEventError(ErrorLevel, AdapterEventBase):
-    code: str = "E004"
+class AdapterEventError(ErrorLvl, E004):  # noqa
+    def code(self):
+        return "E004"
+
+    def message(self):
+        return format_adapter_message(self.name, self.base_msg, self.args)
 
 
 @dataclass
@@ -776,8 +773,9 @@ class AdapterImportError(InfoLevel):
 
 
 @dataclass
-class PluginLoadError(DebugLevel):
-    code: str = "E036"
+class PluginLoadError(DebugLvl, E036):  # noqa
+    def code(self):
+        return "E036"
 
     def message(self):
         pass
@@ -1012,10 +1010,9 @@ class PartialParsingNotEnabled(DebugLevel):
 
 
 @dataclass
-class ParsedFileLoadFailed(DebugLevel):
-    path: str
-    exc: Exception
-    code: str = "I029"
+class ParsedFileLoadFailed(DebugLvl, I029):  # noqa
+    def code(self):
+        return "I029"
 
     def message(self) -> str:
         return f"Failed to load parsed file from disk at {self.path}: {self.exc}"
@@ -1318,9 +1315,9 @@ https://docs.getdbt.com/docs/configure-your-profile
 
 
 @dataclass
-class CatchableExceptionOnRun(DebugLevel):
-    exc: Exception
-    code: str = "W002"
+class CatchableExceptionOnRun(DebugLvl, W002):  # noqa
+    def code(self):
+        return "W002"
 
     def message(self) -> str:
         return str(self.exc)
@@ -1347,8 +1344,9 @@ the error persists, open an issue at https://github.com/dbt-labs/dbt-core
 # This prints the stack trace at the debug level while allowing just the nice exception message
 # at the error level - or whatever other level chosen.  Used in multiple places.
 @dataclass
-class PrintDebugStackTrace(DebugLevel):
-    code: str = "Z011"
+class PrintDebugStackTrace(DebugLvl, Z011):  # noqa
+    def code(self):
+        return "Z011"
 
     def message(self) -> str:
         return ""
@@ -1370,10 +1368,9 @@ class GenericExceptionOnRun(ErrorLevel):
 
 
 @dataclass
-class NodeConnectionReleaseError(DebugLevel):
-    node_name: str
-    exc: Exception
-    code: str = "W005"
+class NodeConnectionReleaseError(DebugLvl, W005):  # noqa
+    def code(self):
+        return "W005"
 
     def message(self) -> str:
         return "Error releasing connection for node {}: {!s}".format(self.node_name, self.exc)
@@ -1696,9 +1693,9 @@ class SQLCompiledPath(InfoLevel):
 
 
 @dataclass
-class SQLRunnerException(DebugLevel):
-    exc: Exception
-    code: str = "Q006"
+class SQLRunnerException(DebugLvl, Q006):  # noqa
+    def code(self):
+        return "Q006"
 
     def message(self) -> str:
         return f"Got an exception: {self.exc}"
@@ -2426,8 +2423,9 @@ class FlushEventsFailure(DebugLevel):
 
 
 @dataclass
-class TrackingInitializeFailure(DebugLevel):
-    code: str = "Z044"
+class TrackingInitializeFailure(DebugLvl, Z044):  # noqa
+    def code(self):
+        return "Z044"
 
     def message(self) -> str:
         return "Got an exception trying to initialize tracking"
@@ -2578,7 +2576,7 @@ if 1 == 0:
     DumpBeforeRenameSchema(dump=dict())
     DumpAfterRenameSchema(dump=dict())
     AdapterImportError(exc=Exception())
-    PluginLoadError()
+    PluginLoadError(exc_info="")
     SystemReportReturnCode(returncode=0)
     NewConnectionOpening(connection_state="")
     TimingInfoCollected()
@@ -2600,7 +2598,7 @@ if 1 == 0:
     PartialParsingFailedBecauseNewProjectDependency()
     PartialParsingFailedBecauseHashChanged()
     PartialParsingDeletedMetric(id="")
-    ParsedFileLoadFailed(path="", exc=Exception(""))
+    ParsedFileLoadFailed(path="", exc="", exc_info="")
     PartialParseSaveFileNotFound()
     StaticParserCausedJinjaRendering(path="")
     UsingExperimentalParser(path="")
@@ -2633,10 +2631,10 @@ if 1 == 0:
     ListSingleProfile(profile="")
     NoDefinedProfiles()
     ProfileHelpMessage()
-    CatchableExceptionOnRun(exc=Exception(""))
+    CatchableExceptionOnRun(exc="")
     InternalExceptionOnRun(build_path="", exc=Exception(""))
     GenericExceptionOnRun(build_path="", unique_id="", exc=Exception(""))
-    NodeConnectionReleaseError(node_name="", exc=Exception(""))
+    NodeConnectionReleaseError(node_name="", exc="")
     CheckCleanPath(path="")
     ConfirmCleanPath(path="")
     ProtectedCleanPath(path="")

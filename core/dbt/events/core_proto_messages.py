@@ -3,13 +3,15 @@
 # plugin: python-betterproto
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 
 import betterproto
 
 
 @dataclass
 class EventInfo(betterproto.Message):
+    """Common event info"""
+
     code: str = betterproto.string_field(1)
     msg: str = betterproto.string_field(2)
     level: str = betterproto.string_field(3)
@@ -21,25 +23,137 @@ class EventInfo(betterproto.Message):
 
 @dataclass
 class A001(betterproto.Message):
+    """MainReportVersion"""
+
     info: "EventInfo" = betterproto.message_field(1)
-    version: str = betterproto.string_field(10)
+    version: str = betterproto.string_field(2)
 
 
 @dataclass
 class A002(betterproto.Message):
+    """MainReportArgs"""
+
     info: "EventInfo" = betterproto.message_field(1)
     args: Dict[str, str] = betterproto.map_field(
-        10, betterproto.TYPE_STRING, betterproto.TYPE_STRING
+        2, betterproto.TYPE_STRING, betterproto.TYPE_STRING
     )
 
 
 @dataclass
 class E009(betterproto.Message):
+    """RollbackFailed"""
+
     info: "EventInfo" = betterproto.message_field(1)
-    conn_name: str = betterproto.string_field(10)
+    conn_name: str = betterproto.string_field(2)
+    exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
 class Z002(betterproto.Message):
+    """MainEncounteredError"""
+
     info: "EventInfo" = betterproto.message_field(1)
-    exc: str = betterproto.string_field(10)
+    exc: str = betterproto.string_field(2)
+
+
+@dataclass
+class E036(betterproto.Message):
+    """PluginLoadError"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc_info: str = betterproto.string_field(2)
+
+
+@dataclass
+class I029(betterproto.Message):
+    """ParsedFileLoadFailed"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    path: str = betterproto.string_field(2)
+    exc: str = betterproto.string_field(3)
+    exc_info: str = betterproto.string_field(4)
+
+
+@dataclass
+class W002(betterproto.Message):
+    """CatchableExceptionOnRun"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc: str = betterproto.string_field(2)
+    exc_info: str = betterproto.string_field(3)
+
+
+@dataclass
+class Z011(betterproto.Message):
+    """PrintDebugStackTrace"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc_info: str = betterproto.string_field(2)
+
+
+@dataclass
+class W005(betterproto.Message):
+    """NodeConnectionReleaseError"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_name: str = betterproto.string_field(2)
+    exc: str = betterproto.string_field(3)
+    exc_info: str = betterproto.string_field(4)
+
+
+@dataclass
+class Q006(betterproto.Message):
+    """SQLRunnerException"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc: str = betterproto.string_field(2)
+    exc_info: str = betterproto.string_field(3)
+
+
+@dataclass
+class Z044(betterproto.Message):
+    """TrackingInitializeFailure"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc_info: str = betterproto.string_field(2)
+
+
+@dataclass
+class E001(betterproto.Message):
+    """AdapterEventDebug"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+    base_msg: str = betterproto.string_field(3)
+    args: List[str] = betterproto.string_field(4)
+
+
+@dataclass
+class E002(betterproto.Message):
+    """AdapterEventInfo"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+    base_msg: str = betterproto.string_field(3)
+    args: List[str] = betterproto.string_field(4)
+
+
+@dataclass
+class E003(betterproto.Message):
+    """AdapterEventWarning"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+    base_msg: str = betterproto.string_field(3)
+    args: List[str] = betterproto.string_field(4)
+
+
+@dataclass
+class E004(betterproto.Message):
+    """AdapterEventError"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+    base_msg: str = betterproto.string_field(3)
+    args: List[str] = betterproto.string_field(4)
+    exc_info: str = betterproto.string_field(5)

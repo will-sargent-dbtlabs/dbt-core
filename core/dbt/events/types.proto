@@ -4,6 +4,7 @@ package core_proto_messages;
 
 import "google/protobuf/timestamp.proto";
 
+// Common event info
 message EventInfo {
     string code = 1;
     string msg = 2;
@@ -14,23 +15,109 @@ message EventInfo {
     google.protobuf.Timestamp ts = 7;
 }
 
-
+// MainReportVersion
 message A001 {
     EventInfo info = 1;
-    string version = 10;
+    string version = 2;
 }
 
+// MainReportArgs
 message A002 {
     EventInfo info = 1;
-    map<string, string> args = 10;  // Dict[str, str]
+    map<string, string> args = 2;  // Dict[str, str]
 }
 
+// RollbackFailed
 message E009 {
     EventInfo info = 1;
-    string conn_name = 10;
+    string conn_name = 2;
+    string exc_info = 3;
 }
 
+// MainEncounteredError
 message Z002 {
     EventInfo info = 1;
-    string exc = 10;
+    string exc = 2;
+}
+
+// PluginLoadError
+message E036 {
+    EventInfo info = 1;
+    string exc_info = 2;
+
+}
+
+// ParsedFileLoadFailed
+message I029 {
+    EventInfo info = 1;
+    string path = 2;
+    string exc = 3;
+    string exc_info = 4;
+}
+
+// CatchableExceptionOnRun
+message W002 {
+    EventInfo info = 1;
+    string exc = 2;
+    string exc_info = 3;
+}
+
+// PrintDebugStackTrace
+message Z011 {
+    EventInfo info = 1;
+    string exc_info = 2;
+}
+
+// NodeConnectionReleaseError
+message W005 {
+    EventInfo info = 1;
+    string node_name = 2;
+    string exc = 3;
+    string exc_info = 4;
+}
+
+// SQLRunnerException
+message Q006 {
+    EventInfo info = 1;
+    string exc = 2;
+    string exc_info = 3;
+}
+
+// TrackingInitializeFailure
+message Z044 {
+    EventInfo info = 1;
+    string exc_info = 2;
+}
+
+// AdapterEventDebug
+message E001 {
+    EventInfo info = 1;
+    string name = 2;
+    string base_msg = 3;
+    repeated string args = 4;
+}
+
+// AdapterEventInfo
+message E002 {
+    EventInfo info = 1;
+    string name = 2;
+    string base_msg = 3;
+    repeated string args = 4;
+}
+
+// AdapterEventWarning
+message E003 {
+    EventInfo info = 1;
+    string name = 2;
+    string base_msg = 3;
+    repeated string args = 4;
+}
+
+// AdapterEventError
+message E004 {
+    EventInfo info = 1;
+    string name = 2;
+    string base_msg = 3;
+    repeated string args = 4;
+    string exc_info = 5;
 }

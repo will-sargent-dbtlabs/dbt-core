@@ -4,6 +4,7 @@ from dbt.events.types import (
     MainReportArgs,
     RollbackFailed,
     MainEncounteredError,
+    PluginLoadError,
 )
 from dbt.version import installed
 import betterproto
@@ -36,14 +37,24 @@ def test_events():
     assert event.info.code == "A002"
 
 
-def test_rollback_event():
-    event = RollbackFailed(conn_name="test")
+def test_exception_events():
+    event = RollbackFailed(conn_name="test", exc_info="something failed")
     event_dict = event.to_dict(casing=betterproto.Casing.SNAKE)
     event_json = event.to_json()
-    assert set(event_dict.keys()) == {"info", "conn_name"}
+    assert set(event_dict.keys()) == {"info", "conn_name", "exc_info"}
     assert set(event_dict["info"].keys()) == info_keys
     assert event_json
     assert event.info.code == "E009"
+
+    event = PluginLoadError(exc_info="something failed")
+    event_dict = event.to_dict(casing=betterproto.Casing.SNAKE)
+    event_json = event.to_json()
+    assert set(event_dict.keys()) == {"info", "exc_info"}
+    assert set(event_dict["info"].keys()) == info_keys
+    assert event_json
+    assert event.info.code == "E036"
+    # This event has no "msg"/"message"
+    assert event.info.msg is None
 
 
 def test_exception_event():

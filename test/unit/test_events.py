@@ -25,7 +25,7 @@ def get_all_subclasses(cls):
     all_subclasses = []
     for subclass in cls.__subclasses__():
         # If the test breaks because of abcs this list might have to be updated.
-        if subclass in [NodeInfo, AdapterEventBase, TestLevel, DebugLevel, WarnLevel, InfoLevel, ErrorLevel]:
+        if subclass in [NodeInfo, TestLevel, DebugLevel, WarnLevel, InfoLevel, ErrorLevel]:
             continue
         all_subclasses.append(subclass)
         all_subclasses.extend(get_all_subclasses(subclass))
@@ -296,10 +296,10 @@ sample_values = [
     ListSingleProfile(profile=''),
     NoDefinedProfiles(),
     ProfileHelpMessage(),
-    CatchableExceptionOnRun(exc=Exception('')),
+    CatchableExceptionOnRun(exc=''),
     InternalExceptionOnRun(build_path='', exc=Exception('')),
     GenericExceptionOnRun(build_path='', unique_id='', exc=''),
-    NodeConnectionReleaseError(node_name='', exc=Exception('')),
+    NodeConnectionReleaseError(node_name='', exc=''),
     CheckCleanPath(path=''),
     ConfirmCleanPath(path=''),
     ProtectedCleanPath(path=''),
@@ -411,7 +411,7 @@ sample_values = [
     RegistryResponseExtraNestedKeys(response=""),
     DepsUTD(),
     PartialParsingNotEnabled(),
-    SQLRunnerException(exc=Exception('')),
+    SQLRunnerException(exc=''),
     DropRelation(dropped=_ReferenceKey(database="", schema="", identifier="")),
     PartialParsingProjectEnvVarsChanged(),
     RegistryProgressGETResponse(url='', resp_code=1),

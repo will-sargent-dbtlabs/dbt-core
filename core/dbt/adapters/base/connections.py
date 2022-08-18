@@ -2,6 +2,7 @@ import abc
 import os
 from time import sleep
 import sys
+import traceback
 
 # multiprocessing.RLock is a function returning this type
 from multiprocessing.synchronize import RLock
@@ -333,7 +334,7 @@ class BaseConnectionManager(metaclass=abc.ABCMeta):
             connection.handle.rollback()
         except Exception:
             conn_name = connection.name or ""
-            fire_event(RollbackFailed(conn_name=conn_name))
+            fire_event(RollbackFailed(conn_name=conn_name, exc_info=traceback.format_exc()))
 
     @classmethod
     def _close_handle(cls, connection: Connection) -> None:
