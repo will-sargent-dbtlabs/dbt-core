@@ -120,6 +120,8 @@ class ErrorLevel(EventSerialization, Event):
 
 @dataclass
 class BaseEvent:
+    """BaseEvent for proto message generated python events"""
+
     def __post_init__(self):
         super().__post_init__()
         self.info.level = self.level_tag()
@@ -130,6 +132,7 @@ class BaseEvent:
         self.info.pid = get_pid()
         self.info.thread = get_thread_name()
         self.info.code = self.code()
+        self.info.name = type(self).__name__
 
     def level_tag(self):
         raise Exception("level_tag() not implemented for event")

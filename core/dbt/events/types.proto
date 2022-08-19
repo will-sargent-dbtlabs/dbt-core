@@ -6,13 +6,14 @@ import "google/protobuf/timestamp.proto";
 
 // Common event info
 message EventInfo {
-    string code = 1;
-    string msg = 2;
-    string level = 3;
-    string invocation_id = 4;
-    int32 pid = 5;
-    string thread = 6;
-    google.protobuf.Timestamp ts = 7;
+    string name = 1;
+    string code = 2;
+    string msg = 3;
+    string level = 4;
+    string invocation_id = 5;
+    int32 pid = 6;
+    string thread = 7;
+    google.protobuf.Timestamp ts = 8;
 }
 
 // GenericMessage, used for deserializing only
@@ -21,39 +22,39 @@ message GenericMessage {
 }
 
 // MainReportVersion
-message A001 {
+message MainReportVersion {
     EventInfo info = 1;
     string version = 2;
 }
 
 // MainReportArgs
-message A002 {
+message MainReportArgs {
     EventInfo info = 1;
     map<string, string> args = 2;  // Dict[str, str]
 }
 
 // RollbackFailed
-message E009 {
+message RollbackFailed {
     EventInfo info = 1;
     string conn_name = 2;
     string exc_info = 3;
 }
 
 // MainEncounteredError
-message Z002 {
+message MainEncounteredError {
     EventInfo info = 1;
     string exc = 2;
 }
 
 // PluginLoadError
-message E036 {
+message PluginLoadError {
     EventInfo info = 1;
     string exc_info = 2;
 
 }
 
 // ParsedFileLoadFailed
-message I029 {
+message ParsedFileLoadFailed {
     EventInfo info = 1;
     string path = 2;
     string exc = 3;
@@ -61,20 +62,20 @@ message I029 {
 }
 
 // CatchableExceptionOnRun
-message W002 {
+message CatchableExceptionOnRun {
     EventInfo info = 1;
     string exc = 2;
     string exc_info = 3;
 }
 
 // PrintDebugStackTrace
-message Z011 {
+message PrintDebugStackTrace {
     EventInfo info = 1;
     string exc_info = 2;
 }
 
 // NodeConnectionReleaseError
-message W005 {
+message NodeConnectionReleaseError {
     EventInfo info = 1;
     string node_name = 2;
     string exc = 3;
@@ -82,20 +83,20 @@ message W005 {
 }
 
 // SQLRunnerException
-message Q006 {
+message SQLRunnerException {
     EventInfo info = 1;
     string exc = 2;
     string exc_info = 3;
 }
 
 // TrackingInitializeFailure
-message Z044 {
+message TrackingInitializeFailure {
     EventInfo info = 1;
     string exc_info = 2;
 }
 
 // AdapterEventDebug
-message E001 {
+message AdapterEventDebug {
     EventInfo info = 1;
     string name = 2;
     string base_msg = 3;
@@ -103,7 +104,7 @@ message E001 {
 }
 
 // AdapterEventInfo
-message E002 {
+message AdapterEventInfo {
     EventInfo info = 1;
     string name = 2;
     string base_msg = 3;
@@ -111,15 +112,15 @@ message E002 {
 }
 
 // AdapterEventWarning
-message E003 {
+message AdapterEventWarning {
     EventInfo info = 1;
     string name = 2;
     string base_msg = 3;
     repeated string args = 4;
 }
 
-// AdapterEventError
-message E004 {
+// E004
+message AdapterEventError {
     EventInfo info = 1;
     string name = 2;
     string base_msg = 3;

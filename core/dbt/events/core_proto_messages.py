@@ -12,154 +12,155 @@ import betterproto
 class EventInfo(betterproto.Message):
     """Common event info"""
 
-    code: str = betterproto.string_field(1)
-    msg: str = betterproto.string_field(2)
-    level: str = betterproto.string_field(3)
-    invocation_id: str = betterproto.string_field(4)
-    pid: int = betterproto.int32_field(5)
-    thread: str = betterproto.string_field(6)
-    ts: datetime = betterproto.message_field(7)
+    name: str = betterproto.string_field(1)
+    code: str = betterproto.string_field(2)
+    msg: str = betterproto.string_field(3)
+    level: str = betterproto.string_field(4)
+    invocation_id: str = betterproto.string_field(5)
+    pid: int = betterproto.int32_field(6)
+    thread: str = betterproto.string_field(7)
+    ts: datetime = betterproto.message_field(8)
 
 
 @dataclass
 class GenericMessage(betterproto.Message):
-    """GenericMessage"""
+    """GenericMessage, used for deserializing only"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
 
 
 @dataclass
-class A001(betterproto.Message):
+class MainReportVersion(betterproto.Message):
     """MainReportVersion"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     version: str = betterproto.string_field(2)
 
 
 @dataclass
-class A002(betterproto.Message):
+class MainReportArgs(betterproto.Message):
     """MainReportArgs"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     args: Dict[str, str] = betterproto.map_field(
         2, betterproto.TYPE_STRING, betterproto.TYPE_STRING
     )
 
 
 @dataclass
-class E009(betterproto.Message):
+class RollbackFailed(betterproto.Message):
     """RollbackFailed"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     conn_name: str = betterproto.string_field(2)
     exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
-class Z002(betterproto.Message):
+class MainEncounteredError(betterproto.Message):
     """MainEncounteredError"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     exc: str = betterproto.string_field(2)
 
 
 @dataclass
-class E036(betterproto.Message):
+class PluginLoadError(betterproto.Message):
     """PluginLoadError"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     exc_info: str = betterproto.string_field(2)
 
 
 @dataclass
-class I029(betterproto.Message):
+class ParsedFileLoadFailed(betterproto.Message):
     """ParsedFileLoadFailed"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     path: str = betterproto.string_field(2)
     exc: str = betterproto.string_field(3)
     exc_info: str = betterproto.string_field(4)
 
 
 @dataclass
-class W002(betterproto.Message):
+class CatchableExceptionOnRun(betterproto.Message):
     """CatchableExceptionOnRun"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     exc: str = betterproto.string_field(2)
     exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
-class Z011(betterproto.Message):
+class PrintDebugStackTrace(betterproto.Message):
     """PrintDebugStackTrace"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     exc_info: str = betterproto.string_field(2)
 
 
 @dataclass
-class W005(betterproto.Message):
+class NodeConnectionReleaseError(betterproto.Message):
     """NodeConnectionReleaseError"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     node_name: str = betterproto.string_field(2)
     exc: str = betterproto.string_field(3)
     exc_info: str = betterproto.string_field(4)
 
 
 @dataclass
-class Q006(betterproto.Message):
+class SQLRunnerException(betterproto.Message):
     """SQLRunnerException"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     exc: str = betterproto.string_field(2)
     exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
-class Z044(betterproto.Message):
+class TrackingInitializeFailure(betterproto.Message):
     """TrackingInitializeFailure"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     exc_info: str = betterproto.string_field(2)
 
 
 @dataclass
-class E001(betterproto.Message):
+class AdapterEventDebug(betterproto.Message):
     """AdapterEventDebug"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     name: str = betterproto.string_field(2)
     base_msg: str = betterproto.string_field(3)
     args: List[str] = betterproto.string_field(4)
 
 
 @dataclass
-class E002(betterproto.Message):
+class AdapterEventInfo(betterproto.Message):
     """AdapterEventInfo"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     name: str = betterproto.string_field(2)
     base_msg: str = betterproto.string_field(3)
     args: List[str] = betterproto.string_field(4)
 
 
 @dataclass
-class E003(betterproto.Message):
+class AdapterEventWarning(betterproto.Message):
     """AdapterEventWarning"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     name: str = betterproto.string_field(2)
     base_msg: str = betterproto.string_field(3)
     args: List[str] = betterproto.string_field(4)
 
 
 @dataclass
-class E004(betterproto.Message):
-    """AdapterEventError"""
+class AdapterEventError(betterproto.Message):
+    """E004"""
 
-    info: "EventInfo" = betterproto.message_field(1)
+    info: EventInfo = betterproto.message_field(1)
     name: str = betterproto.string_field(2)
     base_msg: str = betterproto.string_field(3)
     args: List[str] = betterproto.string_field(4)

@@ -6,11 +6,11 @@ from dbt.events.types import (
     MainEncounteredError,
     PluginLoadError,
 )
-from dbt.events.core_proto_messages import GenericMessage
+from dbt.events import core_proto_messages as cpm
 from dbt.version import installed
 import betterproto
 
-info_keys = {"code", "msg", "level", "invocation_id", "pid", "thread", "ts"}
+info_keys = {"name", "code", "msg", "level", "invocation_id", "pid", "thread", "ts"}
 
 
 def test_events():
@@ -27,10 +27,10 @@ def test_events():
     assert event.info.code == "A001"
 
     # Extract EventInfo from serialized message
-    generic_event = GenericMessage().parse(serialized)
+    generic_event = cpm.GenericMessage().parse(serialized)
     assert generic_event.info.code == "A001"
     # get the message class for the real message from the generic message
-    message_class = getattr(sys.modules["dbt.events.core_proto_messages"], generic_event.info.code)
+    message_class = getattr(sys.modules["dbt.events.core_proto_messages"], generic_event.info.name)
     new_event = message_class().parse(serialized)
     assert new_event.info.code == event.info.code
     assert new_event.version == event.version

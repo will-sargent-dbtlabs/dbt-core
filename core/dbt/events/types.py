@@ -18,8 +18,9 @@ from dbt.events.base_types import (
 )
 from dbt.events.format import format_fancy_output_line, pluralize
 
-# from dbt.events.core_proto_messages import A001, A002, E009, Z002, EventInfo  # noqa
-from dbt.events.core_proto_messages import *  # noqa
+# Not sure why betterproto is quoting EventInfo, requiring the following line
+#from dbt.events.core_proto_messages import EventInfo
+from dbt.events import core_proto_messages as cpm
 
 from dbt.node_types import NodeType
 from typing import Any, Dict, List, Optional, Set, Union
@@ -61,7 +62,7 @@ def format_adapter_message(name, base_msg, args) -> str:
 
 
 @dataclass
-class AdapterEventDebug(DebugLvl, E001):  # noqa
+class AdapterEventDebug(DebugLvl, cpm.AdapterEventDebug):  # noqa
     def code(self):
         return "E001"
 
@@ -70,7 +71,7 @@ class AdapterEventDebug(DebugLvl, E001):  # noqa
 
 
 @dataclass
-class AdapterEventInfo(InfoLvl, E002):  # noqa
+class AdapterEventInfo(InfoLvl, cpm.AdapterEventInfo):  # noqa
     def code(self):
         return "E002"
 
@@ -79,7 +80,7 @@ class AdapterEventInfo(InfoLvl, E002):  # noqa
 
 
 @dataclass
-class AdapterEventWarning(WarnLvl, E003):  # noqa
+class AdapterEventWarning(WarnLvl, cpm.AdapterEventWarning):  # noqa
     def code(self):
         return "E003"
 
@@ -88,7 +89,7 @@ class AdapterEventWarning(WarnLvl, E003):  # noqa
 
 
 @dataclass
-class AdapterEventError(ErrorLvl, E004):  # noqa
+class AdapterEventError(ErrorLvl, cpm.AdapterEventError):  # noqa
     def code(self):
         return "E004"
 
@@ -105,7 +106,7 @@ class MainKeyboardInterrupt(InfoLevel):
 
 
 @dataclass
-class MainEncounteredError(ErrorLvl, Z002):  # noqa
+class MainEncounteredError(ErrorLvl, cpm.MainEncounteredError):  # noqa
     def code(self):
         return "Z002"
 
@@ -123,7 +124,7 @@ class MainStackTrace(ErrorLevel):
 
 
 @dataclass
-class MainReportVersion(InfoLvl, A001):  # noqa
+class MainReportVersion(InfoLvl, cpm.MainReportVersion):  # noqa
     def code(self):
         return "A001"
 
@@ -132,7 +133,7 @@ class MainReportVersion(InfoLvl, A001):  # noqa
 
 
 @dataclass
-class MainReportArgs(DebugLvl, A002):  # noqa
+class MainReportArgs(DebugLvl, cpm.MainReportArgs):  # noqa
     def code(self):
         return "A002"
 
@@ -501,7 +502,7 @@ class ConnectionClosed(DebugLevel):
 
 
 @dataclass
-class RollbackFailed(DebugLvl, E009):  # noqa
+class RollbackFailed(DebugLvl, cpm.RollbackFailed):  # noqa
     def code(self):
         return "E009"
 
@@ -773,7 +774,7 @@ class AdapterImportError(InfoLevel):
 
 
 @dataclass
-class PluginLoadError(DebugLvl, E036):  # noqa
+class PluginLoadError(DebugLvl, cpm.PluginLoadError):  # noqa
     def code(self):
         return "E036"
 
@@ -1010,7 +1011,7 @@ class PartialParsingNotEnabled(DebugLevel):
 
 
 @dataclass
-class ParsedFileLoadFailed(DebugLvl, I029):  # noqa
+class ParsedFileLoadFailed(DebugLvl, cpm.ParsedFileLoadFailed):  # noqa
     def code(self):
         return "I029"
 
@@ -1315,7 +1316,7 @@ https://docs.getdbt.com/docs/configure-your-profile
 
 
 @dataclass
-class CatchableExceptionOnRun(DebugLvl, W002):  # noqa
+class CatchableExceptionOnRun(DebugLvl, cpm.CatchableExceptionOnRun):  # noqa
     def code(self):
         return "W002"
 
@@ -1344,7 +1345,7 @@ the error persists, open an issue at https://github.com/dbt-labs/dbt-core
 # This prints the stack trace at the debug level while allowing just the nice exception message
 # at the error level - or whatever other level chosen.  Used in multiple places.
 @dataclass
-class PrintDebugStackTrace(DebugLvl, Z011):  # noqa
+class PrintDebugStackTrace(DebugLvl, cpm.PrintDebugStackTrace):  # noqa
     def code(self):
         return "Z011"
 
@@ -1368,7 +1369,7 @@ class GenericExceptionOnRun(ErrorLevel):
 
 
 @dataclass
-class NodeConnectionReleaseError(DebugLvl, W005):  # noqa
+class NodeConnectionReleaseError(DebugLvl, cpm.NodeConnectionReleaseError):  # noqa
     def code(self):
         return "W005"
 
@@ -1693,7 +1694,7 @@ class SQLCompiledPath(InfoLevel):
 
 
 @dataclass
-class SQLRunnerException(DebugLvl, Q006):  # noqa
+class SQLRunnerException(DebugLvl, cpm.SQLRunnerException):  # noqa
     def code(self):
         return "Q006"
 
@@ -2423,7 +2424,7 @@ class FlushEventsFailure(DebugLevel):
 
 
 @dataclass
-class TrackingInitializeFailure(DebugLvl, Z044):  # noqa
+class TrackingInitializeFailure(DebugLvl, cpm.TrackingInitializeFailure):  # noqa
     def code(self):
         return "Z044"
 
