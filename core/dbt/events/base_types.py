@@ -88,6 +88,8 @@ class Event(metaclass=ABCMeta):
 # in preparation for #3977
 @dataclass  # type: ignore[misc]
 class TestLevel(EventSerialization, Event):
+    __test__ = False
+
     def level_tag(self) -> str:
         return "test"
 
