@@ -39,7 +39,7 @@ from dbt.contracts.graph.unparsed import (
     MetricFilter,
 )
 from dbt.contracts.util import Replaceable, AdditionalPropertiesMixin
-from dbt.events.core_proto_messages import NodeInfo
+from dbt.events.proto_types import NodeInfo
 from dbt.exceptions import warn_or_error
 from dbt import flags
 from dbt.node_types import NodeType

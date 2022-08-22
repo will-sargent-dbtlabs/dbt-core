@@ -291,8 +291,7 @@ class ManifestLoader:
                         if source_file:
                             parse_file_type = source_file.parse_file_type
                             fire_event(PartialParsingExceptionFile(file=file_id))
-                            file_dict = source_file.to_dict()
-                            fire_event(PartialParsingFile(file_dict=file_dict))
+                            fire_event(PartialParsingFile(file_id=source_file.file_id))
                     exc_info["parse_file_type"] = parse_file_type
                     fire_event(PartialParsingException(exc_info=exc_info))
 

@@ -109,13 +109,13 @@ class BaseTask(metaclass=ABCMeta):
             config = cls.ConfigType.from_args(args)
         except dbt.exceptions.DbtProjectError as exc:
             fire_event(DbtProjectError())
-            fire_event(DbtProjectErrorException(exc=exc))
+            fire_event(DbtProjectErrorException(exc=str(exc)))
 
             tracking.track_invalid_invocation(args=args, result_type=exc.result_type)
             raise dbt.exceptions.RuntimeException("Could not run dbt") from exc
         except dbt.exceptions.DbtProfileError as exc:
             fire_event(DbtProfileError())
-            fire_event(DbtProfileErrorException(exc=exc))
+            fire_event(DbtProfileErrorException(exc=str(exc)))
 
             all_profiles = read_profiles(flags.PROFILES_DIR).keys()
 
@@ -350,7 +350,7 @@ class BaseRunner(metaclass=ABCMeta):
         return str(e)
 
     def _handle_internal_exception(self, e, ctx):
-        fire_event(InternalExceptionOnRun(build_path=self.node.build_path, exc=e))
+        fire_event(InternalExceptionOnRun(build_path=self.node.build_path, exc=str(e)))
         return str(e)
 
     def _handle_generic_exception(self, e, ctx):

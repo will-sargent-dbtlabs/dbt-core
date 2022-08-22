@@ -61,3 +61,7 @@ from dbt.events import AdapterLogger
 logger = AdapterLogger("<database name>")
 # e.g. AdapterLogger("Snowflake")
 ```
+
+## Compiling types.proto
+
+In the core/dbt/events directory: ```protoc --python_betterproto_out . types.proto```

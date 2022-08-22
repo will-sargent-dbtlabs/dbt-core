@@ -7,7 +7,7 @@ from dbt.events.types import (
     PluginLoadError,
     PrintStartLine,
 )
-from dbt.events import core_proto_messages as cpm
+from dbt.events import proto_types as pl
 from dbt.version import installed
 import betterproto
 
@@ -28,10 +28,10 @@ def test_events():
     assert event.info.code == "A001"
 
     # Extract EventInfo from serialized message
-    generic_event = cpm.GenericMessage().parse(serialized)
+    generic_event = pl.GenericMessage().parse(serialized)
     assert generic_event.info.code == "A001"
     # get the message class for the real message from the generic message
-    message_class = getattr(sys.modules["dbt.events.core_proto_messages"], generic_event.info.name)
+    message_class = getattr(sys.modules["dbt.events.proto_types"], generic_event.info.name)
     new_event = message_class().parse(serialized)
     assert new_event.info.code == event.info.code
     assert new_event.version == event.version
@@ -92,7 +92,7 @@ def test_node_info_events():
         description="some description",
         index=123,
         total=111,
-        node_info=cpm.NodeInfo(**node_info),
+        node_info=pl.NodeInfo(**node_info),
     )
     assert event
     assert event.node_info.node_path == "some_path"

@@ -49,7 +49,7 @@ from dbt.events.types import (
     CodeExecution,
     CodeExecutionStatus,
 )
-from dbt.utils import filter_null_values, executor
+from dbt.utils import filter_null_values, executor, cast_to_str
 
 from dbt.adapters.base.connections import Connection, AdapterResponse
 from dbt.adapters.base.meta import AdapterMeta, available
@@ -60,7 +60,7 @@ from dbt.adapters.base.relation import (
     SchemaSearchMap,
 )
 from dbt.adapters.base import Column as BaseColumn
-from dbt.adapters.cache import RelationsCache, _make_key
+from dbt.adapters.cache import RelationsCache, _make_key_msg
 
 
 SeedModel = Union[ParsedSeedNode, CompiledSeedNode]
@@ -313,7 +313,7 @@ class BaseAdapter(metaclass=AdapterMeta):
             fire_event(
                 CacheMiss(
                     conn_name=self.nice_connection_name(),
-                    database=database,
+                    database=cast_to_str(database),
                     schema=schema,
                 )
             )
@@ -696,9 +696,9 @@ class BaseAdapter(metaclass=AdapterMeta):
         relations = self.list_relations_without_caching(schema_relation)
         fire_event(
             ListRelations(
-                database=database,
+                database=cast_to_str(database),
                 schema=schema,
-                relations=[_make_key(x) for x in relations],
+                relations=[_make_key_msg(x) for x in relations],
             )
         )
 

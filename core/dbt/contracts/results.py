@@ -11,7 +11,7 @@ from dbt.contracts.util import (
 from dbt.exceptions import InternalException
 from dbt.events.functions import fire_event
 from dbt.events.types import TimingInfoCollected
-from dbt.events.core_proto_messages import RunResultMsg
+from dbt.events.proto_types import RunResultMsg
 from dbt.logger import (
     TimingProcessor,
     JsonOnly,

@@ -1,14 +1,19 @@
 # flake8: noqa
-from dbt.adapters.reference_keys import _ReferenceKey
 from dbt.events.test_types import UnitTestInfo
 from dbt.events import AdapterLogger
-from dbt.events.functions import event_to_serializable_dict
+from dbt.events.functions import event_to_json
 from dbt.events.types import *
 from dbt.events.test_types import *
 
-# from dbt.events.stubs import _CachedRelation, BaseRelation, _ReferenceKey, ParsedModelNode
-from dbt.events.base_types import Event, TestLevel, DebugLevel, WarnLevel, InfoLevel, ErrorLevel
-from dbt.events.core_proto_messages import NodeInfo, RunResultMsg
+from dbt.events.base_types import (
+    BaseEvent,
+    DebugLevel,
+    WarnLevel,
+    InfoLevel,
+    ErrorLevel,
+    TestLevel,
+)
+from dbt.events.proto_types import NodeInfo, RunResultMsg, ReferenceKeyMsg
 from importlib import reload
 import dbt.events.functions as event_funcs
 import dbt.flags as flags
@@ -17,7 +22,7 @@ import json
 from dbt.contracts.graph.parsed import ParsedModelNode, NodeConfig, DependsOn
 from dbt.contracts.files import FileHash
 from mashumaro.types import SerializableType
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Dict
 import re
 
 # takes in a class and finds any subclasses for it
@@ -76,7 +81,7 @@ class TestEventCodes:
     # checks to see if event codes are duplicated to keep codes singluar and clear.
     # also checks that event codes follow correct namming convention ex. E001
     def test_event_codes(self):
-        all_concrete = get_all_subclasses(Event)
+        all_concrete = get_all_subclasses(BaseEvent)
         all_codes = set()
 
         for event in all_concrete:
@@ -85,9 +90,9 @@ class TestEventCodes:
                 assert re.match("^[A-Z][0-9]{3}", event.code)
                 # cannot have been used already
                 assert (
-                    event.code not in all_codes
+                    event.info.code not in all_codes
                 ), f"{event.code} is assigned more than once. Check types.py for duplicates."
-                all_codes.add(event.code)
+                all_codes.add(event.info.code)
 
 
 class TestEventBuffer:
@@ -111,9 +116,9 @@ class TestEventBuffer:
             event_funcs.fire_event(UnitTestInfo(msg=f"Test Event {n}"))
 
         event_full = event_funcs.EVENT_HISTORY[-1]
-        assert event_full.code == "Z048"
+        assert event_full.info.code == "Z048"
         assert event_funcs.EVENT_HISTORY.count(event_full) == 1
-        assert event_funcs.EVENT_HISTORY.count(UnitTestInfo(msg="Test Event 1", code="T006")) == 0
+        assert event_funcs.EVENT_HISTORY.count(UnitTestInfo(msg="Test Event 1")) == 0
 
 
 def MockNode():
@@ -203,50 +208,50 @@ sample_values = [
     ColTypeChange(
         orig_type="",
         new_type="",
-        table=_ReferenceKey(database="", schema="", identifier=""),
+        table=ReferenceKeyMsg(database="", schema="", identifier=""),
     ),
-    SchemaCreation(relation=_ReferenceKey(database="", schema="", identifier="")),
-    SchemaDrop(relation=_ReferenceKey(database="", schema="", identifier="")),
+    SchemaCreation(relation=ReferenceKeyMsg(database="", schema="", identifier="")),
+    SchemaDrop(relation=ReferenceKeyMsg(database="", schema="", identifier="")),
     UncachedRelation(
-        dep_key=_ReferenceKey(database="", schema="", identifier=""),
-        ref_key=_ReferenceKey(database="", schema="", identifier=""),
+        dep_key=ReferenceKeyMsg(database="", schema="", identifier=""),
+        ref_key=ReferenceKeyMsg(database="", schema="", identifier=""),
     ),
     AddLink(
-        dep_key=_ReferenceKey(database="", schema="", identifier=""),
-        ref_key=_ReferenceKey(database="", schema="", identifier=""),
+        dep_key=ReferenceKeyMsg(database="", schema="", identifier=""),
+        ref_key=ReferenceKeyMsg(database="", schema="", identifier=""),
     ),
-    AddRelation(relation=_ReferenceKey(database="", schema="", identifier="")),
-    DropMissingRelation(relation=_ReferenceKey(database="", schema="", identifier="")),
+    AddRelation(relation=ReferenceKeyMsg(database="", schema="", identifier="")),
+    DropMissingRelation(relation=ReferenceKeyMsg(database="", schema="", identifier="")),
     DropCascade(
-        dropped=_ReferenceKey(database="", schema="", identifier=""),
-        consequences={_ReferenceKey(database="", schema="", identifier="")},
+        dropped=ReferenceKeyMsg(database="", schema="", identifier=""),
+        consequences=[ReferenceKeyMsg(database="", schema="", identifier="")],
     ),
     UpdateReference(
-        old_key=_ReferenceKey(database="", schema="", identifier=""),
-        new_key=_ReferenceKey(database="", schema="", identifier=""),
-        cached_key=_ReferenceKey(database="", schema="", identifier=""),
+        old_key=ReferenceKeyMsg(database="", schema="", identifier=""),
+        new_key=ReferenceKeyMsg(database="", schema="", identifier=""),
+        cached_key=ReferenceKeyMsg(database="", schema="", identifier=""),
     ),
-    TemporaryRelation(key=_ReferenceKey(database="", schema="", identifier="")),
+    TemporaryRelation(key=ReferenceKeyMsg(database="", schema="", identifier="")),
     RenameSchema(
-        old_key=_ReferenceKey(database="", schema="", identifier=""),
-        new_key=_ReferenceKey(database="", schema="", identifier=""),
+        old_key=ReferenceKeyMsg(database="", schema="", identifier=""),
+        new_key=ReferenceKeyMsg(database="", schema="", identifier=""),
     ),
     DumpBeforeAddGraph(dump=dict()),
     DumpAfterAddGraph(dump=dict()),
     DumpBeforeRenameSchema(dump=dict()),
     DumpAfterRenameSchema(dump=dict()),
-    AdapterImportError(exc=ModuleNotFoundError()),
+    AdapterImportError(exc=""),
     PluginLoadError(),
     SystemReportReturnCode(returncode=0),
     NewConnectionOpening(connection_state=""),
     TimingInfoCollected(),
-    MergedFromState(nbr_merged=0, sample=[]),
+    MergedFromState(num_merged=0, sample=[]),
     MissingProfileTarget(profile_name="", target_name=""),
     InvalidVarsYAML(),
     GenericTestFileParse(path=""),
     MacroFileParse(path=""),
     PartialParsingFullReparseBecauseOfError(),
-    PartialParsingFile(file_dict={}),
+    PartialParsingFile(file_id=""),
     PartialParsingExceptionFile(file=""),
     PartialParsingException(exc_info={}),
     PartialParsingSkipParsing(),
@@ -257,7 +262,7 @@ sample_values = [
     PartialParsingFailedBecauseProfileChange(),
     PartialParsingFailedBecauseNewProjectDependency(),
     PartialParsingFailedBecauseHashChanged(),
-    PartialParsingDeletedMetric(id=""),
+    PartialParsingDeletedMetric(unique_id=""),
     ParsedFileLoadFailed(path="", exc=""),
     PartialParseSaveFileNotFound(),
     StaticParserCausedJinjaRendering(path=""),
@@ -273,7 +278,7 @@ sample_values = [
     PartialParsingAddedFile(file_id=""),
     PartialParsingDeletedFile(file_id=""),
     PartialParsingUpdatedFile(file_id=""),
-    PartialParsingNodeMissingInSourceFile(source_file=""),
+    PartialParsingNodeMissingInSourceFile(file_id=""),
     PartialParsingMissingNodes(file_id=""),
     PartialParsingChildMapMissingUniqueID(unique_id=""),
     PartialParsingUpdateSchemaFile(file_id=""),
@@ -282,17 +287,17 @@ sample_values = [
     InvalidDisabledSourceInTestNode(msg=""),
     InvalidRefInTestNode(msg=""),
     RunningOperationCaughtError(exc=""),
-    RunningOperationUncaughtError(exc=Exception("")),
+    RunningOperationUncaughtError(exc=""),
     DbtProjectError(),
-    DbtProjectErrorException(exc=Exception("")),
+    DbtProjectErrorException(exc=""),
     DbtProfileError(),
-    DbtProfileErrorException(exc=Exception("")),
+    DbtProfileErrorException(exc=""),
     ProfileListTitle(),
     ListSingleProfile(profile=""),
     NoDefinedProfiles(),
     ProfileHelpMessage(),
     CatchableExceptionOnRun(exc=""),
-    InternalExceptionOnRun(build_path="", exc=Exception("")),
+    InternalExceptionOnRun(build_path="", exc=""),
     GenericExceptionOnRun(build_path="", unique_id="", exc=""),
     NodeConnectionReleaseError(node_name="", exc=""),
     CheckCleanPath(path=""),
@@ -411,7 +416,7 @@ sample_values = [
     TrackingInitializeFailure(),
     RetryExternalCall(attempt=0, max=0),
     GeneralWarningMsg(msg="", log_fmt=""),
-    GeneralWarningException(exc=Exception(""), log_fmt=""),
+    GeneralWarningException(exc="", log_fmt=""),
     PartialParsingProfileEnvVarsChanged(),
     AdapterEventDebug(name="", base_msg="", args=()),
     AdapterEventInfo(name="", base_msg="", args=()),
@@ -429,7 +434,7 @@ sample_values = [
     DepsUTD(),
     PartialParsingNotEnabled(),
     SQLRunnerException(exc=""),
-    DropRelation(dropped=_ReferenceKey(database="", schema="", identifier="")),
+    DropRelation(dropped=ReferenceKeyMsg(database="", schema="", identifier="")),
     PartialParsingProjectEnvVarsChanged(),
     RegistryProgressGETResponse(url="", resp_code=1),
     IntegrationTestDebug(msg=""),
@@ -438,7 +443,7 @@ sample_values = [
     IntegrationTestError(msg=""),
     IntegrationTestException(msg=""),
     EventBufferFull(),
-    RecordRetryException(exc=Exception("")),
+    RecordRetryException(exc=""),
     UnitTestInfo(msg=""),
 ]
 
@@ -453,7 +458,8 @@ class TestEventJSONSerialization:
 
         all_non_abstract_events = set(
             filter(
-                lambda x: not inspect.isabstract(x) and x not in no_test, get_all_subclasses(Event)
+                lambda x: not inspect.isabstract(x) and x not in no_test,
+                get_all_subclasses(BaseEvent),
             )
         )
         all_event_values_list = list(map(lambda x: x.__class__, sample_values))
@@ -470,8 +476,8 @@ class TestEventJSONSerialization:
         for event in sample_values:
             event_dict = event.to_dict()
             try:
-                event_json = event.to_json()
-            except TypeError as e:
+                event_json = event_to_json(event)
+            except Exception as e:
                 raise Exception(f"{event} is not serializable to json. Originating exception: {e}")
 
 

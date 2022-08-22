@@ -619,7 +619,7 @@ def _connection_exception_retry(fn, max_attempts: int, attempt: int = 0):
         ReadError,
     ) as exc:
         if attempt <= max_attempts - 1:
-            fire_event(RecordRetryException(exc=exc))
+            fire_event(RecordRetryException(exc=str(exc)))
             fire_event(RetryExternalCall(attempt=attempt, max=max_attempts))
             time.sleep(1)
             return _connection_exception_retry(fn, max_attempts, attempt + 1)
@@ -666,3 +666,13 @@ def args_to_dict(args):
             var_args[key] = str(var_args[key])
         dict_args[key] = var_args[key]
     return dict_args
+
+
+# This is useful for proto generated classes in particular, since
+# the default for protobuf for strings is the empty string, so
+# Optional[str] types don't work for generated Python classes.
+def cast_to_str(string: Optional[str]) -> str:
+    if string is None:
+        return ""
+    else:
+        return string

@@ -49,6 +49,7 @@ from dbt.events.types import (
     RollbackFailed,
 )
 from dbt import flags
+from dbt.utils import cast_to_str
 
 SleepTime = Union[int, float]  # As taken by time.sleep.
 AdapterHandle = Any  # Adapter connection handle objects can be any class.
@@ -305,9 +306,9 @@ class BaseConnectionManager(metaclass=abc.ABCMeta):
         with self.lock:
             for connection in self.thread_connections.values():
                 if connection.state not in {"closed", "init"}:
-                    fire_event(ConnectionLeftOpen(conn_name=connection.name))
+                    fire_event(ConnectionLeftOpen(conn_name=cast_to_str(connection.name)))
                 else:
-                    fire_event(ConnectionClosed(conn_name=connection.name))
+                    fire_event(ConnectionClosed(conn_name=cast_to_str(connection.name)))
                 self.close(connection)
 
             # garbage collect these connections
@@ -341,10 +342,10 @@ class BaseConnectionManager(metaclass=abc.ABCMeta):
         """Perform the actual close operation."""
         # On windows, sometimes connection handles don't have a close() attr.
         if hasattr(connection.handle, "close"):
-            fire_event(ConnectionClosed2(conn_name=connection.name))
+            fire_event(ConnectionClosed2(conn_name=cast_to_str(connection.name)))
             connection.handle.close()
         else:
-            fire_event(ConnectionLeftOpen2(conn_name=connection.name))
+            fire_event(ConnectionLeftOpen2(conn_name=cast_to_str(connection.name)))
 
     @classmethod
     def _rollback(cls, connection: Connection) -> None:
@@ -355,7 +356,7 @@ class BaseConnectionManager(metaclass=abc.ABCMeta):
                 f'"{connection.name}", but it does not have one open!'
             )
 
-        fire_event(Rollback(conn_name=connection.name))
+        fire_event(Rollback(conn_name=cast_to_str(connection.name)))
         cls._rollback_handle(connection)
 
         connection.transaction_open = False
@@ -367,7 +368,7 @@ class BaseConnectionManager(metaclass=abc.ABCMeta):
             return connection
 
         if connection.transaction_open and connection.handle:
-            fire_event(Rollback(conn_name=connection.name))
+            fire_event(Rollback(conn_name=cast_to_str(connection.name)))
             cls._rollback_handle(connection)
         connection.transaction_open = False
 

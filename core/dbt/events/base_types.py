@@ -1,6 +1,4 @@
-from abc import ABCMeta, abstractproperty, abstractmethod
 from dataclasses import dataclass
-from dbt.events.serialization import EventSerialization
 import os
 import threading
 from datetime import datetime
@@ -40,83 +38,6 @@ def get_thread_name() -> str:
     return threading.current_thread().name
 
 
-# top-level superclass for all events
-class Event(metaclass=ABCMeta):
-    # Do not define fields with defaults here, it will break subclasses
-    msg: str
-    invocation_id: str
-    ts: str
-    pid: int
-    level: str
-    thread_name: str
-
-    def __post_init__(self):
-        if not hasattr(self, "msg") or not self.msg:
-            self.msg = self.message()
-        self.level = self.level_tag()
-        self.invocation_id = get_invocation_id()
-        self.ts = get_ts_rfc3339()
-        self.pid = get_pid()
-        self.thread_name = get_thread_name()
-
-    # four digit string code that uniquely identifies this type of event
-    # uniqueness and valid characters are enforced by tests
-    @abstractproperty
-    @staticmethod
-    def code() -> str:
-        raise Exception("code() not implemented for event")
-
-    # The 'to_dict' method is added by mashumaro via the EventSerialization.
-    # It should be in all subclasses that are to record actual events.
-    @abstractmethod
-    def to_dict(self):
-        raise Exception("to_dict not implemented for Event")
-
-    # do not define this yourself. inherit it from one of the above level types.
-    @abstractmethod
-    def level_tag(self) -> str:
-        raise Exception("level_tag not implemented for Event")
-
-    # Solely the human readable message. Timestamps and formatting will be added by the logger.
-    # Must override yourself
-    @abstractmethod
-    def message(self) -> str:
-        raise Exception("msg not implemented for Event")
-
-
-# in preparation for #3977
-@dataclass  # type: ignore[misc]
-class TestLevel(EventSerialization, Event):
-    __test__ = False
-
-    def level_tag(self) -> str:
-        return "test"
-
-
-@dataclass  # type: ignore[misc]
-class DebugLevel(EventSerialization, Event):
-    def level_tag(self) -> str:
-        return "debug"
-
-
-@dataclass  # type: ignore[misc]
-class InfoLevel(EventSerialization, Event):
-    def level_tag(self) -> str:
-        return "info"
-
-
-@dataclass  # type: ignore[misc]
-class WarnLevel(EventSerialization, Event):
-    def level_tag(self) -> str:
-        return "warn"
-
-
-@dataclass  # type: ignore[misc]
-class ErrorLevel(EventSerialization, Event):
-    def level_tag(self) -> str:
-        return "error"
-
-
 @dataclass
 class BaseEvent:
     """BaseEvent for proto message generated python events"""
@@ -137,35 +58,37 @@ class BaseEvent:
         raise Exception("level_tag() not implemented for event")
 
     def message(self):
-        raise Exception("message() not implemented for Event")
+        raise Exception("message() not implemented for event")
 
 
 @dataclass
-class TestLvl(BaseEvent):
+class TestLevel(BaseEvent):
+    __test__ = False
+
     def level_tag(self) -> str:
         return "test"
 
 
 @dataclass  # type: ignore[misc]
-class DebugLvl(BaseEvent):
+class DebugLevel(BaseEvent):
     def level_tag(self) -> str:
         return "debug"
 
 
 @dataclass  # type: ignore[misc]
-class InfoLvl(BaseEvent):
+class InfoLevel(BaseEvent):
     def level_tag(self) -> str:
         return "info"
 
 
 @dataclass  # type: ignore[misc]
-class WarnLvl(BaseEvent):
+class WarnLevel(BaseEvent):
     def level_tag(self) -> str:
         return "warn"
 
 
 @dataclass  # type: ignore[misc]
-class ErrorLvl(BaseEvent):
+class ErrorLevel(BaseEvent):
     def level_tag(self) -> str:
         return "error"
 

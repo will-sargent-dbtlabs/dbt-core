@@ -1,7 +1,8 @@
+import betterproto
 from colorama import Style
 import dbt.events.functions as this  # don't worry I hate it too.
-from dbt.events.base_types import NoStdOut, Event, BaseEvent, NoFile, Cache
-from dbt.events.types import EventBufferFull, T_Event, MainReportVersion, EmptyLine
+from dbt.events.base_types import NoStdOut, BaseEvent, NoFile, Cache
+from dbt.events.types import EventBufferFull, MainReportVersion, EmptyLine
 import dbt.flags as flags
 from dbt.constants import SECRET_ENV_PREFIX
 
@@ -19,7 +20,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import uuid
 import threading
-from typing import Any, Dict, List, Optional, Union, Callable
+from typing import List, Optional, Union, Callable
 from collections import deque
 
 global LOG_VERSION
@@ -131,21 +132,23 @@ def scrub_secrets(msg: str, secrets: List[str]) -> str:
 
 # returns a dictionary representation of the event fields.
 # the message may contain secrets which must be scrubbed at the usage site.
-def event_to_serializable_dict(
-    e: T_Event,
-) -> Dict[str, Any]:
+def event_to_json(
+    e: BaseEvent,
+) -> str:
 
     event_dict = dict()
     code: str
     try:
-        event_dict = e.to_dict()  # type: ignore
+        # We could use to_json here, but it wouldn't sort the keys.
+        # The 'to_json' method just does json.dumps on the dict anyway.
+        # Note: This doesn't set "include_default_values". Do we want
+        # to set that?
+        event_dict = e.to_dict(casing=betterproto.Casing.SNAKE)  # type: ignore
     except AttributeError as exc:
         event_type = type(e).__name__
-        raise Exception(  # TODO this may hang async threads
-            f"type {event_type} is not serializable. {str(exc)}"
-        )
-
-    return event_dict
+        raise Exception(f"type {event_type} is not serializable. {str(exc)}")
+    raw_log_line = json.dumps(event_dict, sort_keys=True)
+    return raw_log_line
 
 
 # translates an Event to a completely formatted text-based log line
@@ -154,7 +157,7 @@ def reset_color() -> str:
     return "" if not this.format_color else Style.RESET_ALL
 
 
-def create_info_text_log_line(e: T_Event) -> str:
+def create_info_text_log_line(e: BaseEvent) -> str:
     color_tag: str = reset_color()
     ts: str = get_ts().strftime("%H:%M:%S")  # TODO: get this from the event.ts?
     scrubbed_msg: str = scrub_secrets(e.message(), env_secrets())
@@ -162,7 +165,7 @@ def create_info_text_log_line(e: T_Event) -> str:
     return log_line
 
 
-def create_debug_text_log_line(e: T_Event) -> str:
+def create_debug_text_log_line(e: BaseEvent) -> str:
     log_line: str = ""
     # Create a separator if this is the beginning of an invocation
     if type(e) == MainReportVersion:
@@ -184,18 +187,17 @@ def create_debug_text_log_line(e: T_Event) -> str:
 
 
 # translates an Event to a completely formatted json log line
-def create_json_log_line(e: T_Event) -> Optional[str]:
+def create_json_log_line(e: BaseEvent) -> Optional[str]:
     if type(e) == EmptyLine:
         return None  # will not be sent to logger
-    # using preformatted ts string instead of formatting it here to be extra careful about timezone
-    values = event_to_serializable_dict(e)
-    raw_log_line = json.dumps(values, sort_keys=True)
+    raw_log_line = event_to_json(e)
     return scrub_secrets(raw_log_line, env_secrets())
 
 
 # calls create_stdout_text_log_line() or create_json_log_line() according to logger config
-def create_log_line(e: T_Event, file_output=False) -> Optional[str]:
+def create_log_line(e: BaseEvent, file_output=False) -> Optional[str]:
     if this.format_json:
+        # TODO: Do we want to skip EmptyLine() like the TextOnly for logbook?
         return create_json_log_line(e)  # json output, both console and file
     elif file_output is True or flags.DEBUG:
         return create_debug_text_log_line(e)  # default file output
@@ -227,7 +229,7 @@ def send_to_logger(l: Union[Logger, logbook.Logger], level_tag: str, log_line: s
 
 # an alternative to fire_event which only creates and logs the event value
 # if the condition is met. Does nothing otherwise.
-def fire_event_if(conditional: bool, lazy_e: Callable[[], Event]) -> None:
+def fire_event_if(conditional: bool, lazy_e: Callable[[], BaseEvent]) -> None:
     if conditional:
         fire_event(lazy_e())
 
@@ -236,7 +238,7 @@ def fire_event_if(conditional: bool, lazy_e: Callable[[], Event]) -> None:
 # this is where all the side effects happen branched by event type
 # (i.e. - mutating the event history, printing to stdout, logging
 # to files, etc.)
-def fire_event(e: Union[Event, BaseEvent]) -> None:
+def fire_event(e: BaseEvent) -> None:
     # skip logs when `--log-cache-events` is not passed
     if isinstance(e, Cache) and not flags.LOG_CACHE_EVENTS:
         return
