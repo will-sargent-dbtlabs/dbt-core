@@ -3,12 +3,12 @@ from dbt.adapters.reference_keys import _ReferenceKey
 from dbt.events.test_types import UnitTestInfo
 from dbt.events import AdapterLogger
 from dbt.events.functions import event_to_serializable_dict
-from dbt.events.base_types import NodeInfo
 from dbt.events.types import *
 from dbt.events.test_types import *
 
 # from dbt.events.stubs import _CachedRelation, BaseRelation, _ReferenceKey, ParsedModelNode
 from dbt.events.base_types import Event, TestLevel, DebugLevel, WarnLevel, InfoLevel, ErrorLevel
+from dbt.events.core_proto_messages import NodeInfo, RunResultMsg
 from importlib import reload
 import dbt.events.functions as event_funcs
 import dbt.flags as flags
@@ -25,7 +25,7 @@ def get_all_subclasses(cls):
     all_subclasses = []
     for subclass in cls.__subclasses__():
         # If the test breaks because of abcs this list might have to be updated.
-        if subclass in [NodeInfo, TestLevel, DebugLevel, WarnLevel, InfoLevel, ErrorLevel]:
+        if subclass in [TestLevel, DebugLevel, WarnLevel, InfoLevel, ErrorLevel]:
             continue
         all_subclasses.append(subclass)
         all_subclasses.extend(get_all_subclasses(subclass))
@@ -331,55 +331,59 @@ sample_values = [
     FirstRunResultError(msg=""),
     AfterFirstRunResultError(msg=""),
     EndOfRunSummary(num_errors=0, num_warnings=0, keyboard_interrupt=False),
-    PrintStartLine(description="", index=0, total=0, node_info={}),
-    PrintHookStartLine(statement="", index=0, total=0, node_info={}),
-    PrintHookEndLine(statement="", status="", index=0, total=0, execution_time=0, node_info={}),
-    SkippingDetails(resource_type="", schema="", node_name="", index=0, total=0, node_info={}),
-    PrintErrorTestResult(name="", index=0, num_models=0, execution_time=0, node_info={}),
-    PrintPassTestResult(name="", index=0, num_models=0, execution_time=0, node_info={}),
+    PrintStartLine(description="", index=0, total=0, node_info=NodeInfo()),
+    PrintHookStartLine(statement="", index=0, total=0, node_info=NodeInfo()),
+    PrintHookEndLine(
+        statement="", status="", index=0, total=0, execution_time=0, node_info=NodeInfo()
+    ),
+    SkippingDetails(
+        resource_type="", schema="", node_name="", index=0, total=0, node_info=NodeInfo()
+    ),
+    PrintErrorTestResult(name="", index=0, num_models=0, execution_time=0, node_info=NodeInfo()),
+    PrintPassTestResult(name="", index=0, num_models=0, execution_time=0, node_info=NodeInfo()),
     PrintWarnTestResult(
-        name="", index=0, num_models=0, execution_time=0, failures=0, node_info={}
+        name="", index=0, num_models=0, execution_time=0, num_failures=0, node_info=NodeInfo()
     ),
     PrintFailureTestResult(
-        name="", index=0, num_models=0, execution_time=0, failures=0, node_info={}
+        name="", index=0, num_models=0, execution_time=0, num_failures=0, node_info=NodeInfo()
     ),
     PrintSkipBecauseError(schema="", relation="", index=0, total=0),
     PrintModelErrorResultLine(
-        description="", status="", index=0, total=0, execution_time=0, node_info={}
+        description="", status="", index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintModelResultLine(
-        description="", status="", index=0, total=0, execution_time=0, node_info={}
+        description="", status="", index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintSnapshotErrorResultLine(
-        status="", description="", cfg={}, index=0, total=0, execution_time=0, node_info={}
+        status="", description="", cfg={}, index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintSnapshotResultLine(
-        status="", description="", cfg={}, index=0, total=0, execution_time=0, node_info={}
+        status="", description="", cfg={}, index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintSeedErrorResultLine(
-        status="", index=0, total=0, execution_time=0, schema="", relation="", node_info={}
+        status="", index=0, total=0, execution_time=0, schema="", relation="", node_info=NodeInfo()
     ),
     PrintSeedResultLine(
-        status="", index=0, total=0, execution_time=0, schema="", relation="", node_info={}
+        status="", index=0, total=0, execution_time=0, schema="", relation="", node_info=NodeInfo()
     ),
     PrintHookEndErrorLine(
-        source_name="", table_name="", index=0, total=0, execution_time=0, node_info={}
+        source_name="", table_name="", index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintHookEndErrorStaleLine(
-        source_name="", table_name="", index=0, total=0, execution_time=0, node_info={}
+        source_name="", table_name="", index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintHookEndWarnLine(
-        source_name="", table_name="", index=0, total=0, execution_time=0, node_info={}
+        source_name="", table_name="", index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintHookEndPassLine(
-        source_name="", table_name="", index=0, total=0, execution_time=0, node_info={}
+        source_name="", table_name="", index=0, total=0, execution_time=0, node_info=NodeInfo()
     ),
     PrintCancelLine(conn_name=""),
     DefaultSelector(name=""),
-    NodeStart(unique_id="", node_info={}),
-    NodeCompiling(unique_id="", node_info={}),
-    NodeExecuting(unique_id="", node_info={}),
-    NodeFinished(unique_id="", node_info={}, run_result={}),
+    NodeStart(unique_id="", node_info=NodeInfo()),
+    NodeCompiling(unique_id="", node_info=NodeInfo()),
+    NodeExecuting(unique_id="", node_info=NodeInfo()),
+    NodeFinished(unique_id="", node_info=NodeInfo(), run_result=RunResultMsg()),
     QueryCancelationUnsupported(type=""),
     ConcurrencyLine(num_threads=0, target_name=""),
     StarterProjectPath(dir=""),

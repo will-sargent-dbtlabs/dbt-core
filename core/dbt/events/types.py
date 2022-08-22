@@ -13,17 +13,16 @@ from dbt.events.base_types import (
     WarnLvl,
     ErrorLevel,
     ErrorLvl,
-    NodeInfo,
     Cache,
 )
 from dbt.events.format import format_fancy_output_line, pluralize
 
 # Not sure why betterproto is quoting EventInfo, requiring the following line
-#from dbt.events.core_proto_messages import EventInfo
+from dbt.events.core_proto_messages import EventInfo, NodeInfo, RunResultMsg  # noqa
 from dbt.events import core_proto_messages as cpm
 
 from dbt.node_types import NodeType
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union
 
 
 # The classes in this file represent the data necessary to describe a
@@ -1753,11 +1752,9 @@ class EndOfRunSummary(InfoLevel):
 
 
 @dataclass
-class PrintStartLine(InfoLevel, NodeInfo):
-    description: str
-    index: int
-    total: int
-    code: str = "Q033"
+class PrintStartLine(InfoLvl, cpm.PrintStartLine):  # noqa
+    def code(self):
+        return "Q033"
 
     def message(self) -> str:
         msg = f"START {self.description}"
@@ -1765,11 +1762,9 @@ class PrintStartLine(InfoLevel, NodeInfo):
 
 
 @dataclass
-class PrintHookStartLine(InfoLevel, NodeInfo):
-    statement: str
-    index: int
-    total: int
-    code: str = "Q032"
+class PrintHookStartLine(InfoLvl, cpm.PrintHookStartLine):  # noqa
+    def code(self):
+        return "Q032"
 
     def message(self) -> str:
         msg = f"START hook: {self.statement}"
@@ -1779,13 +1774,9 @@ class PrintHookStartLine(InfoLevel, NodeInfo):
 
 
 @dataclass
-class PrintHookEndLine(InfoLevel, NodeInfo):
-    statement: str
-    status: str
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q007"
+class PrintHookEndLine(InfoLvl, cpm.PrintHookEndLine):  # noqa
+    def code(self):
+        return "Q007"
 
     def message(self) -> str:
         msg = "OK hook: {}".format(self.statement)
@@ -1800,13 +1791,9 @@ class PrintHookEndLine(InfoLevel, NodeInfo):
 
 
 @dataclass
-class SkippingDetails(InfoLevel, NodeInfo):
-    resource_type: str
-    schema: str
-    node_name: str
-    index: int
-    total: int
-    code: str = "Q034"
+class SkippingDetails(InfoLvl, cpm.SkippingDetails):
+    def code(self):
+        return "Q034"
 
     def message(self) -> str:
         if self.resource_type in NodeType.refable():
@@ -1819,12 +1806,9 @@ class SkippingDetails(InfoLevel, NodeInfo):
 
 
 @dataclass
-class PrintErrorTestResult(ErrorLevel, NodeInfo):
-    name: str
-    index: int
-    num_models: int
-    execution_time: int
-    code: str = "Q008"
+class PrintErrorTestResult(ErrorLvl, cpm.PrintErrorTestResult):
+    def code(self):
+        return "Q008"
 
     def message(self) -> str:
         info = "ERROR"
@@ -1839,12 +1823,9 @@ class PrintErrorTestResult(ErrorLevel, NodeInfo):
 
 
 @dataclass
-class PrintPassTestResult(InfoLevel, NodeInfo):
-    name: str
-    index: int
-    num_models: int
-    execution_time: int
-    code: str = "Q009"
+class PrintPassTestResult(InfoLvl, cpm.PrintPassTestResult):
+    def code(self):
+        return "Q009"
 
     def message(self) -> str:
         info = "PASS"
@@ -1859,16 +1840,12 @@ class PrintPassTestResult(InfoLevel, NodeInfo):
 
 
 @dataclass
-class PrintWarnTestResult(WarnLevel, NodeInfo):
-    name: str
-    index: int
-    num_models: int
-    execution_time: int
-    failures: int
-    code: str = "Q010"
+class PrintWarnTestResult(WarnLvl, cpm.PrintWarnTestResult):
+    def code(self):
+        return "Q010"
 
     def message(self) -> str:
-        info = f"WARN {self.failures}"
+        info = f"WARN {self.num_failures}"
         msg = f"{info} {self.name}"
         return format_fancy_output_line(
             msg=msg,
@@ -1880,16 +1857,12 @@ class PrintWarnTestResult(WarnLevel, NodeInfo):
 
 
 @dataclass
-class PrintFailureTestResult(ErrorLevel, NodeInfo):
-    name: str
-    index: int
-    num_models: int
-    execution_time: int
-    failures: int
-    code: str = "Q011"
+class PrintFailureTestResult(ErrorLvl, cpm.PrintFailureTestResult):
+    def code(self):
+        return "Q011"
 
     def message(self) -> str:
-        info = f"FAIL {self.failures}"
+        info = f"FAIL {self.num_failures}"
         msg = f"{info} {self.name}"
         return format_fancy_output_line(
             msg=msg,
@@ -1916,13 +1889,9 @@ class PrintSkipBecauseError(ErrorLevel):
 
 
 @dataclass
-class PrintModelErrorResultLine(ErrorLevel, NodeInfo):
-    description: str
-    status: str
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q035"
+class PrintModelErrorResultLine(ErrorLvl, cpm.PrintModelErrorResultLine):
+    def code(self):
+        return "Q035"
 
     def message(self) -> str:
         info = "ERROR creating"
@@ -1937,13 +1906,9 @@ class PrintModelErrorResultLine(ErrorLevel, NodeInfo):
 
 
 @dataclass
-class PrintModelResultLine(InfoLevel, NodeInfo):
-    description: str
-    status: str
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q012"
+class PrintModelResultLine(InfoLvl, cpm.PrintModelResultLine):
+    def code(self):
+        return "Q012"
 
     def message(self) -> str:
         info = "OK created"
@@ -1958,14 +1923,9 @@ class PrintModelResultLine(InfoLevel, NodeInfo):
 
 
 @dataclass
-class PrintSnapshotErrorResultLine(ErrorLevel, NodeInfo):
-    status: str
-    description: str
-    cfg: Dict[str, Any]
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q013"
+class PrintSnapshotErrorResultLine(ErrorLvl, cpm.PrintSnapshotErrorResultLine):
+    def code(self):
+        return "Q013"
 
     def message(self) -> str:
         info = "ERROR snapshotting"
@@ -1980,14 +1940,9 @@ class PrintSnapshotErrorResultLine(ErrorLevel, NodeInfo):
 
 
 @dataclass
-class PrintSnapshotResultLine(InfoLevel, NodeInfo):
-    status: str
-    description: str
-    cfg: Dict[str, Any]
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q014"
+class PrintSnapshotResultLine(InfoLvl, cpm.PrintSnapshotResultLine):
+    def code(self):
+        return "Q014"
 
     def message(self) -> str:
         info = "OK snapshotted"
@@ -2002,14 +1957,9 @@ class PrintSnapshotResultLine(InfoLevel, NodeInfo):
 
 
 @dataclass
-class PrintSeedErrorResultLine(ErrorLevel, NodeInfo):
-    status: str
-    index: int
-    total: int
-    execution_time: int
-    schema: str
-    relation: str
-    code: str = "Q015"
+class PrintSeedErrorResultLine(ErrorLvl, cpm.PrintSeedErrorResultLine):
+    def code(self):
+        return "Q015"
 
     def message(self) -> str:
         info = "ERROR loading"
@@ -2024,14 +1974,9 @@ class PrintSeedErrorResultLine(ErrorLevel, NodeInfo):
 
 
 @dataclass
-class PrintSeedResultLine(InfoLevel, NodeInfo):
-    status: str
-    index: int
-    total: int
-    execution_time: int
-    schema: str
-    relation: str
-    code: str = "Q016"
+class PrintSeedResultLine(InfoLvl, cpm.PrintSeedResultLine):
+    def code(self):
+        return "Q016"
 
     def message(self) -> str:
         info = "OK loaded"
@@ -2046,13 +1991,9 @@ class PrintSeedResultLine(InfoLevel, NodeInfo):
 
 
 @dataclass
-class PrintHookEndErrorLine(ErrorLevel, NodeInfo):
-    source_name: str
-    table_name: str
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q017"
+class PrintHookEndErrorLine(ErrorLvl, cpm.PrintHookEndErrorLine):
+    def code(self):
+        return "Q017"
 
     def message(self) -> str:
         info = "ERROR"
@@ -2067,13 +2008,9 @@ class PrintHookEndErrorLine(ErrorLevel, NodeInfo):
 
 
 @dataclass
-class PrintHookEndErrorStaleLine(ErrorLevel, NodeInfo):
-    source_name: str
-    table_name: str
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q018"
+class PrintHookEndErrorStaleLine(ErrorLvl, cpm.PrintHookEndErrorStaleLine):
+    def code(self):
+        return "Q018"
 
     def message(self) -> str:
         info = "ERROR STALE"
@@ -2088,13 +2025,9 @@ class PrintHookEndErrorStaleLine(ErrorLevel, NodeInfo):
 
 
 @dataclass
-class PrintHookEndWarnLine(WarnLevel, NodeInfo):
-    source_name: str
-    table_name: str
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q019"
+class PrintHookEndWarnLine(WarnLvl, cpm.PrintHookEndWarnLine):
+    def code(self):
+        return "Q019"
 
     def message(self) -> str:
         info = "WARN"
@@ -2109,13 +2042,9 @@ class PrintHookEndWarnLine(WarnLevel, NodeInfo):
 
 
 @dataclass
-class PrintHookEndPassLine(InfoLevel, NodeInfo):
-    source_name: str
-    table_name: str
-    index: int
-    total: int
-    execution_time: int
-    code: str = "Q020"
+class PrintHookEndPassLine(InfoLvl, cpm.PrintHookEndPassLine):
+    def code(self):
+        return "Q020"
 
     def message(self) -> str:
         info = "PASS"
@@ -2149,20 +2078,18 @@ class DefaultSelector(InfoLevel):
 
 
 @dataclass
-class NodeStart(DebugLevel, NodeInfo):
-    unique_id: str
-    code: str = "Q023"
+class NodeStart(DebugLvl, cpm.NodeStart):
+    def code(self):
+        return "Q023"
 
     def message(self) -> str:
         return f"Began running node {self.unique_id}"
 
 
 @dataclass
-class NodeFinished(DebugLevel, NodeInfo):
-    unique_id: str
-    # The following isn't a RunResult class because we run into circular imports
-    run_result: Dict[str, Any]
-    code: str = "Q024"
+class NodeFinished(DebugLvl, cpm.NodeFinished):
+    def code(self):
+        return "Q024"
 
     def message(self) -> str:
         return f"Finished running node {self.unique_id}"
@@ -2183,28 +2110,27 @@ class QueryCancelationUnsupported(InfoLevel):
 
 
 @dataclass
-class ConcurrencyLine(InfoLevel):
-    num_threads: int
-    target_name: str
-    code: str = "Q026"
+class ConcurrencyLine(InfoLvl, cpm.ConcurrencyLine):  # noqa
+    def code(self):
+        return "Q026"
 
     def message(self) -> str:
         return f"Concurrency: {self.num_threads} threads (target='{self.target_name}')"
 
 
 @dataclass
-class NodeCompiling(DebugLevel, NodeInfo):
-    unique_id: str
-    code: str = "Q030"
+class NodeCompiling(DebugLvl, cpm.NodeCompiling):
+    def code(self):
+        return "Q030"
 
     def message(self) -> str:
         return f"Began compiling node {self.unique_id}"
 
 
 @dataclass
-class NodeExecuting(DebugLevel, NodeInfo):
-    unique_id: str
-    code: str = "Q031"
+class NodeExecuting(DebugLvl, cpm.NodeExecuting):
+    def code(self):
+        return "Q031"
 
     def message(self) -> str:
         return f"Began executing node {self.unique_id}"
@@ -2351,15 +2277,14 @@ class DepsSymlinkNotAvailable(DebugLevel):
 
 
 @dataclass
-class FoundStats(InfoLevel):
-    stat_line: str
-    code: str = "W006"
+class FoundStats(InfoLvl, cpm.FoundStats):
+    def code(self):
+        return "W006"
 
     def message(self) -> str:
         return f"Found {self.stat_line}"
 
 
-# TODO: should this have NodeInfo on it?
 @dataclass
 class CompilingNode(DebugLevel):
     unique_id: str
@@ -2672,12 +2597,11 @@ if 1 == 0:
     FirstRunResultError(msg="")
     AfterFirstRunResultError(msg="")
     EndOfRunSummary(num_errors=0, num_warnings=0, keyboard_interrupt=False)
-    PrintStartLine(description="", index=0, total=0, node_info={})
+    PrintStartLine(description="", index=0, total=0, node_info=NodeInfo())
     PrintHookStartLine(
         statement="",
         index=0,
         total=0,
-        node_info={},
     )
     PrintHookEndLine(
         statement="",
@@ -2685,7 +2609,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     SkippingDetails(
         resource_type="",
@@ -2693,37 +2616,32 @@ if 1 == 0:
         node_name="",
         index=0,
         total=0,
-        node_info={},
     )
     PrintErrorTestResult(
         name="",
         index=0,
         num_models=0,
         execution_time=0,
-        node_info={},
     )
     PrintPassTestResult(
         name="",
         index=0,
         num_models=0,
         execution_time=0,
-        node_info={},
     )
     PrintWarnTestResult(
         name="",
         index=0,
         num_models=0,
         execution_time=0,
-        failures=0,
-        node_info={},
+        num_failures=0,
     )
     PrintFailureTestResult(
         name="",
         index=0,
         num_models=0,
         execution_time=0,
-        failures=0,
-        node_info={},
+        num_failures=0,
     )
     PrintSkipBecauseError(schema="", relation="", index=0, total=0)
     PrintModelErrorResultLine(
@@ -2732,7 +2650,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintModelResultLine(
         description="",
@@ -2740,7 +2657,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintSnapshotErrorResultLine(
         status="",
@@ -2749,7 +2665,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintSnapshotResultLine(
         status="",
@@ -2758,7 +2673,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintSeedErrorResultLine(
         status="",
@@ -2767,7 +2681,6 @@ if 1 == 0:
         execution_time=0,
         schema="",
         relation="",
-        node_info={},
     )
     PrintSeedResultLine(
         status="",
@@ -2776,7 +2689,6 @@ if 1 == 0:
         execution_time=0,
         schema="",
         relation="",
-        node_info={},
     )
     PrintHookEndErrorLine(
         source_name="",
@@ -2784,7 +2696,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintHookEndErrorStaleLine(
         source_name="",
@@ -2792,7 +2703,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintHookEndWarnLine(
         source_name="",
@@ -2800,7 +2710,6 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintHookEndPassLine(
         source_name="",
@@ -2808,16 +2717,15 @@ if 1 == 0:
         index=0,
         total=0,
         execution_time=0,
-        node_info={},
     )
     PrintCancelLine(conn_name="")
     DefaultSelector(name="")
-    NodeStart(node_info={}, unique_id="")
-    NodeFinished(node_info={}, unique_id="", run_result={})
+    NodeStart(unique_id="")
+    NodeFinished(unique_id="")
     QueryCancelationUnsupported(type="")
     ConcurrencyLine(num_threads=0, target_name="")
-    NodeCompiling(node_info={}, unique_id="")
-    NodeExecuting(node_info={}, unique_id="")
+    NodeCompiling(unique_id="")
+    NodeExecuting(unique_id="")
     StarterProjectPath(dir="")
     ConfigFolderDirectory(dir="")
     NoSampleProfileFound(adapter="")

@@ -5,6 +5,7 @@ from dbt.events.types import (
     RollbackFailed,
     MainEncounteredError,
     PluginLoadError,
+    PrintStartLine,
 )
 from dbt.events import core_proto_messages as cpm
 from dbt.version import installed
@@ -65,8 +66,6 @@ def test_exception_events():
     # This event has no "msg"/"message"
     assert event.info.msg is None
 
-
-def test_exception_event():
     # Z002 event
     event = MainEncounteredError(exc="Rollback failed")
     event_dict = event.to_dict(casing=betterproto.Casing.SNAKE)
@@ -76,3 +75,24 @@ def test_exception_event():
     assert set(event_dict["info"].keys()) == info_keys
     assert event_json
     assert event.info.code == "Z002"
+
+
+def test_node_info_events():
+    node_info = {
+        "node_path": "some_path",
+        "node_name": "some_name",
+        "unique_id": "some_id",
+        "resource_type": "model",
+        "materialized": "table",
+        "node_status": "started",
+        "node_started_at": "some_time",
+        "node_finished_at": "another_time",
+    }
+    event = PrintStartLine(
+        description="some description",
+        index=123,
+        total=111,
+        node_info=cpm.NodeInfo(**node_info),
+    )
+    assert event
+    assert event.node_info.node_path == "some_path"

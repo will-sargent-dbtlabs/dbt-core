@@ -232,7 +232,7 @@ class GraphRunnableTask(ManifestTask):
                         NodeFinished(
                             node_info=runner.node.node_info,
                             unique_id=runner.node.unique_id,
-                            run_result=result.to_dict(),
+                            run_result=result.to_msg(),
                         )
                     )
             # `_event_status` dict is only used for logging.  Make sure

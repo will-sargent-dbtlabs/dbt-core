@@ -16,44 +16,74 @@ message EventInfo {
     google.protobuf.Timestamp ts = 8;
 }
 
+// TimingInfo
+message TimingInfoMsg {
+    string name = 1;
+    google.protobuf.Timestamp started_at = 2;
+    google.protobuf.Timestamp completed_at = 3;
+}
+
+// NodeInfo
+message NodeInfo {
+    string node_path = 1;
+    string node_name = 2;
+    string unique_id = 3;
+    string resource_type = 4;
+    string materialized = 5;
+    string node_status = 6;
+    string node_started_at = 7;
+    string node_finished_at = 8;
+}
+
+// RunResult
+message RunResultMsg {
+    // status: Union[RunStatus, TestStatus, FreshnessStatus]
+    string status = 1;
+    repeated TimingInfoMsg timing_info = 2;
+    string thread = 3;
+    float execution_time = 4;
+    map<string, string> adapter_response = 5;
+    int32 num_failures = 6;
+}
+
 // GenericMessage, used for deserializing only
 message GenericMessage {
     EventInfo info = 1;
 }
 
-// MainReportVersion
+// A001
 message MainReportVersion {
     EventInfo info = 1;
     string version = 2;
 }
 
-// MainReportArgs
+// A002
 message MainReportArgs {
     EventInfo info = 1;
-    map<string, string> args = 2;  // Dict[str, str]
+    map<string, string> args = 2;
 }
 
-// RollbackFailed
+// E009
 message RollbackFailed {
     EventInfo info = 1;
     string conn_name = 2;
     string exc_info = 3;
 }
 
-// MainEncounteredError
+// Z002
 message MainEncounteredError {
     EventInfo info = 1;
     string exc = 2;
 }
 
-// PluginLoadError
+// E036
 message PluginLoadError {
     EventInfo info = 1;
     string exc_info = 2;
 
 }
 
-// ParsedFileLoadFailed
+// I029
 message ParsedFileLoadFailed {
     EventInfo info = 1;
     string path = 2;
@@ -61,20 +91,20 @@ message ParsedFileLoadFailed {
     string exc_info = 4;
 }
 
-// CatchableExceptionOnRun
+// W002
 message CatchableExceptionOnRun {
     EventInfo info = 1;
     string exc = 2;
     string exc_info = 3;
 }
 
-// PrintDebugStackTrace
+// Z011
 message PrintDebugStackTrace {
     EventInfo info = 1;
     string exc_info = 2;
 }
 
-// NodeConnectionReleaseError
+// W005
 message NodeConnectionReleaseError {
     EventInfo info = 1;
     string node_name = 2;
@@ -82,20 +112,20 @@ message NodeConnectionReleaseError {
     string exc_info = 4;
 }
 
-// SQLRunnerException
+// Q006
 message SQLRunnerException {
     EventInfo info = 1;
     string exc = 2;
     string exc_info = 3;
 }
 
-// TrackingInitializeFailure
+// Z044
 message TrackingInitializeFailure {
     EventInfo info = 1;
     string exc_info = 2;
 }
 
-// AdapterEventDebug
+// E001
 message AdapterEventDebug {
     EventInfo info = 1;
     string name = 2;
@@ -103,7 +133,7 @@ message AdapterEventDebug {
     repeated string args = 4;
 }
 
-// AdapterEventInfo
+// E002
 message AdapterEventInfo {
     EventInfo info = 1;
     string name = 2;
@@ -111,7 +141,7 @@ message AdapterEventInfo {
     repeated string args = 4;
 }
 
-// AdapterEventWarning
+// E003
 message AdapterEventWarning {
     EventInfo info = 1;
     string name = 2;
@@ -126,4 +156,242 @@ message AdapterEventError {
     string base_msg = 3;
     repeated string args = 4;
     string exc_info = 5;
+}
+
+// W006
+message FoundStats {
+    EventInfo info = 1;
+    string stat_line = 2;
+}
+
+// Q026
+message ConcurrencyLine {
+    EventInfo info = 1;
+    int32 num_threads = 2;
+    string target_name = 3;
+}
+
+// Q033
+message PrintStartLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string description = 3;
+    int32 index = 4;
+    int32 total = 5;
+}
+
+// Q032
+message PrintHookStartLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string statement = 3;
+    int32 index = 4;
+    int32 total = 5;
+}
+
+// Q007
+message PrintHookEndLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string statement = 3;
+    string status = 4;
+    int32 index = 5;
+    int32 total = 6;
+    int32 execution_time = 7;
+}
+
+// Q034
+message SkippingDetails {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string resource_type = 3;
+    string schema = 4;
+    string node_name = 5;
+    int32 index = 6;
+    int32 total = 7;
+}
+
+// Q008
+message PrintErrorTestResult {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string name = 3;
+    int32 index = 4;
+    int32 num_models = 5;
+    int32 execution_time = 6;
+}
+
+// Q009
+message PrintPassTestResult {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string name = 3;
+    int32 index = 4;
+    int32 num_models = 5;
+    int32 execution_time = 6;
+}
+
+// Q010
+message PrintWarnTestResult {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string name = 3;
+    int32 index = 4;
+    int32 num_models = 5;
+    int32 execution_time = 6;
+    int32 num_failures = 7;
+}
+
+// Q011
+message PrintFailureTestResult {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string name = 3;
+    int32 index = 4;
+    int32 num_models = 5;
+    int32 execution_time = 6;
+    int32 num_failures = 7;
+}
+
+// Q035
+message PrintModelErrorResultLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string description = 3;
+    string status = 4;
+    int32 index = 5;
+    int32 total = 6;
+    int32 execution_time = 7;
+}
+
+// Q011
+message PrintModelResultLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string description = 3;
+    string status = 4;
+    int32 index = 5;
+    int32 total = 6;
+    int32 execution_time = 7;
+}
+
+// Q013
+message PrintSnapshotErrorResultLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string description = 3;
+    string status = 4;
+    int32 index = 5;
+    int32 total = 6;
+    int32 execution_time = 7;
+    map<string, string> cfg = 8;
+}
+
+// Q014
+message PrintSnapshotResultLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string description = 3;
+    string status = 4;
+    int32 index = 5;
+    int32 total = 6;
+    int32 execution_time = 7;
+    map<string, string> cfg = 8;
+}
+
+// Q015
+message PrintSeedErrorResultLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string status = 3;
+    int32 index = 4;
+    int32 total = 5;
+    int32 execution_time = 6;
+    string schema = 7;
+    string relation = 8;
+}
+
+// Q016
+message PrintSeedResultLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string status = 3;
+    int32 index = 4;
+    int32 total = 5;
+    int32 execution_time = 6;
+    string schema = 7;
+    string relation = 8;
+}
+
+// Q017
+message PrintHookEndErrorLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    int32 index = 3;
+    int32 total = 4;
+    int32 execution_time = 5;
+    string source_name = 6;
+    string table_name = 7;
+}
+
+// Q018
+message PrintHookEndErrorStaleLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    int32 index = 3;
+    int32 total = 4;
+    int32 execution_time = 5;
+    string source_name = 6;
+    string table_name = 7;
+}
+
+// Q019
+message PrintHookEndWarnLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    int32 index = 3;
+    int32 total = 4;
+    int32 execution_time = 5;
+    string source_name = 6;
+    string table_name = 7;
+}
+
+// Q020
+message PrintHookEndPassLine {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    int32 index = 3;
+    int32 total = 4;
+    int32 execution_time = 5;
+    string source_name = 6;
+    string table_name = 7;
+}
+
+// Q023
+message NodeStart {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string unique_id = 3;
+}
+
+// Q024
+message NodeFinished {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string unique_id = 3;
+    RunResultMsg run_result = 4;
+}
+
+// Q030
+message NodeCompiling {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string unique_id = 3;
+}
+
+// Q031
+message NodeExecuting {
+    EventInfo info = 1;
+    NodeInfo node_info = 2;
+    string unique_id = 3;
 }

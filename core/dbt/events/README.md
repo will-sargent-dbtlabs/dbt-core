@@ -44,8 +44,6 @@ class PartialParsingDeletedExposure(DebugLevel, Cli, File):
 
 ## Optional (based on your event)
 
-- Events associated with node status changes must be extended with `NodeInfo` which contains a node_info attribute
-
 
 All values other than `code` and `node_info` will be included in the `data` node of the json log output.
 

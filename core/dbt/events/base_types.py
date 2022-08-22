@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from dbt.events.serialization import EventSerialization
 import os
 import threading
-from typing import Any, Dict
 from datetime import datetime
 
 
@@ -181,10 +180,3 @@ class NoFile:
 # prevents an event from going to stdout
 class NoStdOut:
     pass
-
-
-# This class represents the node_info which is generated
-# by the NodeInfoMixin class in dbt.contracts.graph.parsed
-@dataclass
-class NodeInfo:
-    node_info: Dict[str, Any]
