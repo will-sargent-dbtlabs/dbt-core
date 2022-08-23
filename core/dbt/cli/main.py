@@ -377,3 +377,7 @@ def test(ctx, **kwargs):
     click.echo(
         f"`{inspect.stack()[0][3]}` called\n kwargs: {kwargs}\n ctx: {pf(ctx.parent.params)}"
     )
+
+
+def runner():
+    cli(auto_envvar_prefix="DBT")
