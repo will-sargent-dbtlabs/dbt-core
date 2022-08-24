@@ -1,4 +1,6 @@
 import pytest
+from pathlib import Path
+from dbt.tests.util import check_relations_equal
 
 
 models__dependent_sql = """
@@ -112,36 +114,56 @@ from source_data
 """
 
 
-@pytest.fixture(scope="class")
-def models():
-    return {
-        "dependent.sql": models__dependent_sql,
-        "double_dependent.sql": models__double_dependent_sql,
-        "super_dependent.sql": models__super_dependent_sql,
-        "base": {
-            "female_only.sql": models__base__female_only_sql,
-            "base.sql": models__base__base_sql,
-            "base_copy.sql": models__base__base_copy_sql,
-        },
-    }
+class BaseTestEphemeral:
+    @pytest.fixture(scope="class", autouse=True)
+    def setUp(self, project):
+        project.run_sql_file(project.test_data_dir / Path("seed.sql"))
 
 
-@pytest.fixture(scope="class")
-def ephemeral_errors():
-    return {
-        "dependent.sql": ephemeral_errors__dependent_sql,
-        "base": {
-            "base.sql": ephemeral_errors__base__base_sql,
-            "base_copy.sql": ephemeral_errors__base__base_copy_sql,
-        },
-    }
+class TestEphemeralMulti(BaseTestEphemeral):
+    @pytest.fixture(scope="class")
+    def models():
+        return {
+            "dependent.sql": models__dependent_sql,
+            "double_dependent.sql": models__double_dependent_sql,
+            "super_dependent.sql": models__super_dependent_sql,
+            "base": {
+                "female_only.sql": models__base__female_only_sql,
+                "base.sql": models__base__base_sql,
+                "base_copy.sql": models__base__base_copy_sql,
+            },
+        }
+
+    def test_ephemeral_multi(self, project):
+        check_relations_equal(project.adapter, ["seed", "dependent"])
+        check_relations_equal(project.adapter, ["seed", "double_dependent"])
+        check_relations_equal(project.adapter, ["seed", "super_dependent"])
 
 
-@pytest.fixture(scope="class")
-def models_n():
-    return {
-        "ephemeral_level_two.sql": models_n__ephemeral_level_two_sql,
-        "root_view.sql": models_n__root_view_sql,
-        "ephemeral.sql": models_n__ephemeral_sql,
-        "source_table.sql": models_n__source_table_sql,
-    }
+class TestEphemeralNested(BaseTestEphemeral):
+    @pytest.fixture(scope="class")
+    def models_n():
+        return {
+            "ephemeral_level_two.sql": models_n__ephemeral_level_two_sql,
+            "root_view.sql": models_n__root_view_sql,
+            "ephemeral.sql": models_n__ephemeral_sql,
+            "source_table.sql": models_n__source_table_sql,
+        }
+
+    def test_ephemeral_nested(self, project):
+        pass
+
+
+class TestEphemeralErrorHandling(BaseTestEphemeral):
+    @pytest.fixture(scope="class")
+    def ephemeral_errors():
+        return {
+            "dependent.sql": ephemeral_errors__dependent_sql,
+            "base": {
+                "base.sql": ephemeral_errors__base__base_sql,
+                "base_copy.sql": ephemeral_errors__base__base_copy_sql,
+            },
+        }
+
+    def test_ephemeral_error_handling(self, project):
+        pass
