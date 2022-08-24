@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from dbt.tests.util import check_relations_equal
+from dbt.tests.util import run_dbt, check_relations_equal
 
 
 models__dependent_sql = """
@@ -135,6 +135,9 @@ class TestEphemeralMulti(BaseTestEphemeral):
         }
 
     def test_ephemeral_multi(self, project):
+        results = run_dbt(["run"])
+        assert len(results) == 3
+
         check_relations_equal(project.adapter, ["seed", "dependent"])
         check_relations_equal(project.adapter, ["seed", "double_dependent"])
         check_relations_equal(project.adapter, ["seed", "super_dependent"])
@@ -151,7 +154,8 @@ class TestEphemeralNested(BaseTestEphemeral):
         }
 
     def test_ephemeral_nested(self, project):
-        pass
+        results = run_dbt(["run"])
+        assert len(results) == 2
 
 
 class TestEphemeralErrorHandling(BaseTestEphemeral):
@@ -166,4 +170,7 @@ class TestEphemeralErrorHandling(BaseTestEphemeral):
         }
 
     def test_ephemeral_error_handling(self, project):
-        pass
+        results = run_dbt(["run"], expect_pass=False)
+        assert len(results) == 1
+        assert results[0].status == "skipped"
+        assert "Compilation Error" in results
