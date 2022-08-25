@@ -131,16 +131,6 @@ def models():
 
 
 @pytest.fixture(scope="class")
-def models_n():
-    return {
-        "ephemeral_level_two.sql": models_n__ephemeral_level_two_sql,
-        "root_view.sql": models_n__root_view_sql,
-        "ephemeral.sql": models_n__ephemeral_sql,
-        "source_table.sql": models_n__source_table_sql,
-    }
-
-
-@pytest.fixture(scope="class")
 def ephemeral_errors():
     return {
         "dependent.sql": ephemeral_errors__dependent_sql,
@@ -148,6 +138,16 @@ def ephemeral_errors():
             "base.sql": ephemeral_errors__base__base_sql,
             "base_copy.sql": ephemeral_errors__base__base_copy_sql,
         },
+    }
+
+
+@pytest.fixture(scope="class")
+def models_n():
+    return {
+        "ephemeral_level_two.sql": models_n__ephemeral_level_two_sql,
+        "root_view.sql": models_n__root_view_sql,
+        "ephemeral.sql": models_n__ephemeral_sql,
+        "source_table.sql": models_n__source_table_sql,
     }
 
 
