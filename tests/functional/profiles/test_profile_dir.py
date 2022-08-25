@@ -6,7 +6,7 @@ from pathlib import Path
 
 import dbt.flags as flags
 from dbt.tests.util import run_dbt_and_capture_stdout, write_file, rm_file
-    
+
 
 @pytest.fixture(scope="class")
 def profiles_yml(profiles_root, dbt_profile_data):
@@ -23,7 +23,7 @@ def profiles_home_root():
 def profiles_env_root(tmpdir_factory):
     path = tmpdir_factory.mktemp("profile_env")
     # environment variables are lowercased for some reason in _get_flag_value_from_env within dbt.flags
-    return str(tmpdir_factory.mktemp("profile_env")).lower()
+    return str(path).lower()
 
 
 @pytest.fixture(scope="class")
@@ -54,7 +54,6 @@ def cwd_child():
 
 @pytest.fixture
 def write_profiles_yml(request):
-
     def _write_profiles_yml(profiles_dir, dbt_profile_contents):
         def cleanup():
             rm_file(Path(profiles_dir) / "profiles.yml")
@@ -107,7 +106,18 @@ class TestProfiles:
             ("cwd", "cwd_parent"),  # use --project-dir flag and cwd is outside of it
         ],
     )
-    def test_profiles(self, project_dir_cli_arg, working_directory, write_profiles_yml, dbt_profile_data, profiles_home_root, profiles_project_root, profiles_flag_root, profiles_env_root, request):
+    def test_profiles(
+        self,
+        project_dir_cli_arg,
+        working_directory,
+        write_profiles_yml,
+        dbt_profile_data,
+        profiles_home_root,
+        profiles_project_root,
+        profiles_flag_root,
+        profiles_env_root,
+        request,
+    ):
         """Verify priority order to search for profiles.yml configuration.
 
         Reverse priority order:
@@ -119,8 +129,11 @@ class TestProfiles:
         """
 
         # https://pypi.org/project/pytest-lazy-fixture/ is an alternative to using request.getfixturevalue
-        project_dir_cli_arg = request.getfixturevalue(project_dir_cli_arg) if project_dir_cli_arg is not None else None
-        working_directory = request.getfixturevalue(working_directory) if working_directory is not None else None
+        if project_dir_cli_arg is not None:
+            project_dir_cli_arg = request.getfixturevalue(project_dir_cli_arg)
+
+        if working_directory is not None:
+            working_directory = request.getfixturevalue(working_directory)
 
         # start in the specified directory
         if working_directory is not None:
@@ -140,5 +153,7 @@ class TestProfiles:
             # that it takes priority even when the relevant environment variable is also set
 
             # set --profiles-dir on the command-line
-            _, stdout = self.dbt_debug(project_dir_cli_arg, profiles_dir_cli_arg=profiles_flag_root)
+            _, stdout = self.dbt_debug(
+                project_dir_cli_arg, profiles_dir_cli_arg=profiles_flag_root
+            )
             assert f"Using profiles.yml file at {profiles_flag_root}" in stdout
