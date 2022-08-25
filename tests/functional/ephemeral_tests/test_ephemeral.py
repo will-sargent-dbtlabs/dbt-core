@@ -1,4 +1,6 @@
 import pytest
+import re
+import os
 from pathlib import Path
 from dbt.tests.util import run_dbt, check_relations_equal
 
@@ -114,26 +116,47 @@ from source_data
 """
 
 
-class BaseTestEphemeral:
-    @pytest.fixture(scope="class", autouse=True)
-    def setUp(self, project):
-        project.run_sql_file(project.test_data_dir / Path("seed.sql"))
+@pytest.fixture(scope="class")
+def models():
+    return {
+        "dependent.sql": models__dependent_sql,
+        "double_dependent.sql": models__double_dependent_sql,
+        "super_dependent.sql": models__super_dependent_sql,
+        "base": {
+            "female_only.sql": models__base__female_only_sql,
+            "base.sql": models__base__base_sql,
+            "base_copy.sql": models__base__base_copy_sql,
+        },
+    }
 
 
-class TestEphemeralMulti(BaseTestEphemeral):
-    @pytest.fixture(scope="class")
-    def models():
-        return {
-            "dependent.sql": models__dependent_sql,
-            "double_dependent.sql": models__double_dependent_sql,
-            "super_dependent.sql": models__super_dependent_sql,
-            "base": {
-                "female_only.sql": models__base__female_only_sql,
-                "base.sql": models__base__base_sql,
-                "base_copy.sql": models__base__base_copy_sql,
-            },
-        }
+@pytest.fixture(scope="class")
+def models_n():
+    return {
+        "ephemeral_level_two.sql": models_n__ephemeral_level_two_sql,
+        "root_view.sql": models_n__root_view_sql,
+        "ephemeral.sql": models_n__ephemeral_sql,
+        "source_table.sql": models_n__source_table_sql,
+    }
 
+
+@pytest.fixture(scope="class")
+def ephemeral_errors():
+    return {
+        "dependent.sql": ephemeral_errors__dependent_sql,
+        "base": {
+            "base.sql": ephemeral_errors__base__base_sql,
+            "base_copy.sql": ephemeral_errors__base__base_copy_sql,
+        },
+    }
+
+
+@pytest.fixture(scope="class", autouse=True)
+def setUp(project):
+    project.run_sql_file(project.test_data_dir / Path("seed.sql"))
+
+
+class TestEphemeralMulti:
     def test_ephemeral_multi(self, project):
         results = run_dbt(["run"])
         assert len(results) == 3
@@ -141,36 +164,57 @@ class TestEphemeralMulti(BaseTestEphemeral):
         check_relations_equal(project.adapter, ["seed", "dependent"])
         check_relations_equal(project.adapter, ["seed", "double_dependent"])
         check_relations_equal(project.adapter, ["seed", "super_dependent"])
+        assert os.path.exists("./target/run/test/models/double_dependent.sql")
+        with open("./target/run/test/models/double_dependent.sql", "r") as fp:
+            sql_file = fp.read()
+
+        sql_file = re.sub(r"\d+", "", sql_file)
+        expected_sql = (
+            'create view "dbt"."test_ephemeral_"."double_dependent__dbt_tmp" as ('
+            "with __dbt__cte__base as ("
+            "select * from test_ephemeral_.seed"
+            "),  __dbt__cte__base_copy as ("
+            "select * from __dbt__cte__base"
+            ")-- base_copy just pulls from base. Make sure the listed"
+            "-- graph of CTEs all share the same dbt_cte__base cte"
+            "select * from __dbt__cte__base where gender = 'Male'"
+            "union all"
+            "select * from __dbt__cte__base_copy where gender = 'Female'"
+            ");"
+        )
+        sql_file = "".join(sql_file.split())
+        expected_sql = "".join(expected_sql.split())
+        assert sql_file == expected_sql
 
 
-class TestEphemeralNested(BaseTestEphemeral):
-    @pytest.fixture(scope="class")
-    def models_n():
-        return {
-            "ephemeral_level_two.sql": models_n__ephemeral_level_two_sql,
-            "root_view.sql": models_n__root_view_sql,
-            "ephemeral.sql": models_n__ephemeral_sql,
-            "source_table.sql": models_n__source_table_sql,
-        }
-
+class TestEphemeralNested:
     def test_ephemeral_nested(self, project):
-        results = run_dbt(["run"])
+        results = run_dbt(["run", "--models", "models_n"])
+
         assert len(results) == 2
+        assert os.path.exists("./target/run/test/models-n/root_view.sql")
+        with open("./target/run/test/models-n/root_view.sql", "r") as fp:
+            sql_file = fp.read()
+
+        sql_file = re.sub(r"\d+", "", sql_file)
+        expected_sql = (
+            'create view "dbt"."test_ephemeral_"."root_view__dbt_tmp" as ('
+            "with __dbt__cte__ephemeral_level_two as ("
+            'select * from "dbt"."test_ephemeral_"."source_table"'
+            "),  __dbt__cte__ephemeral as ("
+            "select * from __dbt__cte__ephemeral_level_two"
+            ")select * from __dbt__cte__ephemeral"
+            ");"
+        )
+
+        sql_file = "".join(sql_file.split())
+        expected_sql = "".join(expected_sql.split())
+        assert sql_file == expected_sql
 
 
-class TestEphemeralErrorHandling(BaseTestEphemeral):
-    @pytest.fixture(scope="class")
-    def ephemeral_errors():
-        return {
-            "dependent.sql": ephemeral_errors__dependent_sql,
-            "base": {
-                "base.sql": ephemeral_errors__base__base_sql,
-                "base_copy.sql": ephemeral_errors__base__base_copy_sql,
-            },
-        }
-
+class TestEphemeralErrorHandling:
     def test_ephemeral_error_handling(self, project):
-        results = run_dbt(["run"], expect_pass=False)
+        results = run_dbt(["run", "--models", "ephemeral_errors"], expect_pass=False)
         assert len(results) == 1
         assert results[0].status == "skipped"
         assert "Compilation Error" in results
