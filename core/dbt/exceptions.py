@@ -122,9 +122,9 @@ class RuntimeException(RuntimeError, Exception):
 
         result.update(
             {
-                "raw_sql": self.node.raw_sql,
+                "raw_code": self.node.raw_code,
                 # the node isn't always compiled, but if it is, include that!
-                "compiled_sql": getattr(self.node, "compiled_sql", None),
+                "compiled_code": getattr(self.node, "compiled_code", None),
             }
         )
         return result
@@ -203,7 +203,7 @@ class DatabaseException(RuntimeException):
         lines = []
 
         if hasattr(self.node, "build_path") and self.node.build_path:
-            lines.append("compiled SQL at {}".format(self.node.build_path))
+            lines.append("compiled Code at {}".format(self.node.build_path))
 
         return lines + RuntimeException.process_stack(self)
 
@@ -776,13 +776,25 @@ def package_not_found(package_name):
     raise_dependency_error("Package {} was not found in the package index".format(package_name))
 
 
-def package_version_not_found(package_name, version_range, available_versions):
+def package_version_not_found(
+    package_name, version_range, available_versions, should_version_check
+):
     base_msg = (
-        "Could not find a matching version for package {}\n"
+        "Could not find a matching compatible version for package {}\n"
         "  Requested range: {}\n"
-        "  Available versions: {}"
+        "  Compatible versions: {}\n"
     )
-    raise_dependency_error(base_msg.format(package_name, version_range, available_versions))
+    addendum = (
+        (
+            "\n"
+            "  Not shown: package versions incompatible with installed version of dbt-core\n"
+            "  To include them, run 'dbt --no-version-check deps'"
+        )
+        if should_version_check
+        else ""
+    )
+    msg = base_msg.format(package_name, version_range, available_versions) + addendum
+    raise_dependency_error(msg)
 
 
 def invalid_materialization_argument(name, argument):

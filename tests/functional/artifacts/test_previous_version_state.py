@@ -28,7 +28,7 @@ select 1 as id
 
 
 class TestPreviousVersionState:
-    CURRENT_EXPECTED_MANIFEST_VERSION = 6
+    CURRENT_EXPECTED_MANIFEST_VERSION = 7
 
     @pytest.fixture(scope="class")
     def models(self):
@@ -78,7 +78,8 @@ class TestPreviousVersionState:
         assert (
             current_schema_version == self.CURRENT_EXPECTED_MANIFEST_VERSION
         ), "Sounds like you've bumped the manifest version and need to update this test!"
-        self.generate_latest_manifest(project, current_schema_version)
+        # If we need a newly generated manifest, uncomment the following line and commit the result
+        # self.generate_latest_manifest(project, current_schema_version)
         self.compare_previous_state(project, current_schema_version, True)
 
     def test_backwards_compatible_versions(self, project):

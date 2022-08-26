@@ -41,7 +41,7 @@ from dbt.contracts.graph.unparsed import (
 from dbt.contracts.util import Replaceable, AdditionalPropertiesMixin
 from dbt.exceptions import warn_or_error
 from dbt import flags
-from dbt.node_types import NodeType
+from dbt.node_types import ModelLanguage, NodeType
 
 
 from .model_config import (
@@ -157,7 +157,6 @@ class ParsedNodeMixins(dbtClassMixin):
         self.created_at = time.time()
         self.description = patch.description
         self.columns = patch.columns
-        self.docs = patch.docs
 
     def get_materialization(self):
         return self.config.materialized
@@ -234,6 +233,7 @@ class ParsedNode(ParsedNodeDefaults, ParsedNodeMixins, SerializableType):
         return self.to_dict()
 
     def __post_serialize__(self, dct):
+        dct = super().__post_serialize__(dct)
         if "_event_status" in dct:
             del dct["_event_status"]
         return dct
@@ -281,7 +281,7 @@ class ParsedNode(ParsedNodeDefaults, ParsedNodeMixins, SerializableType):
         return False
 
     def same_body(self: T, other: T) -> bool:
-        return self.raw_sql == other.raw_sql
+        return self.raw_code == other.raw_code
 
     def same_persisted_description(self: T, other: T) -> bool:
         # the check on configs will handle the case where we have different
@@ -516,6 +516,7 @@ class ParsedMacro(UnparsedBaseNode, HasUniqueID):
     patch_path: Optional[str] = None
     arguments: List[MacroArgument] = field(default_factory=list)
     created_at: float = field(default_factory=lambda: time.time())
+    supported_languages: Optional[List[ModelLanguage]] = None
 
     def patch(self, patch: ParsedMacroPatch):
         self.patch_path: Optional[str] = patch.file_id

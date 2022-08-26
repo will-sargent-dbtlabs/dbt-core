@@ -142,7 +142,6 @@ def main(args=None):
             exit_code = e.code
 
         except BaseException as e:
-            traceback.print_exc()
             fire_event(MainEncounteredError(e=str(e)))
             fire_event(MainStackTrace(stack_trace=traceback.format_exc()))
             exit_code = ExitCodes.UnhandledError.value
@@ -562,6 +561,7 @@ def _build_docs_generate_subparser(subparsers, base_subparser):
         Do not run "dbt compile" as part of docs generation
         """,
     )
+    _add_defer_argument(generate_sub)
     return generate_sub
 
 
@@ -1167,7 +1167,7 @@ def parse_args(args, cls=DBTArgumentParser):
     # list_sub sets up its own arguments.
     _add_selection_arguments(run_sub, compile_sub, generate_sub, test_sub, snapshot_sub, seed_sub)
     # --defer
-    _add_defer_argument(run_sub, test_sub, build_sub, snapshot_sub)
+    _add_defer_argument(run_sub, test_sub, build_sub, snapshot_sub, compile_sub)
     # --full-refresh
     _add_table_mutability_arguments(run_sub, compile_sub, build_sub)
 
