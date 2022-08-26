@@ -141,9 +141,7 @@ def event_to_json(
     try:
         # We could use to_json here, but it wouldn't sort the keys.
         # The 'to_json' method just does json.dumps on the dict anyway.
-        # Note: This doesn't set "include_default_values". Do we want
-        # to set that?
-        event_dict = e.to_dict(casing=betterproto.Casing.SNAKE)  # type: ignore
+        event_dict = e.to_dict(casing=betterproto.Casing.SNAKE, include_default_values=True)  # type: ignore
     except AttributeError as exc:
         event_type = type(e).__name__
         raise Exception(f"type {event_type} is not serializable. {str(exc)}")

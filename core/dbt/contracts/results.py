@@ -16,7 +16,7 @@ from dbt.logger import (
     TimingProcessor,
     JsonOnly,
 )
-from dbt.utils import lowercase
+from dbt.utils import lowercase, cast_to_str, cast_to_int
 from dbt.dataclass_schema import dbtClassMixin, StrEnum
 
 import agate
@@ -124,9 +124,10 @@ class BaseResult(dbtClassMixin):
         # TODO: add more fields
         msg = RunResultMsg()
         msg.status = str(self.status)
+        msg.message = cast_to_str(self.message)
         msg.thread = self.thread_id
         msg.execution_time = self.execution_time
-        msg.num_failures = self.failures
+        msg.num_failures = cast_to_int(self.failures)
         # timing_info, adapter_response, message
         return msg
 

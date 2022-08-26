@@ -1235,6 +1235,15 @@ class RunningOperationUncaughtError(ErrorLevel, pl.RunningOperationUncaughtError
 
 
 @dataclass
+class EndResult(DebugLevel, pl.EndResult):
+    def code(self):
+        return "Q037"
+
+    def message(self) -> str:
+        return "Command end result"
+
+
+@dataclass
 class DbtProjectError(ErrorLevel, pl.DbtProjectError):
     def code(self):
         return "A009"

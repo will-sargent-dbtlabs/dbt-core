@@ -51,13 +51,14 @@ class RunResultMsg(betterproto.Message):
 
     # status: Union[RunStatus, TestStatus, FreshnessStatus]
     status: str = betterproto.string_field(1)
-    timing_info: List["TimingInfoMsg"] = betterproto.message_field(2)
-    thread: str = betterproto.string_field(3)
-    execution_time: float = betterproto.float_field(4)
+    message: str = betterproto.string_field(2)
+    timing_info: List["TimingInfoMsg"] = betterproto.message_field(3)
+    thread: str = betterproto.string_field(4)
+    execution_time: float = betterproto.float_field(5)
     adapter_response: Dict[str, str] = betterproto.map_field(
-        5, betterproto.TYPE_STRING, betterproto.TYPE_STRING
+        6, betterproto.TYPE_STRING, betterproto.TYPE_STRING
     )
-    num_failures: int = betterproto.int32_field(6)
+    num_failures: int = betterproto.int32_field(7)
 
 
 @dataclass
@@ -499,6 +500,17 @@ class NodeExecuting(betterproto.Message):
     info: "EventInfo" = betterproto.message_field(1)
     node_info: "NodeInfo" = betterproto.message_field(2)
     unique_id: str = betterproto.string_field(3)
+
+
+@dataclass
+class EndResult(betterproto.Message):
+    """Q037"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    results: List["RunResultMsg"] = betterproto.message_field(2)
+    elapsed_time: float = betterproto.float_field(3)
+    generated_at: datetime = betterproto.message_field(4)
+    success: bool = betterproto.bool_field(5)
 
 
 @dataclass

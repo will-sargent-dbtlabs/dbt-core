@@ -676,3 +676,10 @@ def cast_to_str(string: Optional[str]) -> str:
         return ""
     else:
         return string
+
+
+def cast_to_int(integer: Optional[int]) -> int:
+    if integer is None:
+        return 0
+    else:
+        return integer

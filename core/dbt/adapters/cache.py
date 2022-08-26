@@ -422,7 +422,7 @@ class RelationsCache:
             )
 
         if old_key not in self.relations:
-            fire_event(TemporaryRelation(key=old_key))
+            fire_event(TemporaryRelation(key=_make_msg_from_key(old_key)))
             return False
         return True
 
