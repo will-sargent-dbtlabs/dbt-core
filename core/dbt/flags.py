@@ -52,6 +52,7 @@ _NON_BOOLEAN_FLAGS = [
 
 _NON_DBT_ENV_FLAGS = ["DO_NOT_TRACK"]
 
+
 def get_profiles_dir():
     default_profiles_dir = DEFAULT_PROFILES_DIR
 
@@ -60,6 +61,7 @@ def get_profiles_dir():
         default_profiles_dir = os.getcwd()
 
     return default_profiles_dir
+
 
 # Global CLI defaults. These flags are set from three places:
 # CLI args, environment variables, and user_config (profiles.yml).
