@@ -195,33 +195,34 @@ class TestHookRefs(BaseTestPrePost):
 
 
 class TestPrePostModelHooksOnSeeds(DBTIntegrationTest):
-    @property
-    def schema(self):
-        return "model_hooks_014"
+    pass
+    # @property
+    # def schema(self):
+    #     return "model_hooks_014"
 
-    @property
-    def models(self):
-        return "seed-models"
+    # @property
+    # def models(self):
+    #     return "seed-models"
 
-    @property
-    def project_config(self):
-        return {
-            'config-version': 2,
-            'seed-paths': ['seeds'],
-            'models': {},
-            'seeds': {
-                'post-hook': [
-                    'alter table {{ this }} add column new_col int',
-                    'update {{ this }} set new_col = 1'
-                ],
-                'quote_columns': False,
-            },
-        }
+    # @property
+    # def project_config(self):
+    #     return {
+    #         'config-version': 2,
+    #         'seed-paths': ['seeds'],
+    #         'models': {},
+    #         'seeds': {
+    #             'post-hook': [
+    #                 'alter table {{ this }} add column new_col int',
+    #                 'update {{ this }} set new_col = 1'
+    #             ],
+    #             'quote_columns': False,
+    #         },
+    #     }
 
-    @use_profile('postgres')
-    def test_postgres_hooks_on_seeds(self):
-        res = self.run_dbt(['seed'])
-        self.assertEqual(len(res), 1, 'Expected exactly one item')
-        res = self.run_dbt(['test'])
-        self.assertEqual(len(res), 1, 'Expected exactly one item')
+    # @use_profile('postgres')
+    # def test_postgres_hooks_on_seeds(self):
+    #     res = self.run_dbt(['seed'])
+    #     self.assertEqual(len(res), 1, 'Expected exactly one item')
+    #     res = self.run_dbt(['test'])
+    #     self.assertEqual(len(res), 1, 'Expected exactly one item')
 
