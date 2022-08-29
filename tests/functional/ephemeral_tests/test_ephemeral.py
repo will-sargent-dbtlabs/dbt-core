@@ -198,9 +198,9 @@ class TestEphemeralNested:
 
         sql_file = re.sub(r"\d+", "", sql_file)
         expected_sql = (
-            'create view "dbt"."test_ephemeral_"."root_view__dbt_tmp" as ('
+            'create view "dbt"."test_ephemeral"."root_view__dbt_tmp" as ('
             "with __dbt__cte__ephemeral_level_two as ("
-            'select * from "dbt"."test_ephemeral_"."source_table"'
+            'select * from "dbt"."test_ephemeral"."source_table"'
             "),  __dbt__cte__ephemeral as ("
             "select * from __dbt__cte__ephemeral_level_two"
             ")select * from __dbt__cte__ephemeral"
