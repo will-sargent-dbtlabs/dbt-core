@@ -170,9 +170,9 @@ class TestEphemeralMulti:
 
         sql_file = re.sub(r"\d+", "", sql_file)
         expected_sql = (
-            'create view "dbt"."test_ephemeral_"."double_dependent__dbt_tmp" as ('
+            'create view "dbt"."test_ephemeral"."double_dependent__dbt_tmp" as ('
             "with __dbt__cte__base as ("
-            "select * from test_ephemeral_.seed"
+            "select * from test_ephemeral.seed"
             "),  __dbt__cte__base_copy as ("
             "select * from __dbt__cte__base"
             ")-- base_copy just pulls from base. Make sure the listed"
