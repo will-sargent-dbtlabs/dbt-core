@@ -54,7 +54,7 @@ select * from {{ ref('base') }}
 
 ephemeral_errors__dependent_sql = """
 -- base copy is an error
-select * from {{ref('base_copy')}} where gender = 'Male'
+select * from {{ref('base_copy_errors')}} where gender = 'Male'
 
 """
 
@@ -70,7 +70,7 @@ ephemeral_errors__base__base_copy_sql = """
 
 {{ adapter.invalid_method() }}
 
-select * from {{ ref('base') }}
+select * from {{ ref('base_errors') }}
 
 """
 
@@ -122,32 +122,18 @@ def models():
         "dependent.sql": models__dependent_sql,
         "double_dependent.sql": models__double_dependent_sql,
         "super_dependent.sql": models__super_dependent_sql,
-        "base": {
-            "female_only.sql": models__base__female_only_sql,
-            "base.sql": models__base__base_sql,
-            "base_copy.sql": models__base__base_copy_sql,
-        },
-    }
-
-
-@pytest.fixture(scope="class")
-def ephemeral_errors():
-    return {
-        "dependent.sql": ephemeral_errors__dependent_sql,
-        "base": {
-            "base.sql": ephemeral_errors__base__base_sql,
-            "base_copy.sql": ephemeral_errors__base__base_copy_sql,
-        },
-    }
-
-
-@pytest.fixture(scope="class")
-def models_n():
-    return {
         "ephemeral_level_two.sql": models_n__ephemeral_level_two_sql,
         "root_view.sql": models_n__root_view_sql,
         "ephemeral.sql": models_n__ephemeral_sql,
         "source_table.sql": models_n__source_table_sql,
+        "dependent_errors.sql": ephemeral_errors__dependent_sql,
+        "base": {
+            "female_only.sql": models__base__female_only_sql,
+            "base.sql": models__base__base_sql,
+            "base_copy.sql": models__base__base_copy_sql,
+            "base_errors.sql": ephemeral_errors__base__base_sql,
+            "base_copy_errors.sql": ephemeral_errors__base__base_copy_sql,
+        },
     }
 
 
@@ -189,11 +175,12 @@ class TestEphemeralMulti:
 
 class TestEphemeralNested:
     def test_ephemeral_nested(self, project):
-        results = run_dbt(["run", "--models", "models_n"])
-
+        results = run_dbt(
+            ["run", "--models", "ephemeral_level_two", "root_view", "ephemeral", "source_table"]
+        )
         assert len(results) == 2
-        assert os.path.exists("./target/run/test/models-n/root_view.sql")
-        with open("./target/run/test/models-n/root_view.sql", "r") as fp:
+        assert os.path.exists("./target/run/test/models/root_view.sql")
+        with open("./target/run/test/models/root_view.sql", "r") as fp:
             sql_file = fp.read()
 
         sql_file = re.sub(r"\d+", "", sql_file)
@@ -214,7 +201,7 @@ class TestEphemeralNested:
 
 class TestEphemeralErrorHandling:
     def test_ephemeral_error_handling(self, project):
-        results = run_dbt(["run", "--models", "ephemeral_errors"], expect_pass=False)
+        results = run_dbt(["run", "--models", "dependent_errors"], expect_pass=False)
         assert len(results) == 1
         assert results[0].status == "skipped"
-        assert "Compilation Error" in results
+        assert "Compilation Error" in results[0].message
