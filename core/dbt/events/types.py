@@ -33,9 +33,8 @@ from dbt.node_types import NodeType
 # | E    | DB adapter          |
 # | I    | Project parsing     |
 # | M    | Deps generation     |
-# | Q    | Node processing     |
+# | Q    | Node execution     |
 # | W    | Node testing        |
-# | Y    | Post processing     |
 # | Z    | Misc                |
 # | T    | Test only           |
 #
@@ -47,6 +46,266 @@ def format_adapter_message(name, base_msg, args) -> str:
     # avoids issues like "dict: {k: v}".format() which results in `KeyError 'k'`
     msg = base_msg if len(args) == 0 else base_msg.format(*args)
     return f"{name} adapter: {msg}"
+
+
+# =======================================================
+# A - Pre-project loading
+# =======================================================
+
+
+@dataclass
+class MainReportVersion(InfoLevel, pl.MainReportVersion):  # noqa
+    def code(self):
+        return "A001"
+
+    def message(self):
+        return f"Running with dbt{self.version}"
+
+
+@dataclass
+class MainReportArgs(DebugLevel, pl.MainReportArgs):  # noqa
+    def code(self):
+        return "A002"
+
+    def message(self):
+        return f"running dbt with arguments {str(self.args)}"
+
+
+@dataclass
+class MainTrackingUserState(DebugLevel, pl.MainTrackingUserState):
+    def code(self):
+        return "A003"
+
+    def message(self):
+        return f"Tracking: {self.user_state}"
+
+
+@dataclass
+class MergedFromState(DebugLevel, pl.MergedFromState):
+    def code(self):
+        return "A004"
+
+    def message(self) -> str:
+        return f"Merged {self.num_merged} items from state (sample: {self.sample})"
+
+
+@dataclass
+class MissingProfileTarget(InfoLevel, pl.MissingProfileTarget):
+    def code(self):
+        return "A005"
+
+    def message(self) -> str:
+        return f"target not specified in profile '{self.profile_name}', using '{self.target_name}'"
+
+
+# Skipped A006, A007
+
+
+@dataclass
+class InvalidVarsYAML(ErrorLevel, pl.InvalidVarsYAML):
+    def code(self):
+        return "A008"
+
+    def message(self) -> str:
+        return "The YAML provided in the --vars argument is not valid."
+
+
+@dataclass
+class DbtProjectError(ErrorLevel, pl.DbtProjectError):
+    def code(self):
+        return "A009"
+
+    def message(self) -> str:
+        return "Encountered an error while reading the project:"
+
+
+@dataclass
+class DbtProjectErrorException(ErrorLevel, pl.DbtProjectErrorException):
+    def code(self):
+        return "A010"
+
+    def message(self) -> str:
+        return f"  ERROR: {str(self.exc)}"
+
+
+@dataclass
+class DbtProfileError(ErrorLevel, pl.DbtProfileError):
+    def code(self):
+        return "A011"
+
+    def message(self) -> str:
+        return "Encountered an error while reading profiles:"
+
+
+@dataclass
+class DbtProfileErrorException(ErrorLevel, pl.DbtProfileErrorException):
+    def code(self):
+        return "A012"
+
+    def message(self) -> str:
+        return f"  ERROR: {str(self.exc)}"
+
+
+@dataclass
+class ProfileListTitle(InfoLevel, pl.ProfileListTitle):
+    def code(self):
+        return "A013"
+
+    def message(self) -> str:
+        return "Defined profiles:"
+
+
+@dataclass
+class ListSingleProfile(InfoLevel, pl.ListSingleProfile):
+    def code(self):
+        return "A014"
+
+    def message(self) -> str:
+        return f" - {self.profile}"
+
+
+@dataclass
+class NoDefinedProfiles(InfoLevel, pl.NoDefinedProfiles):
+    def code(self):
+        return "A015"
+
+    def message(self) -> str:
+        return "There are no profiles defined in your profiles.yml file"
+
+
+@dataclass
+class ProfileHelpMessage(InfoLevel, pl.ProfileHelpMessage):
+    def code(self):
+        return "A016"
+
+    def message(self) -> str:
+        return """
+For more information on configuring profiles, please consult the dbt docs:
+
+https://docs.getdbt.com/docs/configure-your-profile
+"""
+
+
+@dataclass
+class StarterProjectPath(DebugLevel, pl.StarterProjectPath):
+    def code(self):
+        return "A017"
+
+    def message(self) -> str:
+        return f"Starter project path: {self.dir}"
+
+
+@dataclass
+class ConfigFolderDirectory(InfoLevel, pl.ConfigFolderDirectory):
+    def code(self):
+        return "A018"
+
+    def message(self) -> str:
+        return f"Creating dbt configuration folder at {self.dir}"
+
+
+@dataclass
+class NoSampleProfileFound(InfoLevel, pl.NoSampleProfileFound):
+    def code(self):
+        return "A019"
+
+    def message(self) -> str:
+        return f"No sample profile found for {self.adapter}."
+
+
+@dataclass
+class ProfileWrittenWithSample(InfoLevel, pl.ProfileWrittenWithSample):
+    def code(self):
+        return "A020"
+
+    def message(self) -> str:
+        return (
+            f"Profile {self.name} written to {self.path} "
+            "using target's sample configuration. Once updated, you'll be able to "
+            "start developing with dbt."
+        )
+
+
+@dataclass
+class ProfileWrittenWithTargetTemplateYAML(InfoLevel, pl.ProfileWrittenWithTargetTemplateYAML):
+    def code(self):
+        return "A021"
+
+    def message(self) -> str:
+        return (
+            f"Profile {self.name} written to {self.path} using target's "
+            "profile_template.yml and your supplied values. Run 'dbt debug' to "
+            "validate the connection."
+        )
+
+
+@dataclass
+class ProfileWrittenWithProjectTemplateYAML(InfoLevel, pl.ProfileWrittenWithProjectTemplateYAML):
+    def code(self):
+        return "A022"
+
+    def message(self) -> str:
+        return (
+            f"Profile {self.name} written to {self.path} using project's "
+            "profile_template.yml and your supplied values. Run 'dbt debug' to "
+            "validate the connection."
+        )
+
+
+@dataclass
+class SettingUpProfile(InfoLevel, pl.SettingUpProfile):
+    def code(self):
+        return "A023"
+
+    def message(self) -> str:
+        return "Setting up your profile."
+
+
+@dataclass
+class InvalidProfileTemplateYAML(InfoLevel, pl.InvalidProfileTemplateYAML):
+    def code(self):
+        return "A024"
+
+    def message(self) -> str:
+        return "Invalid profile_template.yml in project."
+
+
+@dataclass
+class ProjectNameAlreadyExists(InfoLevel, pl.ProjectNameAlreadyExists):
+    def code(self):
+        return "A025"
+
+    def message(self) -> str:
+        return f"A project called {self.name} already exists here."
+
+
+@dataclass
+class ProjectCreated(InfoLevel, pl.ProjectCreated):
+    def code(self):
+        return "A026"
+
+    def message(self) -> str:
+        return """
+Your new dbt project "{self.project_name}" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  {self.docs_url}
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  {self.slack_url}
+
+Happy modeling!
+"""
+
+
+# =======================================================
+# E - DB Adapter
+# =======================================================
 
 
 @dataclass
@@ -83,375 +342,6 @@ class AdapterEventError(ErrorLevel, pl.AdapterEventError):  # noqa
 
     def message(self):
         return format_adapter_message(self.name, self.base_msg, self.args)
-
-
-@dataclass
-class MainKeyboardInterrupt(InfoLevel, pl.MainKeyboardInterrupt):
-    def code(self):
-        return "Z001"
-
-    def message(self) -> str:
-        return "ctrl-c"
-
-
-@dataclass
-class MainEncounteredError(ErrorLevel, pl.MainEncounteredError):  # noqa
-    def code(self):
-        return "Z002"
-
-    def message(self) -> str:
-        return f"Encountered an error:\n{self.exc}"
-
-
-@dataclass
-class MainStackTrace(ErrorLevel, pl.MainStackTrace):
-    def code(self):
-        return "Z003"
-
-    def message(self) -> str:
-        return self.stack_trace
-
-
-@dataclass
-class MainReportVersion(InfoLevel, pl.MainReportVersion):  # noqa
-    def code(self):
-        return "A001"
-
-    def message(self):
-        return f"Running with dbt{self.version}"
-
-
-@dataclass
-class MainReportArgs(DebugLevel, pl.MainReportArgs):  # noqa
-    def code(self):
-        return "A002"
-
-    def message(self):
-        return f"running dbt with arguments {str(self.args)}"
-
-
-@dataclass
-class MainTrackingUserState(DebugLevel, pl.MainTrackingUserState):
-    def code(self):
-        return "A003"
-
-    def message(self):
-        return f"Tracking: {self.user_state}"
-
-
-@dataclass
-class ParsingStart(InfoLevel, pl.ParsingStart):
-    def code(self):
-        return "I001"
-
-    def message(self) -> str:
-        return "Start parsing."
-
-
-@dataclass
-class ParsingCompiling(InfoLevel, pl.ParsingCompiling):
-    def code(self):
-        return "I002"
-
-    def message(self) -> str:
-        return "Compiling."
-
-
-@dataclass
-class ParsingWritingManifest(InfoLevel, pl.ParsingWritingManifest):
-    def code(self):
-        return "I003"
-
-    def message(self) -> str:
-        return "Writing manifest."
-
-
-@dataclass
-class ParsingDone(InfoLevel, pl.ParsingDone):
-    def code(self):
-        return "I004"
-
-    def message(self) -> str:
-        return "Done."
-
-
-@dataclass
-class ManifestDependenciesLoaded(InfoLevel, pl.ManifestDependenciesLoaded):
-    def code(self):
-        return "I005"
-
-    def message(self) -> str:
-        return "Dependencies loaded"
-
-
-@dataclass
-class ManifestLoaderCreated(InfoLevel, pl.ManifestLoaderCreated):
-    def code(self):
-        return "I006"
-
-    def message(self) -> str:
-        return "ManifestLoader created"
-
-
-@dataclass
-class ManifestLoaded(InfoLevel, pl.ManifestLoaded):
-    def code(self):
-        return "I007"
-
-    def message(self) -> str:
-        return "Manifest loaded"
-
-
-@dataclass
-class ManifestChecked(InfoLevel, pl.ManifestChecked):
-    def code(self):
-        return "I008"
-
-    def message(self) -> str:
-        return "Manifest checked"
-
-
-@dataclass
-class ManifestFlatGraphBuilt(InfoLevel, pl.ManifestFlatGraphBuilt):
-    def code(self):
-        return "I009"
-
-    def message(self) -> str:
-        return "Flat graph built"
-
-
-@dataclass
-class ReportPerformancePath(InfoLevel, pl.ReportPerformancePath):
-    def code(self):
-        return "I010"
-
-    def message(self) -> str:
-        return f"Performance info: {self.path}"
-
-
-@dataclass
-class GitSparseCheckoutSubdirectory(DebugLevel, pl.GitSparseCheckoutSubdirectory):
-    def code(self):
-        return "M001"
-
-    def message(self) -> str:
-        return f"  Subdirectory specified: {self.subdir}, using sparse checkout."
-
-
-@dataclass
-class GitProgressCheckoutRevision(DebugLevel, pl.GitProgressCheckoutRevision):
-    def code(self):
-        return "M002"
-
-    def message(self) -> str:
-        return f"  Checking out revision {self.revision}."
-
-
-@dataclass
-class GitProgressUpdatingExistingDependency(DebugLevel, pl.GitProgressUpdatingExistingDependency):
-    def code(self):
-        return "M003"
-
-    def message(self) -> str:
-        return f"Updating existing dependency {self.dir}."
-
-
-@dataclass
-class GitProgressPullingNewDependency(DebugLevel, pl.GitProgressPullingNewDependency):
-    def code(self):
-        return "M004"
-
-    def message(self) -> str:
-        return f"Pulling new dependency {self.dir}."
-
-
-@dataclass
-class GitNothingToDo(DebugLevel, pl.GitNothingToDo):
-    def code(self):
-        return "M005"
-
-    def message(self) -> str:
-        return f"Already at {self.sha}, nothing to do."
-
-
-@dataclass
-class GitProgressUpdatedCheckoutRange(DebugLevel, pl.GitProgressUpdatedCheckoutRange):
-    def code(self):
-        return "M006"
-
-    def message(self) -> str:
-        return f"  Updated checkout from {self.start_sha} to {self.end_sha}."
-
-
-@dataclass
-class GitProgressCheckedOutAt(DebugLevel, pl.GitProgressCheckedOutAt):
-    def code(self):
-        return "M007"
-
-    def message(self) -> str:
-        return f"  Checked out at {self.end_sha}."
-
-
-@dataclass
-class RegistryIndexProgressMakingGETRequest(DebugLevel, pl.RegistryIndexProgressMakingGETRequest):
-    def code(self):
-        return "M022"
-
-    def message(self) -> str:
-        return f"Making package index registry request: GET {self.url}"
-
-
-@dataclass
-class RegistryIndexProgressGETResponse(DebugLevel, pl.RegistryIndexProgressGETResponse):
-    def code(self):
-        return "M023"
-
-    def message(self) -> str:
-        return f"Response from registry index: GET {self.url} {self.resp_code}"
-
-
-@dataclass
-class RegistryProgressMakingGETRequest(DebugLevel, pl.RegistryProgressMakingGETRequest):
-    def code(self):
-        return "M008"
-
-    def message(self) -> str:
-        return f"Making package registry request: GET {self.url}"
-
-
-@dataclass
-class RegistryProgressGETResponse(DebugLevel, pl.RegistryProgressGETResponse):
-    def code(self):
-        return "M009"
-
-    def message(self) -> str:
-        return f"Response from registry: GET {self.url} {self.resp_code}"
-
-
-@dataclass
-class RegistryResponseUnexpectedType(DebugLevel, pl.RegistryResponseUnexpectedType):
-    def code(self):
-        return "M024"
-
-    def message(self) -> str:
-        return f"Response was None: {self.response}"
-
-
-@dataclass
-class RegistryResponseMissingTopKeys(DebugLevel, pl.RegistryResponseMissingTopKeys):
-    def code(self):
-        return "M025"
-
-    def message(self) -> str:
-        # expected/actual keys logged in exception
-        return f"Response missing top level keys: {self.response}"
-
-
-@dataclass
-class RegistryResponseMissingNestedKeys(DebugLevel, pl.RegistryResponseMissingNestedKeys):
-    def code(self):
-        return "M026"
-
-    def message(self) -> str:
-        # expected/actual keys logged in exception
-        return f"Response missing nested keys: {self.response}"
-
-
-@dataclass
-class RegistryResponseExtraNestedKeys(DebugLevel, pl.RegistryResponseExtraNestedKeys):
-    def code(self):
-        return "M027"
-
-    def message(self) -> str:
-        # expected/actual keys logged in exception
-        return f"Response contained inconsistent keys: {self.response}"
-
-
-@dataclass
-class SystemErrorRetrievingModTime(ErrorLevel, pl.SystemErrorRetrievingModTime):
-    def code(self):
-        return "Z004"
-
-    def message(self) -> str:
-        return f"Error retrieving modification time for file {self.path}"
-
-
-@dataclass
-class SystemCouldNotWrite(DebugLevel, pl.SystemCouldNotWrite):
-    def code(self):
-        return "Z005"
-
-    def message(self) -> str:
-        return (
-            f"Could not write to path {self.path}({len(self.path)} characters): "
-            f"{self.reason}\nexception: {self.exc}"
-        )
-
-
-@dataclass
-class SystemExecutingCmd(DebugLevel, pl.SystemExecutingCmd):
-    def code(self):
-        return "Z006"
-
-    def message(self) -> str:
-        return f'Executing "{" ".join(self.cmd)}"'
-
-
-@dataclass
-class SystemStdOutMsg(DebugLevel, pl.SystemStdOutMsg):
-    def code(self):
-        return "Z007"
-
-    def message(self) -> str:
-        return f'STDOUT: "{str(self.bmsg)}"'
-
-
-@dataclass
-class SystemStdErrMsg(DebugLevel, pl.SystemStdErrMsg):
-    def code(self):
-        return "Z008"
-
-    def message(self) -> str:
-        return f'STDERR: "{str(self.bmsg)}"'
-
-
-@dataclass
-class SystemReportReturnCode(DebugLevel, pl.SystemReportReturnCode):
-    def code(self):
-        return "Z009"
-
-    def message(self) -> str:
-        return f"command return code={self.returncode}"
-
-
-@dataclass
-class SelectorReportInvalidSelector(InfoLevel, pl.SelectorReportInvalidSelector):
-    def code(self):
-        return "M010"
-
-    def message(self) -> str:
-        return (
-            f"The '{self.spec_method}' selector specified in {self.raw_spec} is "
-            f"invalid. Must be one of [{self.valid_selectors}]"
-        )
-
-
-@dataclass
-class MacroEventInfo(InfoLevel, pl.MacroEventInfo):
-    def code(self):
-        return "M011"
-
-    def message(self) -> str:
-        return self.msg
-
-
-@dataclass
-class MacroEventDebug(DebugLevel, pl.MacroEventDebug):
-    def code(self):
-        return "M012"
-
-    def message(self) -> str:
-        return self.msg
 
 
 @dataclass
@@ -783,40 +673,169 @@ class CodeExecutionStatus(DebugLevel, pl.CodeExecutionStatus):
         return f"Execution status: {self.status} in {self.elapsed} seconds"
 
 
-@dataclass
-class TimingInfoCollected(DebugLevel, pl.TimingInfoCollected):
-    def code(self):
-        return "Z010"
-
-    def message(self) -> str:
-        return "finished collecting timing info"
+# Skipped E040
 
 
 @dataclass
-class MergedFromState(DebugLevel, pl.MergedFromState):
+class WriteCatalogFailure(ErrorLevel, pl.WriteCatalogFailure):
     def code(self):
-        return "A004"
+        return "E041"
 
     def message(self) -> str:
-        return f"Merged {self.num_merged} items from state (sample: {self.sample})"
+        return (
+            f"dbt encountered {self.num_exceptions} failure{(self.num_exceptions != 1) * 's'} "
+            "while writing the catalog"
+        )
 
 
 @dataclass
-class MissingProfileTarget(InfoLevel, pl.MissingProfileTarget):
+class CatalogWritten(InfoLevel, pl.CatalogWritten):
     def code(self):
-        return "A005"
+        return "E042"
 
     def message(self) -> str:
-        return f"target not specified in profile '{self.profile_name}', using '{self.target_name}'"
+        return f"Catalog written to {self.path}"
 
 
 @dataclass
-class InvalidVarsYAML(ErrorLevel, pl.InvalidVarsYAML):
+class CannotGenerateDocs(InfoLevel, pl.CannotGenerateDocs):
     def code(self):
-        return "A008"
+        return "E043"
 
     def message(self) -> str:
-        return "The YAML provided in the --vars argument is not valid."
+        return "compile failed, cannot generate docs"
+
+
+@dataclass
+class BuildingCatalog(InfoLevel, pl.BuildingCatalog):
+    def code(self):
+        return "E044"
+
+    def message(self) -> str:
+        return "Building catalog"
+
+
+@dataclass
+class DatabaseErrorRunningHook(InfoLevel, pl.DatabaseErrorRunningHook):
+    def code(self):
+        return "E045"
+
+    def message(self) -> str:
+        return f"Database error while running {self.hook_type}"
+
+
+@dataclass
+class HooksRunning(InfoLevel, pl.HooksRunning):
+    def code(self):
+        return "E046"
+
+    def message(self) -> str:
+        plural = "hook" if self.num_hooks == 1 else "hooks"
+        return f"Running {self.num_hooks} {self.hook_type} {plural}"
+
+
+@dataclass
+class HookFinished(InfoLevel, pl.HookFinished):
+    def code(self):
+        return "E047"
+
+    def message(self) -> str:
+        return f"Finished running {self.stat_line}{self.execution} ({self.execution_time:0.2f}s)."
+
+
+# =======================================================
+# I - Project parsing
+# =======================================================
+
+
+@dataclass
+class ParseCmdStart(InfoLevel, pl.ParseCmdStart):
+    def code(self):
+        return "I001"
+
+    def message(self) -> str:
+        return "Start parsing."
+
+
+@dataclass
+class ParseCmdCompiling(InfoLevel, pl.ParseCmdCompiling):
+    def code(self):
+        return "I002"
+
+    def message(self) -> str:
+        return "Compiling."
+
+
+@dataclass
+class ParseCmdWritingManifest(InfoLevel, pl.ParseCmdWritingManifest):
+    def code(self):
+        return "I003"
+
+    def message(self) -> str:
+        return "Writing manifest."
+
+
+@dataclass
+class ParseCmdDone(InfoLevel, pl.ParseCmdDone):
+    def code(self):
+        return "I004"
+
+    def message(self) -> str:
+        return "Done."
+
+
+@dataclass
+class ManifestDependenciesLoaded(InfoLevel, pl.ManifestDependenciesLoaded):
+    def code(self):
+        return "I005"
+
+    def message(self) -> str:
+        return "Dependencies loaded"
+
+
+@dataclass
+class ManifestLoaderCreated(InfoLevel, pl.ManifestLoaderCreated):
+    def code(self):
+        return "I006"
+
+    def message(self) -> str:
+        return "ManifestLoader created"
+
+
+@dataclass
+class ManifestLoaded(InfoLevel, pl.ManifestLoaded):
+    def code(self):
+        return "I007"
+
+    def message(self) -> str:
+        return "Manifest loaded"
+
+
+@dataclass
+class ManifestChecked(InfoLevel, pl.ManifestChecked):
+    def code(self):
+        return "I008"
+
+    def message(self) -> str:
+        return "Manifest checked"
+
+
+@dataclass
+class ManifestFlatGraphBuilt(InfoLevel, pl.ManifestFlatGraphBuilt):
+    def code(self):
+        return "I009"
+
+    def message(self) -> str:
+        return "Flat graph built"
+
+
+@dataclass
+class ParseCmdPerfInfoPath(InfoLevel, pl.ParseCmdPerfInfoPath):
+    def code(self):
+        return "I010"
+
+    def message(self) -> str:
+        return f"Performance info: {self.path}"
 
 
 @dataclass
@@ -1119,7 +1138,7 @@ class PartialParsingEnabled(DebugLevel, pl.PartialParsingEnabled):
 @dataclass
 class PartialParsingAddedFile(DebugLevel, pl.PartialParsingAddedFile):
     def code(self):
-        return "I042"
+        return "I041"
 
     def message(self) -> str:
         return f"Partial parsing: added file: {self.file_id}"
@@ -1137,7 +1156,7 @@ class PartialParsingDeletedFile(DebugLevel, pl.PartialParsingDeletedFile):
 @dataclass
 class PartialParsingUpdatedFile(DebugLevel, pl.PartialParsingUpdatedFile):
     def code(self):
-        return "I042"
+        return "I043"
 
     def message(self) -> str:
         return f"Partial parsing: updated file: {self.file_id}"
@@ -1216,6 +1235,277 @@ class InvalidRefInTestNode(DebugLevel, pl.InvalidRefInTestNode):
         return self.msg
 
 
+# =======================================================
+# M - Deps generation
+# =======================================================
+
+
+@dataclass
+class GitSparseCheckoutSubdirectory(DebugLevel, pl.GitSparseCheckoutSubdirectory):
+    def code(self):
+        return "M001"
+
+    def message(self) -> str:
+        return f"  Subdirectory specified: {self.subdir}, using sparse checkout."
+
+
+@dataclass
+class GitProgressCheckoutRevision(DebugLevel, pl.GitProgressCheckoutRevision):
+    def code(self):
+        return "M002"
+
+    def message(self) -> str:
+        return f"  Checking out revision {self.revision}."
+
+
+@dataclass
+class GitProgressUpdatingExistingDependency(DebugLevel, pl.GitProgressUpdatingExistingDependency):
+    def code(self):
+        return "M003"
+
+    def message(self) -> str:
+        return f"Updating existing dependency {self.dir}."
+
+
+@dataclass
+class GitProgressPullingNewDependency(DebugLevel, pl.GitProgressPullingNewDependency):
+    def code(self):
+        return "M004"
+
+    def message(self) -> str:
+        return f"Pulling new dependency {self.dir}."
+
+
+@dataclass
+class GitNothingToDo(DebugLevel, pl.GitNothingToDo):
+    def code(self):
+        return "M005"
+
+    def message(self) -> str:
+        return f"Already at {self.sha}, nothing to do."
+
+
+@dataclass
+class GitProgressUpdatedCheckoutRange(DebugLevel, pl.GitProgressUpdatedCheckoutRange):
+    def code(self):
+        return "M006"
+
+    def message(self) -> str:
+        return f"  Updated checkout from {self.start_sha} to {self.end_sha}."
+
+
+@dataclass
+class GitProgressCheckedOutAt(DebugLevel, pl.GitProgressCheckedOutAt):
+    def code(self):
+        return "M007"
+
+    def message(self) -> str:
+        return f"  Checked out at {self.end_sha}."
+
+
+@dataclass
+class RegistryProgressGETRequest(DebugLevel, pl.RegistryProgressGETRequest):
+    def code(self):
+        return "M008"
+
+    def message(self) -> str:
+        return f"Making package registry request: GET {self.url}"
+
+
+@dataclass
+class RegistryProgressGETResponse(DebugLevel, pl.RegistryProgressGETResponse):
+    def code(self):
+        return "M009"
+
+    def message(self) -> str:
+        return f"Response from registry: GET {self.url} {self.resp_code}"
+
+
+@dataclass
+class SelectorReportInvalidSelector(InfoLevel, pl.SelectorReportInvalidSelector):
+    def code(self):
+        return "M010"
+
+    def message(self) -> str:
+        return (
+            f"The '{self.spec_method}' selector specified in {self.raw_spec} is "
+            f"invalid. Must be one of [{self.valid_selectors}]"
+        )
+
+
+@dataclass
+class MacroEventInfo(InfoLevel, pl.MacroEventInfo):
+    def code(self):
+        return "M011"
+
+    def message(self) -> str:
+        return self.msg
+
+
+@dataclass
+class MacroEventDebug(DebugLevel, pl.MacroEventDebug):
+    def code(self):
+        return "M012"
+
+    def message(self) -> str:
+        return self.msg
+
+
+@dataclass
+class DepsNoPackagesFound(InfoLevel, pl.DepsNoPackagesFound):
+    def code(self):
+        return "M013"
+
+    def message(self) -> str:
+        return "Warning: No packages were found in packages.yml"
+
+
+@dataclass
+class DepsStartPackageInstall(InfoLevel, pl.DepsStartPackageInstall):
+    def code(self):
+        return "M014"
+
+    def message(self) -> str:
+        return f"Installing {self.package_name}"
+
+
+@dataclass
+class DepsInstallInfo(InfoLevel, pl.DepsInstallInfo):
+    def code(self):
+        return "M015"
+
+    def message(self) -> str:
+        return f"  Installed from {self.version_name}"
+
+
+@dataclass
+class DepsUpdateAvailable(InfoLevel, pl.DepsUpdateAvailable):
+    def code(self):
+        return "M016"
+
+    def message(self) -> str:
+        return f"  Updated version available: {self.version_latest}"
+
+
+@dataclass
+class DepsUpToDate(InfoLevel, pl.DepsUpToDate):
+    def code(self):
+        return "M017"
+
+    def message(self) -> str:
+        return "  Up to date!"
+
+
+@dataclass
+class DepsListSubdirectory(InfoLevel, pl.DepsListSubdirectory):
+    def code(self):
+        return "M018"
+
+    def message(self) -> str:
+        return f"   and subdirectory {self.subdirectory}"
+
+
+@dataclass
+class DepsNotifyUpdatesAvailable(InfoLevel, pl.DepsNotifyUpdatesAvailable):
+    def code(self):
+        return "M019"
+
+    def message(self) -> str:
+        return "Updates available for packages: {} \
+                \nUpdate your versions in packages.yml, then run dbt deps".format(
+            self.packages
+        )
+
+
+@dataclass
+class RetryExternalCall(DebugLevel, pl.RetryExternalCall):
+    def code(self):
+        return "M020"
+
+    def message(self) -> str:
+        return f"Retrying external call. Attempt: {self.attempt} Max attempts: {self.max}"
+
+
+@dataclass
+class RecordRetryException(DebugLevel, pl.RecordRetryException):
+    def code(self):
+        return "M021"
+
+    def message(self) -> str:
+        return f"External call exception: {self.exc}"
+
+
+@dataclass
+class RegistryIndexProgressGETRequest(DebugLevel, pl.RegistryIndexProgressGETRequest):
+    def code(self):
+        return "M022"
+
+    def message(self) -> str:
+        return f"Making package index registry request: GET {self.url}"
+
+
+@dataclass
+class RegistryIndexProgressGETResponse(DebugLevel, pl.RegistryIndexProgressGETResponse):
+    def code(self):
+        return "M023"
+
+    def message(self) -> str:
+        return f"Response from registry index: GET {self.url} {self.resp_code}"
+
+
+@dataclass
+class RegistryResponseUnexpectedType(DebugLevel, pl.RegistryResponseUnexpectedType):
+    def code(self):
+        return "M024"
+
+    def message(self) -> str:
+        return f"Response was None: {self.response}"
+
+
+@dataclass
+class RegistryResponseMissingTopKeys(DebugLevel, pl.RegistryResponseMissingTopKeys):
+    def code(self):
+        return "M025"
+
+    def message(self) -> str:
+        # expected/actual keys logged in exception
+        return f"Response missing top level keys: {self.response}"
+
+
+@dataclass
+class RegistryResponseMissingNestedKeys(DebugLevel, pl.RegistryResponseMissingNestedKeys):
+    def code(self):
+        return "M026"
+
+    def message(self) -> str:
+        # expected/actual keys logged in exception
+        return f"Response missing nested keys: {self.response}"
+
+
+@dataclass
+class RegistryResponseExtraNestedKeys(DebugLevel, pl.RegistryResponseExtraNestedKeys):
+    def code(self):
+        return "M027"
+
+    def message(self) -> str:
+        # expected/actual keys logged in exception
+        return f"Response contained inconsistent keys: {self.response}"
+
+
+@dataclass
+class DepsSetDownloadDirectory(DebugLevel, pl.DepsSetDownloadDirectory):
+    def code(self):
+        return "M028"
+
+    def message(self) -> str:
+        return f"Set downloads directory='{self.path}'"
+
+
+# =======================================================
+# Q - Node execution
+# =======================================================
+
+
 @dataclass
 class RunningOperationCaughtError(ErrorLevel, pl.RunningOperationCaughtError):
     def code(self):
@@ -1223,6 +1513,443 @@ class RunningOperationCaughtError(ErrorLevel, pl.RunningOperationCaughtError):
 
     def message(self) -> str:
         return f"Encountered an error while running operation: {self.exc}"
+
+
+@dataclass
+class CompileComplete(InfoLevel, pl.CompileComplete):
+    def code(self):
+        return "Q002"
+
+    def message(self) -> str:
+        return "Done."
+
+
+@dataclass
+class FreshnessCheckComplete(InfoLevel, pl.FreshnessCheckComplete):
+    def code(self):
+        return "Q003"
+
+    def message(self) -> str:
+        return "Done."
+
+
+@dataclass
+class SeedHeader(InfoLevel, pl.SeedHeader):
+    def code(self):
+        return "Q004"
+
+    def message(self) -> str:
+        return self.header
+
+
+@dataclass
+class SeedHeaderSeparator(InfoLevel, pl.SeedHeaderSeparator):
+    def code(self):
+        return "Q005"
+
+    def message(self) -> str:
+        return "-" * self.len_header
+
+
+@dataclass
+class SQLRunnerException(DebugLevel, pl.SQLRunnerException):  # noqa
+    def code(self):
+        return "Q006"
+
+    def message(self) -> str:
+        return f"Got an exception: {self.exc}"
+
+
+@dataclass
+@dataclass
+class PrintErrorTestResult(ErrorLevel, pl.PrintErrorTestResult):
+    def code(self):
+        return "Q007"
+
+    def message(self) -> str:
+        info = "ERROR"
+        msg = f"{info} {self.name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.red(info),
+            index=self.index,
+            total=self.num_models,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintPassTestResult(InfoLevel, pl.PrintPassTestResult):
+    def code(self):
+        return "Q008"
+
+    def message(self) -> str:
+        info = "PASS"
+        msg = f"{info} {self.name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.green(info),
+            index=self.index,
+            total=self.num_models,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintWarnTestResult(WarnLevel, pl.PrintWarnTestResult):
+    def code(self):
+        return "Q009"
+
+    def message(self) -> str:
+        info = f"WARN {self.num_failures}"
+        msg = f"{info} {self.name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.yellow(info),
+            index=self.index,
+            total=self.num_models,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintFailureTestResult(ErrorLevel, pl.PrintFailureTestResult):
+    def code(self):
+        return "Q010"
+
+    def message(self) -> str:
+        info = f"FAIL {self.num_failures}"
+        msg = f"{info} {self.name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.red(info),
+            index=self.index,
+            total=self.num_models,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintStartLine(InfoLevel, pl.PrintStartLine):  # noqa
+    def code(self):
+        return "Q011"
+
+    def message(self) -> str:
+        msg = f"START {self.description}"
+        return format_fancy_output_line(msg=msg, status="RUN", index=self.index, total=self.total)
+
+
+@dataclass
+class PrintModelResultLine(InfoLevel, pl.PrintModelResultLine):
+    def code(self):
+        return "Q012"
+
+    def message(self) -> str:
+        info = "OK created"
+        msg = f"{info} {self.description}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.green(self.status),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintModelErrorResultLine(ErrorLevel, pl.PrintModelErrorResultLine):
+    def code(self):
+        return "Q013"
+
+    def message(self) -> str:
+        info = "ERROR creating"
+        msg = f"{info} {self.description}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.red(self.status.upper()),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintSnapshotErrorResultLine(ErrorLevel, pl.PrintSnapshotErrorResultLine):
+    def code(self):
+        return "Q014"
+
+    def message(self) -> str:
+        info = "ERROR snapshotting"
+        msg = "{info} {description}".format(info=info, description=self.description, **self.cfg)
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.red(self.status.upper()),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintSnapshotResultLine(InfoLevel, pl.PrintSnapshotResultLine):
+    def code(self):
+        return "Q015"
+
+    def message(self) -> str:
+        info = "OK snapshotted"
+        msg = "{info} {description}".format(info=info, description=self.description, **self.cfg)
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.green(self.status),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintSeedErrorResultLine(ErrorLevel, pl.PrintSeedErrorResultLine):
+    def code(self):
+        return "Q016"
+
+    def message(self) -> str:
+        info = "ERROR loading"
+        msg = f"{info} seed file {self.schema}.{self.relation}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.red(self.status.upper()),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintSeedResultLine(InfoLevel, pl.PrintSeedResultLine):
+    def code(self):
+        return "Q017"
+
+    def message(self) -> str:
+        info = "OK loaded"
+        msg = f"{info} seed file {self.schema}.{self.relation}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.green(self.status),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintHookEndErrorLine(ErrorLevel, pl.PrintHookEndErrorLine):
+    def code(self):
+        return "Q018"
+
+    def message(self) -> str:
+        info = "ERROR"
+        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.red(info),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintHookEndErrorStaleLine(ErrorLevel, pl.PrintHookEndErrorStaleLine):
+    def code(self):
+        return "Q019"
+
+    def message(self) -> str:
+        info = "ERROR STALE"
+        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.red(info),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintHookEndWarnLine(WarnLevel, pl.PrintHookEndWarnLine):
+    def code(self):
+        return "Q020"
+
+    def message(self) -> str:
+        info = "WARN"
+        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.yellow(info),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintHookEndPassLine(InfoLevel, pl.PrintHookEndPassLine):
+    def code(self):
+        return "Q021"
+
+    def message(self) -> str:
+        info = "PASS"
+        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.green(info),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+        )
+
+
+@dataclass
+class PrintCancelLine(ErrorLevel, pl.PrintCancelLine):
+    def code(self):
+        return "Q022"
+
+    def message(self) -> str:
+        msg = "CANCEL query {}".format(self.conn_name)
+        return format_fancy_output_line(msg=msg, status=ui.red("CANCEL"), index=None, total=None)
+
+
+@dataclass
+class DefaultSelector(InfoLevel, pl.DefaultSelector):
+    def code(self):
+        return "Q023"
+
+    def message(self) -> str:
+        return f"Using default selector {self.name}"
+
+
+@dataclass
+class NodeStart(DebugLevel, pl.NodeStart):
+    def code(self):
+        return "Q024"
+
+    def message(self) -> str:
+        return f"Began running node {self.unique_id}"
+
+
+@dataclass
+class NodeFinished(DebugLevel, pl.NodeFinished):
+    def code(self):
+        return "Q025"
+
+    def message(self) -> str:
+        return f"Finished running node {self.unique_id}"
+
+
+@dataclass
+class QueryCancelationUnsupported(InfoLevel, pl.QueryCancelationUnsupported):
+    def code(self):
+        return "Q026"
+
+    def message(self) -> str:
+        msg = (
+            f"The {self.type} adapter does not support query "
+            "cancellation. Some queries may still be "
+            "running!"
+        )
+        return ui.yellow(msg)
+
+
+@dataclass
+class ConcurrencyLine(InfoLevel, pl.ConcurrencyLine):  # noqa
+    def code(self):
+        return "Q027"
+
+    def message(self) -> str:
+        return f"Concurrency: {self.num_threads} threads (target='{self.target_name}')"
+
+
+@dataclass
+class CompilingNode(DebugLevel, pl.CompilingNode):
+    def code(self):
+        return "Q028"
+
+    def message(self) -> str:
+        return f"Compiling {self.unique_id}"
+
+
+@dataclass
+class WritingInjectedSQLForNode(DebugLevel, pl.WritingInjectedSQLForNode):
+    def code(self):
+        return "Q029"
+
+    def message(self) -> str:
+        return f'Writing injected SQL for node "{self.unique_id}"'
+
+
+@dataclass
+class NodeCompiling(DebugLevel, pl.NodeCompiling):
+    def code(self):
+        return "Q030"
+
+    def message(self) -> str:
+        return f"Began compiling node {self.unique_id}"
+
+
+@dataclass
+class NodeExecuting(DebugLevel, pl.NodeExecuting):
+    def code(self):
+        return "Q031"
+
+    def message(self) -> str:
+        return f"Began executing node {self.unique_id}"
+
+
+@dataclass
+class PrintHookStartLine(InfoLevel, pl.PrintHookStartLine):  # noqa
+    def code(self):
+        return "Q032"
+
+    def message(self) -> str:
+        msg = f"START hook: {self.statement}"
+        return format_fancy_output_line(
+            msg=msg, status="RUN", index=self.index, total=self.total, truncate=True
+        )
+
+
+@dataclass
+class PrintHookEndLine(InfoLevel, pl.PrintHookEndLine):  # noqa
+    def code(self):
+        return "Q033"
+
+    def message(self) -> str:
+        msg = "OK hook: {}".format(self.statement)
+        return format_fancy_output_line(
+            msg=msg,
+            status=ui.green(self.status),
+            index=self.index,
+            total=self.total,
+            execution_time=self.execution_time,
+            truncate=True,
+        )
+
+
+@dataclass
+class SkippingDetails(InfoLevel, pl.SkippingDetails):
+    def code(self):
+        return "Q034"
+
+    def message(self) -> str:
+        if self.resource_type in NodeType.refable():
+            msg = f"SKIP relation {self.schema}.{self.node_name}"
+        else:
+            msg = f"SKIP {self.resource_type} {self.node_name}"
+        return format_fancy_output_line(
+            msg=msg, status=ui.yellow("SKIP"), index=self.index, total=self.total
+        )
+
+
+# Skipped Q035
 
 
 @dataclass
@@ -1243,80 +1970,11 @@ class EndResult(DebugLevel, pl.EndResult):
         return "Command end result"
 
 
-@dataclass
-class DbtProjectError(ErrorLevel, pl.DbtProjectError):
-    def code(self):
-        return "A009"
+# =======================================================
+# W - Node testing
+# =======================================================
 
-    def message(self) -> str:
-        return "Encountered an error while reading the project:"
-
-
-@dataclass
-class DbtProjectErrorException(ErrorLevel, pl.DbtProjectErrorException):
-    def code(self):
-        return "A010"
-
-    def message(self) -> str:
-        return f"  ERROR: {str(self.exc)}"
-
-
-@dataclass
-class DbtProfileError(ErrorLevel, pl.DbtProfileError):
-    def code(self):
-        return "A011"
-
-    def message(self) -> str:
-        return "Encountered an error while reading profiles:"
-
-
-@dataclass
-class DbtProfileErrorException(ErrorLevel, pl.DbtProfileErrorException):
-    def code(self):
-        return "A012"
-
-    def message(self) -> str:
-        return f"  ERROR: {str(self.exc)}"
-
-
-@dataclass
-class ProfileListTitle(InfoLevel, pl.ProfileListTitle):
-    def code(self):
-        return "A013"
-
-    def message(self) -> str:
-        return "Defined profiles:"
-
-
-@dataclass
-class ListSingleProfile(InfoLevel, pl.ListSingleProfile):
-    def code(self):
-        return "A014"
-
-    def message(self) -> str:
-        return f" - {self.profile}"
-
-
-@dataclass
-class NoDefinedProfiles(InfoLevel, pl.NoDefinedProfiles):
-    def code(self):
-        return "A015"
-
-    def message(self) -> str:
-        return "There are no profiles defined in your profiles.yml file"
-
-
-@dataclass
-class ProfileHelpMessage(InfoLevel, pl.ProfileHelpMessage):
-    def code(self):
-        return "A016"
-
-    def message(self) -> str:
-        return """
-For more information on configuring profiles, please consult the dbt docs:
-
-https://docs.getdbt.com/docs/configure-your-profile
-"""
+# Skipped W001
 
 
 @dataclass
@@ -1345,17 +2003,6 @@ the error persists, open an issue at https://github.com/dbt-labs/dbt-core
         )
 
 
-# This prints the stack trace at the debug level while allowing just the nice exception message
-# at the error level - or whatever other level chosen.  Used in multiple places.
-@dataclass
-class PrintDebugStackTrace(DebugLevel, pl.PrintDebugStackTrace):  # noqa
-    def code(self):
-        return "Z011"
-
-    def message(self) -> str:
-        return ""
-
-
 @dataclass
 class GenericExceptionOnRun(ErrorLevel, pl.GenericExceptionOnRun):
     def code(self):
@@ -1376,6 +2023,124 @@ class NodeConnectionReleaseError(DebugLevel, pl.NodeConnectionReleaseError):  # 
 
     def message(self) -> str:
         return "Error releasing connection for node {}: {!s}".format(self.node_name, self.exc)
+
+
+@dataclass
+class FoundStats(InfoLevel, pl.FoundStats):
+    def code(self):
+        return "W006"
+
+    def message(self) -> str:
+        return f"Found {self.stat_line}"
+
+
+# =======================================================
+# Z - Misc
+# =======================================================
+
+
+@dataclass
+class MainKeyboardInterrupt(InfoLevel, pl.MainKeyboardInterrupt):
+    def code(self):
+        return "Z001"
+
+    def message(self) -> str:
+        return "ctrl-c"
+
+
+@dataclass
+class MainEncounteredError(ErrorLevel, pl.MainEncounteredError):  # noqa
+    def code(self):
+        return "Z002"
+
+    def message(self) -> str:
+        return f"Encountered an error:\n{self.exc}"
+
+
+@dataclass
+class MainStackTrace(ErrorLevel, pl.MainStackTrace):
+    def code(self):
+        return "Z003"
+
+    def message(self) -> str:
+        return self.stack_trace
+
+
+@dataclass
+class SystemErrorRetrievingModTime(ErrorLevel, pl.SystemErrorRetrievingModTime):
+    def code(self):
+        return "Z004"
+
+    def message(self) -> str:
+        return f"Error retrieving modification time for file {self.path}"
+
+
+@dataclass
+class SystemCouldNotWrite(DebugLevel, pl.SystemCouldNotWrite):
+    def code(self):
+        return "Z005"
+
+    def message(self) -> str:
+        return (
+            f"Could not write to path {self.path}({len(self.path)} characters): "
+            f"{self.reason}\nexception: {self.exc}"
+        )
+
+
+@dataclass
+class SystemExecutingCmd(DebugLevel, pl.SystemExecutingCmd):
+    def code(self):
+        return "Z006"
+
+    def message(self) -> str:
+        return f'Executing "{" ".join(self.cmd)}"'
+
+
+@dataclass
+class SystemStdOutMsg(DebugLevel, pl.SystemStdOutMsg):
+    def code(self):
+        return "Z007"
+
+    def message(self) -> str:
+        return f'STDOUT: "{str(self.bmsg)}"'
+
+
+@dataclass
+class SystemStdErrMsg(DebugLevel, pl.SystemStdErrMsg):
+    def code(self):
+        return "Z008"
+
+    def message(self) -> str:
+        return f'STDERR: "{str(self.bmsg)}"'
+
+
+@dataclass
+class SystemReportReturnCode(DebugLevel, pl.SystemReportReturnCode):
+    def code(self):
+        return "Z009"
+
+    def message(self) -> str:
+        return f"command return code={self.returncode}"
+
+
+@dataclass
+class TimingInfoCollected(DebugLevel, pl.TimingInfoCollected):
+    def code(self):
+        return "Z010"
+
+    def message(self) -> str:
+        return "finished collecting timing info"
+
+
+# This prints the stack trace at the debug level while allowing just the nice exception message
+# at the error level - or whatever other level chosen.  Used in multiple places.
+@dataclass
+class PrintDebugStackTrace(DebugLevel, pl.PrintDebugStackTrace):  # noqa
+    def code(self):
+        return "Z011"
+
+    def message(self) -> str:
+        return ""
 
 
 # We don't write "clean" events to the log, because the clean command
@@ -1430,163 +2195,12 @@ class OpenCommand(InfoLevel, pl.OpenCommand):
 
 
 @dataclass
-class DepsNoPackagesFound(InfoLevel, pl.DepsNoPackagesFound):
-    def code(self):
-        return "M013"
-
-    def message(self) -> str:
-        return "Warning: No packages were found in packages.yml"
-
-
-@dataclass
-class DepsStartPackageInstall(InfoLevel, pl.DepsStartPackageInstall):
-    def code(self):
-        return "M014"
-
-    def message(self) -> str:
-        return f"Installing {self.package_name}"
-
-
-@dataclass
-class DepsInstallInfo(InfoLevel, pl.DepsInstallInfo):
-    def code(self):
-        return "M015"
-
-    def message(self) -> str:
-        return f"  Installed from {self.version_name}"
-
-
-@dataclass
-class DepsUpdateAvailable(InfoLevel, pl.DepsUpdateAvailable):
-    def code(self):
-        return "M016"
-
-    def message(self) -> str:
-        return f"  Updated version available: {self.version_latest}"
-
-
-@dataclass
-class DepsUTD(InfoLevel, pl.DepsUTD):
-    def code(self):
-        return "M017"
-
-    def message(self) -> str:
-        return "  Up to date!"
-
-
-@dataclass
-class DepsListSubdirectory(InfoLevel, pl.DepsListSubdirectory):
-    def code(self):
-        return "M018"
-
-    def message(self) -> str:
-        return f"   and subdirectory {self.subdirectory}"
-
-
-@dataclass
-class DepsNotifyUpdatesAvailable(InfoLevel, pl.DepsNotifyUpdatesAvailable):
-    def code(self):
-        return "M019"
-
-    def message(self) -> str:
-        return "Updates available for packages: {} \
-                \nUpdate your versions in packages.yml, then run dbt deps".format(
-            self.packages
-        )
-
-
-@dataclass
-class DatabaseErrorRunning(InfoLevel, pl.DatabaseErrorRunning):
-    def code(self):
-        return "E038"
-
-    def message(self) -> str:
-        return f"Database error while running {self.hook_type}"
-
-
-@dataclass
 class EmptyLine(InfoLevel, pl.EmptyLine):
     def code(self):
         return "Z017"
 
     def message(self) -> str:
         return ""
-
-
-@dataclass
-class HooksRunning(InfoLevel, pl.HooksRunning):
-    def code(self):
-        return "E039"
-
-    def message(self) -> str:
-        plural = "hook" if self.num_hooks == 1 else "hooks"
-        return f"Running {self.num_hooks} {self.hook_type} {plural}"
-
-
-@dataclass
-class HookFinished(InfoLevel, pl.HookFinished):
-    def code(self):
-        return "E040"
-
-    def message(self) -> str:
-        return f"Finished running {self.stat_line}{self.execution} ({self.execution_time:0.2f}s)."
-
-
-@dataclass
-class WriteCatalogFailure(ErrorLevel, pl.WriteCatalogFailure):
-    def code(self):
-        return "E041"
-
-    def message(self) -> str:
-        return (
-            f"dbt encountered {self.num_exceptions} failure{(self.num_exceptions != 1) * 's'} "
-            "while writing the catalog"
-        )
-
-
-@dataclass
-class CatalogWritten(InfoLevel, pl.CatalogWritten):
-    def code(self):
-        return "E042"
-
-    def message(self) -> str:
-        return f"Catalog written to {self.path}"
-
-
-@dataclass
-class CannotGenerateDocs(InfoLevel, pl.CannotGenerateDocs):
-    def code(self):
-        return "E043"
-
-    def message(self) -> str:
-        return "compile failed, cannot generate docs"
-
-
-@dataclass
-class BuildingCatalog(InfoLevel, pl.BuildingCatalog):
-    def code(self):
-        return "E044"
-
-    def message(self) -> str:
-        return "Building catalog"
-
-
-@dataclass
-class CompileComplete(InfoLevel, pl.CompileComplete):
-    def code(self):
-        return "Q002"
-
-    def message(self) -> str:
-        return "Done."
-
-
-@dataclass
-class FreshnessCheckComplete(InfoLevel, pl.FreshnessCheckComplete):
-    def code(self):
-        return "Q003"
-
-    def message(self) -> str:
-        return "Done."
 
 
 @dataclass
@@ -1614,24 +2228,6 @@ class ServingDocsExitInfo(InfoLevel, pl.ServingDocsExitInfo):
 
     def message(self) -> str:
         return "Press Ctrl+C to exit."
-
-
-@dataclass
-class SeedHeader(InfoLevel, pl.SeedHeader):
-    def code(self):
-        return "Q004"
-
-    def message(self) -> str:
-        return self.header
-
-
-@dataclass
-class SeedHeaderSeparator(InfoLevel, pl.SeedHeaderSeparator):
-    def code(self):
-        return "Q005"
-
-    def message(self) -> str:
-        return "-" * self.len_header
 
 
 @dataclass
@@ -1692,15 +2288,6 @@ class SQLCompiledPath(InfoLevel, pl.SQLCompiledPath):
 
 
 @dataclass
-class SQLRunnerException(DebugLevel, pl.SQLRunnerException):  # noqa
-    def code(self):
-        return "Q006"
-
-    def message(self) -> str:
-        return f"Got an exception: {self.exc}"
-
-
-@dataclass
 class CheckNodeTestFailure(InfoLevel, pl.CheckNodeTestFailure):
     def code(self):
         return "Z027"
@@ -1748,126 +2335,7 @@ class EndOfRunSummary(InfoLevel, pl.EndOfRunSummary):
         return message
 
 
-@dataclass
-class PrintStartLine(InfoLevel, pl.PrintStartLine):  # noqa
-    def code(self):
-        return "Q033"
-
-    def message(self) -> str:
-        msg = f"START {self.description}"
-        return format_fancy_output_line(msg=msg, status="RUN", index=self.index, total=self.total)
-
-
-@dataclass
-class PrintHookStartLine(InfoLevel, pl.PrintHookStartLine):  # noqa
-    def code(self):
-        return "Q032"
-
-    def message(self) -> str:
-        msg = f"START hook: {self.statement}"
-        return format_fancy_output_line(
-            msg=msg, status="RUN", index=self.index, total=self.total, truncate=True
-        )
-
-
-@dataclass
-class PrintHookEndLine(InfoLevel, pl.PrintHookEndLine):  # noqa
-    def code(self):
-        return "Q007"
-
-    def message(self) -> str:
-        msg = "OK hook: {}".format(self.statement)
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.green(self.status),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-            truncate=True,
-        )
-
-
-@dataclass
-class SkippingDetails(InfoLevel, pl.SkippingDetails):
-    def code(self):
-        return "Q034"
-
-    def message(self) -> str:
-        if self.resource_type in NodeType.refable():
-            msg = f"SKIP relation {self.schema}.{self.node_name}"
-        else:
-            msg = f"SKIP {self.resource_type} {self.node_name}"
-        return format_fancy_output_line(
-            msg=msg, status=ui.yellow("SKIP"), index=self.index, total=self.total
-        )
-
-
-@dataclass
-class PrintErrorTestResult(ErrorLevel, pl.PrintErrorTestResult):
-    def code(self):
-        return "Q008"
-
-    def message(self) -> str:
-        info = "ERROR"
-        msg = f"{info} {self.name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.red(info),
-            index=self.index,
-            total=self.num_models,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintPassTestResult(InfoLevel, pl.PrintPassTestResult):
-    def code(self):
-        return "Q009"
-
-    def message(self) -> str:
-        info = "PASS"
-        msg = f"{info} {self.name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.green(info),
-            index=self.index,
-            total=self.num_models,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintWarnTestResult(WarnLevel, pl.PrintWarnTestResult):
-    def code(self):
-        return "Q010"
-
-    def message(self) -> str:
-        info = f"WARN {self.num_failures}"
-        msg = f"{info} {self.name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.yellow(info),
-            index=self.index,
-            total=self.num_models,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintFailureTestResult(ErrorLevel, pl.PrintFailureTestResult):
-    def code(self):
-        return "Q011"
-
-    def message(self) -> str:
-        info = f"FAIL {self.num_failures}"
-        msg = f"{info} {self.name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.red(info),
-            index=self.index,
-            total=self.num_models,
-            execution_time=self.execution_time,
-        )
+# Skipped Z031, Z032, Z033
 
 
 @dataclass
@@ -1882,363 +2350,7 @@ class PrintSkipBecauseError(ErrorLevel, pl.PrintSkipBecauseError):
         )
 
 
-@dataclass
-class PrintModelErrorResultLine(ErrorLevel, pl.PrintModelErrorResultLine):
-    def code(self):
-        return "Q035"
-
-    def message(self) -> str:
-        info = "ERROR creating"
-        msg = f"{info} {self.description}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.red(self.status.upper()),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintModelResultLine(InfoLevel, pl.PrintModelResultLine):
-    def code(self):
-        return "Q012"
-
-    def message(self) -> str:
-        info = "OK created"
-        msg = f"{info} {self.description}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.green(self.status),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintSnapshotErrorResultLine(ErrorLevel, pl.PrintSnapshotErrorResultLine):
-    def code(self):
-        return "Q013"
-
-    def message(self) -> str:
-        info = "ERROR snapshotting"
-        msg = "{info} {description}".format(info=info, description=self.description, **self.cfg)
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.red(self.status.upper()),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintSnapshotResultLine(InfoLevel, pl.PrintSnapshotResultLine):
-    def code(self):
-        return "Q014"
-
-    def message(self) -> str:
-        info = "OK snapshotted"
-        msg = "{info} {description}".format(info=info, description=self.description, **self.cfg)
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.green(self.status),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintSeedErrorResultLine(ErrorLevel, pl.PrintSeedErrorResultLine):
-    def code(self):
-        return "Q015"
-
-    def message(self) -> str:
-        info = "ERROR loading"
-        msg = f"{info} seed file {self.schema}.{self.relation}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.red(self.status.upper()),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintSeedResultLine(InfoLevel, pl.PrintSeedResultLine):
-    def code(self):
-        return "Q016"
-
-    def message(self) -> str:
-        info = "OK loaded"
-        msg = f"{info} seed file {self.schema}.{self.relation}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.green(self.status),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintHookEndErrorLine(ErrorLevel, pl.PrintHookEndErrorLine):
-    def code(self):
-        return "Q017"
-
-    def message(self) -> str:
-        info = "ERROR"
-        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.red(info),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintHookEndErrorStaleLine(ErrorLevel, pl.PrintHookEndErrorStaleLine):
-    def code(self):
-        return "Q018"
-
-    def message(self) -> str:
-        info = "ERROR STALE"
-        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.red(info),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintHookEndWarnLine(WarnLevel, pl.PrintHookEndWarnLine):
-    def code(self):
-        return "Q019"
-
-    def message(self) -> str:
-        info = "WARN"
-        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.yellow(info),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintHookEndPassLine(InfoLevel, pl.PrintHookEndPassLine):
-    def code(self):
-        return "Q020"
-
-    def message(self) -> str:
-        info = "PASS"
-        msg = f"{info} freshness of {self.source_name}.{self.table_name}"
-        return format_fancy_output_line(
-            msg=msg,
-            status=ui.green(info),
-            index=self.index,
-            total=self.total,
-            execution_time=self.execution_time,
-        )
-
-
-@dataclass
-class PrintCancelLine(ErrorLevel, pl.PrintCancelLine):
-    def code(self):
-        return "Q021"
-
-    def message(self) -> str:
-        msg = "CANCEL query {}".format(self.conn_name)
-        return format_fancy_output_line(msg=msg, status=ui.red("CANCEL"), index=None, total=None)
-
-
-@dataclass
-class DefaultSelector(InfoLevel, pl.DefaultSelector):
-    def code(self):
-        return "Q022"
-
-    def message(self) -> str:
-        return f"Using default selector {self.name}"
-
-
-@dataclass
-class NodeStart(DebugLevel, pl.NodeStart):
-    def code(self):
-        return "Q023"
-
-    def message(self) -> str:
-        return f"Began running node {self.unique_id}"
-
-
-@dataclass
-class NodeFinished(DebugLevel, pl.NodeFinished):
-    def code(self):
-        return "Q024"
-
-    def message(self) -> str:
-        return f"Finished running node {self.unique_id}"
-
-
-@dataclass
-class QueryCancelationUnsupported(InfoLevel, pl.QueryCancelationUnsupported):
-    def code(self):
-        return "Q025"
-
-    def message(self) -> str:
-        msg = (
-            f"The {self.type} adapter does not support query "
-            "cancellation. Some queries may still be "
-            "running!"
-        )
-        return ui.yellow(msg)
-
-
-@dataclass
-class ConcurrencyLine(InfoLevel, pl.ConcurrencyLine):  # noqa
-    def code(self):
-        return "Q026"
-
-    def message(self) -> str:
-        return f"Concurrency: {self.num_threads} threads (target='{self.target_name}')"
-
-
-@dataclass
-class NodeCompiling(DebugLevel, pl.NodeCompiling):
-    def code(self):
-        return "Q030"
-
-    def message(self) -> str:
-        return f"Began compiling node {self.unique_id}"
-
-
-@dataclass
-class NodeExecuting(DebugLevel, pl.NodeExecuting):
-    def code(self):
-        return "Q031"
-
-    def message(self) -> str:
-        return f"Began executing node {self.unique_id}"
-
-
-@dataclass
-class StarterProjectPath(DebugLevel, pl.StarterProjectPath):
-    def code(self):
-        return "A017"
-
-    def message(self) -> str:
-        return f"Starter project path: {self.dir}"
-
-
-@dataclass
-class ConfigFolderDirectory(InfoLevel, pl.ConfigFolderDirectory):
-    def code(self):
-        return "A018"
-
-    def message(self) -> str:
-        return f"Creating dbt configuration folder at {self.dir}"
-
-
-@dataclass
-class NoSampleProfileFound(InfoLevel, pl.NoSampleProfileFound):
-    def code(self):
-        return "A019"
-
-    def message(self) -> str:
-        return f"No sample profile found for {self.adapter}."
-
-
-@dataclass
-class ProfileWrittenWithSample(InfoLevel, pl.ProfileWrittenWithSample):
-    def code(self):
-        return "A020"
-
-    def message(self) -> str:
-        return (
-            f"Profile {self.name} written to {self.path} "
-            "using target's sample configuration. Once updated, you'll be able to "
-            "start developing with dbt."
-        )
-
-
-@dataclass
-class ProfileWrittenWithTargetTemplateYAML(InfoLevel, pl.ProfileWrittenWithTargetTemplateYAML):
-    def code(self):
-        return "A021"
-
-    def message(self) -> str:
-        return (
-            f"Profile {self.name} written to {self.path} using target's "
-            "profile_template.yml and your supplied values. Run 'dbt debug' to "
-            "validate the connection."
-        )
-
-
-@dataclass
-class ProfileWrittenWithProjectTemplateYAML(InfoLevel, pl.ProfileWrittenWithProjectTemplateYAML):
-    def code(self):
-        return "A022"
-
-    def message(self) -> str:
-        return (
-            f"Profile {self.name} written to {self.path} using project's "
-            "profile_template.yml and your supplied values. Run 'dbt debug' to "
-            "validate the connection."
-        )
-
-
-@dataclass
-class SettingUpProfile(InfoLevel, pl.SettingUpProfile):
-    def code(self):
-        return "A023"
-
-    def message(self) -> str:
-        return "Setting up your profile."
-
-
-@dataclass
-class InvalidProfileTemplateYAML(InfoLevel, pl.InvalidProfileTemplateYAML):
-    def code(self):
-        return "A024"
-
-    def message(self) -> str:
-        return "Invalid profile_template.yml in project."
-
-
-@dataclass
-class ProjectNameAlreadyExists(InfoLevel, pl.ProjectNameAlreadyExists):
-    def code(self):
-        return "A025"
-
-    def message(self) -> str:
-        return f"A project called {self.name} already exists here."
-
-
-@dataclass
-class GetAddendum(InfoLevel, pl.GetAddendum):
-    def code(self):
-        return "A026"
-
-    def message(self) -> str:
-        return self.msg
-
-
-@dataclass
-class DepsSetDownloadDirectory(DebugLevel, pl.DepsSetDownloadDirectory):
-    def code(self):
-        return "A027"
-
-    def message(self) -> str:
-        return f"Set downloads directory='{self.path}'"
+# Skipped Z035
 
 
 @dataclass
@@ -2270,33 +2382,6 @@ class DepsSymlinkNotAvailable(DebugLevel, pl.DepsSymlinkNotAvailable):
 
     def message(self) -> str:
         return "  Symlinks are not available on this OS, copying dependency."
-
-
-@dataclass
-class FoundStats(InfoLevel, pl.FoundStats):
-    def code(self):
-        return "W006"
-
-    def message(self) -> str:
-        return f"Found {self.stat_line}"
-
-
-@dataclass
-class CompilingNode(DebugLevel, pl.CompilingNode):
-    def code(self):
-        return "Q027"
-
-    def message(self) -> str:
-        return f"Compiling {self.unique_id}"
-
-
-@dataclass
-class WritingInjectedSQLForNode(DebugLevel, pl.WritingInjectedSQLForNode):
-    def code(self):
-        return "Q028"
-
-    def message(self) -> str:
-        return f'Writing injected SQL for node "{self.unique_id}"'
 
 
 @dataclass
@@ -2357,13 +2442,7 @@ class TrackingInitializeFailure(DebugLevel, pl.TrackingInitializeFailure):  # no
         return "Got an exception trying to initialize tracking"
 
 
-@dataclass
-class RetryExternalCall(DebugLevel, pl.RetryExternalCall):
-    def code(self):
-        return "M020"
-
-    def message(self) -> str:
-        return f"Retrying external call. Attempt: {self.attempt} Max attempts: {self.max}"
+# Skipped Z045
 
 
 @dataclass
@@ -2396,15 +2475,6 @@ class EventBufferFull(WarnLevel, pl.EventBufferFull):
         )
 
 
-@dataclass
-class RecordRetryException(DebugLevel, pl.RecordRetryException):
-    def code(self):
-        return "M021"
-
-    def message(self) -> str:
-        return f"External call exception: {self.exc}"
-
-
 # since mypy doesn't run on every file we need to suggest to mypy that every
 # class gets instantiated. But we don't actually want to run this code.
 # making the conditional `if False` causes mypy to skip it as dead code so
@@ -2412,44 +2482,37 @@ class RecordRetryException(DebugLevel, pl.RecordRetryException):
 #
 # TODO remove these lines once we run mypy everywhere.
 if 1 == 0:
+    # A - pre-project loading
     MainReportVersion(version="")
-    MainKeyboardInterrupt()
-    MainEncounteredError(exc="")
-    MainStackTrace(stack_trace="")
+    MainReportArgs(args={})
     MainTrackingUserState(user_state="")
-    ParsingStart()
-    ParsingCompiling()
-    ParsingWritingManifest()
-    ParsingDone()
-    ManifestDependenciesLoaded()
-    ManifestLoaderCreated()
-    ManifestLoaded()
-    ManifestChecked()
-    ManifestFlatGraphBuilt()
-    ReportPerformancePath(path="")
-    GitSparseCheckoutSubdirectory(subdir="")
-    GitProgressCheckoutRevision(revision="")
-    GitProgressUpdatingExistingDependency(dir="")
-    GitProgressPullingNewDependency(dir="")
-    GitNothingToDo(sha="")
-    GitProgressUpdatedCheckoutRange(start_sha="", end_sha="")
-    GitProgressCheckedOutAt(end_sha="")
-    RegistryIndexProgressMakingGETRequest(url="")
-    RegistryIndexProgressGETResponse(url="", resp_code=1234)
-    RegistryProgressMakingGETRequest(url="")
-    RegistryProgressGETResponse(url="", resp_code=1234)
-    RegistryResponseUnexpectedType(response=""),
-    RegistryResponseMissingTopKeys(response=""),
-    RegistryResponseMissingNestedKeys(response=""),
-    RegistryResponseExtraNestedKeys(response=""),
-    SystemErrorRetrievingModTime(path="")
-    SystemCouldNotWrite(path="", reason="", exc="")
-    SystemExecutingCmd(cmd=[""])
-    SystemStdOutMsg(bmsg=b"")
-    SystemStdErrMsg(bmsg=b"")
-    SelectorReportInvalidSelector(valid_selectors="", spec_method="", raw_spec="")
-    MacroEventInfo(msg="")
-    MacroEventDebug(msg="")
+    MergedFromState(num_merged=0, sample=[])
+    MissingProfileTarget(profile_name="", target_name="")
+    InvalidVarsYAML()
+    DbtProjectError()
+    DbtProjectErrorException(exc="")
+    DbtProfileError()
+    DbtProfileErrorException(exc="")
+    ProfileListTitle()
+    ListSingleProfile(profile="")
+    NoDefinedProfiles()
+    ProfileHelpMessage()
+    StarterProjectPath(dir="")
+    ConfigFolderDirectory(dir="")
+    NoSampleProfileFound(adapter="")
+    ProfileWrittenWithSample(name="", path="")
+    ProfileWrittenWithTargetTemplateYAML(name="", path="")
+    ProfileWrittenWithProjectTemplateYAML(name="", path="")
+    SettingUpProfile()
+    InvalidProfileTemplateYAML()
+    ProjectNameAlreadyExists(name="")
+    ProjectCreated(project_name="")
+
+    # E - DB Adapter ======================
+    AdapterEventDebug()
+    AdapterEventInfo()
+    AdapterEventWarning()
+    AdapterEventError()
     NewConnection(conn_type="", conn_name="")
     ConnectionReused(conn_name="")
     ConnectionLeftOpen(conn_name="")
@@ -2463,8 +2526,6 @@ if 1 == 0:
     ConnectionUsed(conn_type="", conn_name="")
     SQLQuery(conn_name="", sql="")
     SQLQueryStatus(status="", elapsed=0.1)
-    CodeExecution(conn_name="", code_content="")
-    CodeExecutionStatus(status="", elapsed=0.1)
     SQLCommit(conn_name="")
     ColTypeChange(
         orig_type="", new_type="", table=ReferenceKeyMsg(database="", schema="", identifier="")
@@ -2485,6 +2546,7 @@ if 1 == 0:
         dropped=ReferenceKeyMsg(database="", schema="", identifier=""),
         consequences=[ReferenceKeyMsg(database="", schema="", identifier="")],
     )
+    DropRelation(dropped=ReferenceKeyMsg())
     UpdateReference(
         old_key=ReferenceKeyMsg(database="", schema="", identifier=""),
         new_key=ReferenceKeyMsg(database="", schema="", identifier=""),
@@ -2501,27 +2563,46 @@ if 1 == 0:
     DumpAfterRenameSchema(dump=dict())
     AdapterImportError(exc="")
     PluginLoadError(exc_info="")
-    SystemReportReturnCode(returncode=0)
     NewConnectionOpening(connection_state="")
-    TimingInfoCollected()
-    MergedFromState(num_merged=0, sample=[])
-    MissingProfileTarget(profile_name="", target_name="")
-    InvalidVarsYAML()
+    CodeExecution(conn_name="", code_content="")
+    CodeExecutionStatus(status="", elapsed=0.1)
+    WriteCatalogFailure(num_exceptions=0)
+    CatalogWritten(path="")
+    CannotGenerateDocs()
+    BuildingCatalog()
+    DatabaseErrorRunningHook(hook_type="")
+    HooksRunning(num_hooks=0, hook_type="")
+    HookFinished(stat_line="", execution="", execution_time=0)
+
+    # I - Project parsing ======================
+    ParseCmdStart()
+    ParseCmdCompiling()
+    ParseCmdWritingManifest()
+    ParseCmdDone()
+    ManifestDependenciesLoaded()
+    ManifestLoaderCreated()
+    ManifestLoaded()
+    ManifestChecked()
+    ManifestFlatGraphBuilt()
+    ParseCmdPerfInfoPath(path="")
     GenericTestFileParse(path="")
     MacroFileParse(path="")
     PartialParsingFullReparseBecauseOfError()
-    PartialParsingFile(file_id="")
     PartialParsingExceptionFile(file="")
+    PartialParsingFile(file_id="")
     PartialParsingException(exc_info={})
     PartialParsingSkipParsing()
     PartialParsingMacroChangeStartFullParse()
+    PartialParsingProjectEnvVarsChanged()
+    PartialParsingProfileEnvVarsChanged()
+    PartialParsingDeletedMetric(unique_id="")
     ManifestWrongMetadataVersion(version="")
     PartialParsingVersionMismatch(saved_version="", current_version="")
     PartialParsingFailedBecauseConfigChange()
     PartialParsingFailedBecauseProfileChange()
     PartialParsingFailedBecauseNewProjectDependency()
     PartialParsingFailedBecauseHashChanged()
-    PartialParsingDeletedMetric(unique_id="")
+    PartialParsingNotEnabled()
     ParsedFileLoadFailed(path="", exc="", exc_info="")
     PartialParseSaveFileNotFound()
     StaticParserCausedJinjaRendering(path="")
@@ -2545,76 +2626,46 @@ if 1 == 0:
     PartialParsingDeletedExposure(unique_id="")
     InvalidDisabledSourceInTestNode(msg="")
     InvalidRefInTestNode(msg="")
-    RunningOperationCaughtError(exc="")
-    RunningOperationUncaughtError(exc="")
-    DbtProjectError()
-    DbtProjectErrorException(exc="")
-    DbtProfileError()
-    DbtProfileErrorException(exc="")
-    ProfileListTitle()
-    ListSingleProfile(profile="")
-    NoDefinedProfiles()
-    ProfileHelpMessage()
-    CatchableExceptionOnRun(exc="")
-    InternalExceptionOnRun(build_path="", exc="")
-    GenericExceptionOnRun(build_path="", unique_id="", exc="")
-    NodeConnectionReleaseError(node_name="", exc="")
-    CheckCleanPath(path="")
-    ConfirmCleanPath(path="")
-    ProtectedCleanPath(path="")
-    FinishedCleanPaths()
-    OpenCommand(open_cmd="", profiles_dir="")
+
+    # M - Deps generation ======================
+
+    GitSparseCheckoutSubdirectory(subdir="")
+    GitProgressCheckoutRevision(revision="")
+    GitProgressUpdatingExistingDependency(dir="")
+    GitProgressPullingNewDependency(dir="")
+    GitNothingToDo(sha="")
+    GitProgressUpdatedCheckoutRange(start_sha="", end_sha="")
+    GitProgressCheckedOutAt(end_sha="")
+    RegistryProgressGETRequest(url="")
+    RegistryProgressGETResponse(url="", resp_code=1234)
+    SelectorReportInvalidSelector(valid_selectors="", spec_method="", raw_spec="")
+    MacroEventInfo(msg="")
+    MacroEventDebug(msg="")
     DepsNoPackagesFound()
     DepsStartPackageInstall(package_name="")
     DepsInstallInfo(version_name="")
     DepsUpdateAvailable(version_latest="")
+    DepsUpToDate()
     DepsListSubdirectory(subdirectory="")
     DepsNotifyUpdatesAvailable(packages=ListOfStrings())
-    DatabaseErrorRunning(hook_type="")
-    EmptyLine()
-    HooksRunning(num_hooks=0, hook_type="")
-    HookFinished(stat_line="", execution="", execution_time=0)
-    WriteCatalogFailure(num_exceptions=0)
-    CatalogWritten(path="")
-    CannotGenerateDocs()
-    BuildingCatalog()
+    RetryExternalCall(attempt=0, max=0)
+    RecordRetryException(exc="")
+    RegistryIndexProgressGETRequest(url="")
+    RegistryIndexProgressGETResponse(url="", resp_code=1234)
+    RegistryResponseUnexpectedType(response=""),
+    RegistryResponseMissingTopKeys(response=""),
+    RegistryResponseMissingNestedKeys(response=""),
+    RegistryResponseExtraNestedKeys(response=""),
+    DepsSetDownloadDirectory(path="")
+
+    # Q - Node execution ======================
+
+    RunningOperationCaughtError(exc="")
     CompileComplete()
     FreshnessCheckComplete()
-    ServingDocsPort(address="", port=0)
-    ServingDocsAccessInfo(port="")
-    ServingDocsExitInfo()
     SeedHeader(header="")
     SeedHeaderSeparator(len_header=0)
-    RunResultWarning(resource_type="", node_name="", path="")
-    RunResultFailure(resource_type="", node_name="", path="")
-    StatsLine(stats={})
-    RunResultError(msg="")
-    RunResultErrorNoMessage(status="")
-    SQLCompiledPath(path="")
-    CheckNodeTestFailure(relation_name="")
-    FirstRunResultError(msg="")
-    AfterFirstRunResultError(msg="")
-    EndOfRunSummary(num_errors=0, num_warnings=0, keyboard_interrupt=False)
-    PrintStartLine(description="", index=0, total=0, node_info=NodeInfo())
-    PrintHookStartLine(
-        statement="",
-        index=0,
-        total=0,
-    )
-    PrintHookEndLine(
-        statement="",
-        status="",
-        index=0,
-        total=0,
-        execution_time=0,
-    )
-    SkippingDetails(
-        resource_type="",
-        schema="",
-        node_name="",
-        index=0,
-        total=0,
-    )
+    SQLRunnerException(exc="")
     PrintErrorTestResult(
         name="",
         index=0,
@@ -2641,15 +2692,15 @@ if 1 == 0:
         execution_time=0,
         num_failures=0,
     )
-    PrintSkipBecauseError(schema="", relation="", index=0, total=0)
-    PrintModelErrorResultLine(
+    PrintStartLine(description="", index=0, total=0, node_info=NodeInfo())
+    PrintModelResultLine(
         description="",
         status="",
         index=0,
         total=0,
         execution_time=0,
     )
-    PrintModelResultLine(
+    PrintModelErrorResultLine(
         description="",
         status="",
         index=0,
@@ -2722,33 +2773,82 @@ if 1 == 0:
     NodeFinished(unique_id="")
     QueryCancelationUnsupported(type="")
     ConcurrencyLine(num_threads=0, target_name="")
+    CompilingNode(unique_id="")
+    WritingInjectedSQLForNode(unique_id="")
     NodeCompiling(unique_id="")
     NodeExecuting(unique_id="")
-    StarterProjectPath(dir="")
-    ConfigFolderDirectory(dir="")
-    NoSampleProfileFound(adapter="")
-    ProfileWrittenWithSample(name="", path="")
-    ProfileWrittenWithTargetTemplateYAML(name="", path="")
-    ProfileWrittenWithProjectTemplateYAML(name="", path="")
-    SettingUpProfile()
-    InvalidProfileTemplateYAML()
-    ProjectNameAlreadyExists(name="")
-    GetAddendum(msg="")
-    DepsSetDownloadDirectory(path="")
+    PrintHookStartLine(
+        statement="",
+        index=0,
+        total=0,
+    )
+    PrintHookEndLine(
+        statement="",
+        status="",
+        index=0,
+        total=0,
+        execution_time=0,
+    )
+    SkippingDetails(
+        resource_type="",
+        schema="",
+        node_name="",
+        index=0,
+        total=0,
+    )
+    RunningOperationUncaughtError(exc="")
+    EndResult()
+
+    # W - Node testing ======================
+
+    CatchableExceptionOnRun(exc="")
+    InternalExceptionOnRun(build_path="", exc="")
+    GenericExceptionOnRun(build_path="", unique_id="", exc="")
+    NodeConnectionReleaseError(node_name="", exc="")
+    FoundStats(stat_line="")
+
+    # Z - misc ======================
+
+    MainKeyboardInterrupt()
+    MainEncounteredError(exc="")
+    MainStackTrace(stack_trace="")
+    SystemErrorRetrievingModTime(path="")
+    SystemCouldNotWrite(path="", reason="", exc="")
+    SystemExecutingCmd(cmd=[""])
+    SystemStdOutMsg(bmsg=b"")
+    SystemStdErrMsg(bmsg=b"")
+    SystemReportReturnCode(returncode=0)
+    TimingInfoCollected()
+    PrintDebugStackTrace()
+    CheckCleanPath(path="")
+    ConfirmCleanPath(path="")
+    ProtectedCleanPath(path="")
+    FinishedCleanPaths()
+    OpenCommand(open_cmd="", profiles_dir="")
+    EmptyLine()
+    ServingDocsPort(address="", port=0)
+    ServingDocsAccessInfo(port="")
+    ServingDocsExitInfo()
+    RunResultWarning(resource_type="", node_name="", path="")
+    RunResultFailure(resource_type="", node_name="", path="")
+    StatsLine(stats={})
+    RunResultError(msg="")
+    RunResultErrorNoMessage(status="")
+    SQLCompiledPath(path="")
+    CheckNodeTestFailure(relation_name="")
+    FirstRunResultError(msg="")
+    AfterFirstRunResultError(msg="")
+    EndOfRunSummary(num_errors=0, num_warnings=0, keyboard_interrupt=False)
+    PrintSkipBecauseError(schema="", relation="", index=0, total=0)
     EnsureGitInstalled()
     DepsCreatingLocalSymlink()
     DepsSymlinkNotAvailable()
-    FoundStats(stat_line="")
-    CompilingNode(unique_id="")
-    WritingInjectedSQLForNode(unique_id="")
     DisableTracking()
     SendingEvent(kwargs="")
     SendEventFailure()
     FlushEvents()
     FlushEventsFailure()
     TrackingInitializeFailure()
-    RetryExternalCall(attempt=0, max=0)
     GeneralWarningMsg(msg="", log_fmt="")
     GeneralWarningException(exc="", log_fmt="")
     EventBufferFull()
-    RecordRetryException(exc="")

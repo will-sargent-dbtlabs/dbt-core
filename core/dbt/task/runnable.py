@@ -478,7 +478,7 @@ class GraphRunnableTask(ManifestTask):
                 results=result_msgs,
                 generated_at=result.generated_at,
                 elapsed_time=result.elapsed_time,
-                success=self.interpret_results(result.results),
+                success=GraphRunnableTask.interpret_results(result.results),
             )
         )
 
@@ -489,7 +489,8 @@ class GraphRunnableTask(ManifestTask):
         self.task_end_messages(result.results)
         return result
 
-    def interpret_results(self, results):
+    @classmethod
+    def interpret_results(cls, results):
         if results is None:
             return False
 

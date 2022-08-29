@@ -90,6 +90,7 @@ class MainReportVersion(betterproto.Message):
 
     info: "EventInfo" = betterproto.message_field(1)
     version: str = betterproto.string_field(2)
+    log_version: int = betterproto.int32_field(3)
 
 
 @dataclass
@@ -103,72 +104,178 @@ class MainReportArgs(betterproto.Message):
 
 
 @dataclass
-class RollbackFailed(betterproto.Message):
-    """E009"""
+class MainTrackingUserState(betterproto.Message):
+    """A003"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    conn_name: str = betterproto.string_field(2)
-    exc_info: str = betterproto.string_field(3)
+    user_state: str = betterproto.string_field(2)
 
 
 @dataclass
-class MainEncounteredError(betterproto.Message):
-    """Z002"""
+class MergedFromState(betterproto.Message):
+    """A004"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    num_merged: int = betterproto.int32_field(2)
+    sample: List[str] = betterproto.string_field(3)
+
+
+@dataclass
+class MissingProfileTarget(betterproto.Message):
+    """A005"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    profile_name: str = betterproto.string_field(2)
+    target_name: str = betterproto.string_field(3)
+
+
+@dataclass
+class InvalidVarsYAML(betterproto.Message):
+    """A008"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class DbtProjectError(betterproto.Message):
+    """A009"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class DbtProjectErrorException(betterproto.Message):
+    """A010"""
 
     info: "EventInfo" = betterproto.message_field(1)
     exc: str = betterproto.string_field(2)
 
 
 @dataclass
-class PluginLoadError(betterproto.Message):
-    """E036"""
+class DbtProfileError(betterproto.Message):
+    """A011"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    exc_info: str = betterproto.string_field(2)
 
 
 @dataclass
-class CatchableExceptionOnRun(betterproto.Message):
-    """W002"""
+class DbtProfileErrorException(betterproto.Message):
+    """A012"""
 
     info: "EventInfo" = betterproto.message_field(1)
     exc: str = betterproto.string_field(2)
-    exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
-class PrintDebugStackTrace(betterproto.Message):
-    """Z011"""
+class ProfileListTitle(betterproto.Message):
+    """A013"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    exc_info: str = betterproto.string_field(2)
 
 
 @dataclass
-class NodeConnectionReleaseError(betterproto.Message):
-    """W005"""
+class ListSingleProfile(betterproto.Message):
+    """A014"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    node_name: str = betterproto.string_field(2)
-    exc: str = betterproto.string_field(3)
-    exc_info: str = betterproto.string_field(4)
+    profile: str = betterproto.string_field(2)
 
 
 @dataclass
-class SQLRunnerException(betterproto.Message):
-    """Q006"""
+class NoDefinedProfiles(betterproto.Message):
+    """A015"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    exc: str = betterproto.string_field(2)
-    exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
-class TrackingInitializeFailure(betterproto.Message):
-    """Z044"""
+class ProfileHelpMessage(betterproto.Message):
+    """A016"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    exc_info: str = betterproto.string_field(2)
+
+
+@dataclass
+class StarterProjectPath(betterproto.Message):
+    """A017"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    dir: str = betterproto.string_field(2)
+
+
+@dataclass
+class ConfigFolderDirectory(betterproto.Message):
+    """A018"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    dir: str = betterproto.string_field(2)
+
+
+@dataclass
+class NoSampleProfileFound(betterproto.Message):
+    """A019"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    adapter: str = betterproto.string_field(2)
+
+
+@dataclass
+class ProfileWrittenWithSample(betterproto.Message):
+    """A020"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+    path: str = betterproto.string_field(3)
+
+
+@dataclass
+class ProfileWrittenWithTargetTemplateYAML(betterproto.Message):
+    """A021"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+    path: str = betterproto.string_field(3)
+
+
+@dataclass
+class ProfileWrittenWithProjectTemplateYAML(betterproto.Message):
+    """A022"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+    path: str = betterproto.string_field(3)
+
+
+@dataclass
+class SettingUpProfile(betterproto.Message):
+    """A023"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class InvalidProfileTemplateYAML(betterproto.Message):
+    """A024"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ProjectNameAlreadyExists(betterproto.Message):
+    """A025"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+
+
+@dataclass
+class ProjectCreated(betterproto.Message):
+    """A026"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    project_name: str = betterproto.string_field(2)
+    docs_url: str = betterproto.string_field(3)
+    slack_url: str = betterproto.string_field(4)
 
 
 @dataclass
@@ -213,600 +320,6 @@ class AdapterEventError(betterproto.Message):
 
 
 @dataclass
-class FoundStats(betterproto.Message):
-    """W006"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    stat_line: str = betterproto.string_field(2)
-
-
-@dataclass
-class ConcurrencyLine(betterproto.Message):
-    """Q026"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    num_threads: int = betterproto.int32_field(2)
-    target_name: str = betterproto.string_field(3)
-
-
-@dataclass
-class PrintStartLine(betterproto.Message):
-    """Q033"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    description: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    total: int = betterproto.int32_field(5)
-
-
-@dataclass
-class PrintHookStartLine(betterproto.Message):
-    """Q032"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    statement: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    total: int = betterproto.int32_field(5)
-
-
-@dataclass
-class PrintHookEndLine(betterproto.Message):
-    """Q007"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    statement: str = betterproto.string_field(3)
-    status: str = betterproto.string_field(4)
-    index: int = betterproto.int32_field(5)
-    total: int = betterproto.int32_field(6)
-    execution_time: int = betterproto.int32_field(7)
-
-
-@dataclass
-class SkippingDetails(betterproto.Message):
-    """Q034"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    resource_type: str = betterproto.string_field(3)
-    schema: str = betterproto.string_field(4)
-    node_name: str = betterproto.string_field(5)
-    index: int = betterproto.int32_field(6)
-    total: int = betterproto.int32_field(7)
-
-
-@dataclass
-class PrintErrorTestResult(betterproto.Message):
-    """Q008"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    name: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    num_models: int = betterproto.int32_field(5)
-    execution_time: int = betterproto.int32_field(6)
-
-
-@dataclass
-class PrintPassTestResult(betterproto.Message):
-    """Q009"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    name: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    num_models: int = betterproto.int32_field(5)
-    execution_time: int = betterproto.int32_field(6)
-
-
-@dataclass
-class PrintWarnTestResult(betterproto.Message):
-    """Q010"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    name: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    num_models: int = betterproto.int32_field(5)
-    execution_time: int = betterproto.int32_field(6)
-    num_failures: int = betterproto.int32_field(7)
-
-
-@dataclass
-class PrintFailureTestResult(betterproto.Message):
-    """Q011"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    name: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    num_models: int = betterproto.int32_field(5)
-    execution_time: int = betterproto.int32_field(6)
-    num_failures: int = betterproto.int32_field(7)
-
-
-@dataclass
-class PrintModelErrorResultLine(betterproto.Message):
-    """Q035"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    description: str = betterproto.string_field(3)
-    status: str = betterproto.string_field(4)
-    index: int = betterproto.int32_field(5)
-    total: int = betterproto.int32_field(6)
-    execution_time: int = betterproto.int32_field(7)
-
-
-@dataclass
-class PrintModelResultLine(betterproto.Message):
-    """Q011"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    description: str = betterproto.string_field(3)
-    status: str = betterproto.string_field(4)
-    index: int = betterproto.int32_field(5)
-    total: int = betterproto.int32_field(6)
-    execution_time: int = betterproto.int32_field(7)
-
-
-@dataclass
-class PrintSnapshotErrorResultLine(betterproto.Message):
-    """Q013"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    description: str = betterproto.string_field(3)
-    status: str = betterproto.string_field(4)
-    index: int = betterproto.int32_field(5)
-    total: int = betterproto.int32_field(6)
-    execution_time: int = betterproto.int32_field(7)
-    cfg: Dict[str, str] = betterproto.map_field(
-        8, betterproto.TYPE_STRING, betterproto.TYPE_STRING
-    )
-
-
-@dataclass
-class PrintSnapshotResultLine(betterproto.Message):
-    """Q014"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    description: str = betterproto.string_field(3)
-    status: str = betterproto.string_field(4)
-    index: int = betterproto.int32_field(5)
-    total: int = betterproto.int32_field(6)
-    execution_time: int = betterproto.int32_field(7)
-    cfg: Dict[str, str] = betterproto.map_field(
-        8, betterproto.TYPE_STRING, betterproto.TYPE_STRING
-    )
-
-
-@dataclass
-class PrintSeedErrorResultLine(betterproto.Message):
-    """Q015"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    status: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    total: int = betterproto.int32_field(5)
-    execution_time: int = betterproto.int32_field(6)
-    schema: str = betterproto.string_field(7)
-    relation: str = betterproto.string_field(8)
-
-
-@dataclass
-class PrintSeedResultLine(betterproto.Message):
-    """Q016"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    status: str = betterproto.string_field(3)
-    index: int = betterproto.int32_field(4)
-    total: int = betterproto.int32_field(5)
-    execution_time: int = betterproto.int32_field(6)
-    schema: str = betterproto.string_field(7)
-    relation: str = betterproto.string_field(8)
-
-
-@dataclass
-class PrintHookEndErrorLine(betterproto.Message):
-    """Q017"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    index: int = betterproto.int32_field(3)
-    total: int = betterproto.int32_field(4)
-    execution_time: int = betterproto.int32_field(5)
-    source_name: str = betterproto.string_field(6)
-    table_name: str = betterproto.string_field(7)
-
-
-@dataclass
-class PrintHookEndErrorStaleLine(betterproto.Message):
-    """Q018"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    index: int = betterproto.int32_field(3)
-    total: int = betterproto.int32_field(4)
-    execution_time: int = betterproto.int32_field(5)
-    source_name: str = betterproto.string_field(6)
-    table_name: str = betterproto.string_field(7)
-
-
-@dataclass
-class PrintHookEndWarnLine(betterproto.Message):
-    """Q019"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    index: int = betterproto.int32_field(3)
-    total: int = betterproto.int32_field(4)
-    execution_time: int = betterproto.int32_field(5)
-    source_name: str = betterproto.string_field(6)
-    table_name: str = betterproto.string_field(7)
-
-
-@dataclass
-class PrintHookEndPassLine(betterproto.Message):
-    """Q020"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    index: int = betterproto.int32_field(3)
-    total: int = betterproto.int32_field(4)
-    execution_time: int = betterproto.int32_field(5)
-    source_name: str = betterproto.string_field(6)
-    table_name: str = betterproto.string_field(7)
-
-
-@dataclass
-class NodeStart(betterproto.Message):
-    """Q023"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    unique_id: str = betterproto.string_field(3)
-
-
-@dataclass
-class NodeFinished(betterproto.Message):
-    """Q024"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    unique_id: str = betterproto.string_field(3)
-    run_result: "RunResultMsg" = betterproto.message_field(4)
-
-
-@dataclass
-class NodeCompiling(betterproto.Message):
-    """Q030"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    unique_id: str = betterproto.string_field(3)
-
-
-@dataclass
-class NodeExecuting(betterproto.Message):
-    """Q031"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    node_info: "NodeInfo" = betterproto.message_field(2)
-    unique_id: str = betterproto.string_field(3)
-
-
-@dataclass
-class EndResult(betterproto.Message):
-    """Q037"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    results: List["RunResultMsg"] = betterproto.message_field(2)
-    elapsed_time: float = betterproto.float_field(3)
-    generated_at: datetime = betterproto.message_field(4)
-    success: bool = betterproto.bool_field(5)
-
-
-@dataclass
-class MainKeyboardInterrupt(betterproto.Message):
-    """Z001"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class MainStackTrace(betterproto.Message):
-    """Z003"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    stack_trace: str = betterproto.string_field(2)
-
-
-@dataclass
-class MainTrackingUserState(betterproto.Message):
-    """A003"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    user_state: str = betterproto.string_field(2)
-
-
-@dataclass
-class ParsingStart(betterproto.Message):
-    """I001"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ParsingCompiling(betterproto.Message):
-    """I002"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ParsingWritingManifest(betterproto.Message):
-    """I003"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ParsingDone(betterproto.Message):
-    """I004"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ManifestDependenciesLoaded(betterproto.Message):
-    """I005"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ManifestLoaderCreated(betterproto.Message):
-    """I006"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ManifestLoaded(betterproto.Message):
-    """I007"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ManifestChecked(betterproto.Message):
-    """I008"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ManifestFlatGraphBuilt(betterproto.Message):
-    """I009"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ReportPerformancePath(betterproto.Message):
-    """I010"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    path: str = betterproto.string_field(2)
-
-
-@dataclass
-class GitSparseCheckoutSubdirectory(betterproto.Message):
-    """M001"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    subdir: str = betterproto.string_field(2)
-
-
-@dataclass
-class GitProgressCheckoutRevision(betterproto.Message):
-    """M002"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    revision: str = betterproto.string_field(2)
-
-
-@dataclass
-class GitProgressUpdatingExistingDependency(betterproto.Message):
-    """M003"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    dir: str = betterproto.string_field(2)
-
-
-@dataclass
-class GitProgressPullingNewDependency(betterproto.Message):
-    """M004"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    dir: str = betterproto.string_field(2)
-
-
-@dataclass
-class GitNothingToDo(betterproto.Message):
-    """M005"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    sha: str = betterproto.string_field(2)
-
-
-@dataclass
-class GitProgressUpdatedCheckoutRange(betterproto.Message):
-    """M006"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    start_sha: str = betterproto.string_field(2)
-    end_sha: str = betterproto.string_field(3)
-
-
-@dataclass
-class GitProgressCheckedOutAt(betterproto.Message):
-    """M007"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    end_sha: str = betterproto.string_field(2)
-
-
-@dataclass
-class RegistryIndexProgressMakingGETRequest(betterproto.Message):
-    """M022"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    url: str = betterproto.string_field(2)
-
-
-@dataclass
-class RegistryIndexProgressGETResponse(betterproto.Message):
-    """M023"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    url: str = betterproto.string_field(2)
-    resp_code: int = betterproto.int32_field(3)
-
-
-@dataclass
-class RegistryProgressMakingGETRequest(betterproto.Message):
-    """M008"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    url: str = betterproto.string_field(2)
-
-
-@dataclass
-class RegistryProgressGETResponse(betterproto.Message):
-    """M009"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    url: str = betterproto.string_field(2)
-    resp_code: int = betterproto.int32_field(3)
-
-
-@dataclass
-class RegistryResponseUnexpectedType(betterproto.Message):
-    """M024"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    response: str = betterproto.string_field(2)
-
-
-@dataclass
-class RegistryResponseMissingTopKeys(betterproto.Message):
-    """M025"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    response: str = betterproto.string_field(2)
-
-
-@dataclass
-class RegistryResponseMissingNestedKeys(betterproto.Message):
-    """M026"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    response: str = betterproto.string_field(2)
-
-
-@dataclass
-class RegistryResponseExtraNestedKeys(betterproto.Message):
-    """m027"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    response: str = betterproto.string_field(2)
-
-
-@dataclass
-class SystemErrorRetrievingModTime(betterproto.Message):
-    """Z004"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    path: str = betterproto.string_field(2)
-
-
-@dataclass
-class SystemCouldNotWrite(betterproto.Message):
-    """Z005"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    path: str = betterproto.string_field(2)
-    reason: str = betterproto.string_field(3)
-    exc: str = betterproto.string_field(4)
-
-
-@dataclass
-class SystemExecutingCmd(betterproto.Message):
-    """Z006"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    cmd: List[str] = betterproto.string_field(2)
-
-
-@dataclass
-class SystemStdOutMsg(betterproto.Message):
-    """Z007"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    bmsg: bytes = betterproto.bytes_field(2)
-
-
-@dataclass
-class SystemStdErrMsg(betterproto.Message):
-    """Z008"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    bmsg: bytes = betterproto.bytes_field(2)
-
-
-@dataclass
-class SystemReportReturnCode(betterproto.Message):
-    """Z009"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    returncode: int = betterproto.int32_field(2)
-
-
-@dataclass
-class SelectorReportInvalidSelector(betterproto.Message):
-    """M010"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    valid_selectors: str = betterproto.string_field(2)
-    spec_method: str = betterproto.string_field(3)
-    raw_spec: str = betterproto.string_field(4)
-
-
-@dataclass
-class MacroEventInfo(betterproto.Message):
-    """M011"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    msg: str = betterproto.string_field(2)
-
-
-@dataclass
-class MacroEventDebug(betterproto.Message):
-    """M012"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    msg: str = betterproto.string_field(2)
-
-
-@dataclass
 class NewConnection(betterproto.Message):
     """E005"""
 
@@ -837,6 +350,15 @@ class ConnectionClosed(betterproto.Message):
 
     info: "EventInfo" = betterproto.message_field(1)
     conn_name: str = betterproto.string_field(2)
+
+
+@dataclass
+class RollbackFailed(betterproto.Message):
+    """E009"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    conn_name: str = betterproto.string_field(2)
+    exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
@@ -1071,6 +593,14 @@ class AdapterImportError(betterproto.Message):
 
 
 @dataclass
+class PluginLoadError(betterproto.Message):
+    """E036"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc_info: str = betterproto.string_field(2)
+
+
+@dataclass
 class NewConnectionOpening(betterproto.Message):
     """E037"""
 
@@ -1097,35 +627,131 @@ class CodeExecutionStatus(betterproto.Message):
 
 
 @dataclass
-class TimingInfoCollected(betterproto.Message):
-    """Z010"""
+class WriteCatalogFailure(betterproto.Message):
+    """E041"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    num_exceptions: int = betterproto.int32_field(2)
+
+
+@dataclass
+class CatalogWritten(betterproto.Message):
+    """E042"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    path: str = betterproto.string_field(2)
+
+
+@dataclass
+class CannotGenerateDocs(betterproto.Message):
+    """E043"""
 
     info: "EventInfo" = betterproto.message_field(1)
 
 
 @dataclass
-class MergedFromState(betterproto.Message):
-    """A004"""
+class BuildingCatalog(betterproto.Message):
+    """E044"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    num_merged: int = betterproto.int32_field(2)
-    sample: List[str] = betterproto.string_field(3)
 
 
 @dataclass
-class MissingProfileTarget(betterproto.Message):
-    """A005"""
+class DatabaseErrorRunningHook(betterproto.Message):
+    """E045"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    profile_name: str = betterproto.string_field(2)
-    target_name: str = betterproto.string_field(3)
+    hook_type: str = betterproto.string_field(2)
 
 
 @dataclass
-class InvalidVarsYAML(betterproto.Message):
-    """A008"""
+class HooksRunning(betterproto.Message):
+    """E046"""
 
     info: "EventInfo" = betterproto.message_field(1)
+    num_hooks: int = betterproto.int32_field(2)
+    hook_type: str = betterproto.string_field(3)
+
+
+@dataclass
+class HookFinished(betterproto.Message):
+    """E047"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    stat_line: str = betterproto.string_field(2)
+    execution: str = betterproto.string_field(3)
+    execution_time: float = betterproto.float_field(4)
+
+
+@dataclass
+class ParseCmdStart(betterproto.Message):
+    """I001"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ParseCmdCompiling(betterproto.Message):
+    """I002"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ParseCmdWritingManifest(betterproto.Message):
+    """I003"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ParseCmdDone(betterproto.Message):
+    """I004"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ManifestDependenciesLoaded(betterproto.Message):
+    """I005"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ManifestLoaderCreated(betterproto.Message):
+    """I006"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ManifestLoaded(betterproto.Message):
+    """I007"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ManifestChecked(betterproto.Message):
+    """I008"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ManifestFlatGraphBuilt(betterproto.Message):
+    """I009"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class ParseCmdPerfInfoPath(betterproto.Message):
+    """I010"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    path: str = betterproto.string_field(2)
 
 
 @dataclass
@@ -1324,7 +950,7 @@ class StaticParsingMacroOverrideDetected(betterproto.Message):
 
 @dataclass
 class StaticParserSuccess(betterproto.Message):
-    """I008"""
+    """I036"""
 
     info: "EventInfo" = betterproto.message_field(1)
     path: str = betterproto.string_field(2)
@@ -1453,11 +1079,600 @@ class InvalidRefInTestNode(betterproto.Message):
 
 
 @dataclass
+class GitSparseCheckoutSubdirectory(betterproto.Message):
+    """M001"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    subdir: str = betterproto.string_field(2)
+
+
+@dataclass
+class GitProgressCheckoutRevision(betterproto.Message):
+    """M002"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    revision: str = betterproto.string_field(2)
+
+
+@dataclass
+class GitProgressUpdatingExistingDependency(betterproto.Message):
+    """M003"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    dir: str = betterproto.string_field(2)
+
+
+@dataclass
+class GitProgressPullingNewDependency(betterproto.Message):
+    """M004"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    dir: str = betterproto.string_field(2)
+
+
+@dataclass
+class GitNothingToDo(betterproto.Message):
+    """M005"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    sha: str = betterproto.string_field(2)
+
+
+@dataclass
+class GitProgressUpdatedCheckoutRange(betterproto.Message):
+    """M006"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    start_sha: str = betterproto.string_field(2)
+    end_sha: str = betterproto.string_field(3)
+
+
+@dataclass
+class GitProgressCheckedOutAt(betterproto.Message):
+    """M007"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    end_sha: str = betterproto.string_field(2)
+
+
+@dataclass
+class RegistryProgressGETRequest(betterproto.Message):
+    """M008"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    url: str = betterproto.string_field(2)
+
+
+@dataclass
+class RegistryProgressGETResponse(betterproto.Message):
+    """M009"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    url: str = betterproto.string_field(2)
+    resp_code: int = betterproto.int32_field(3)
+
+
+@dataclass
+class SelectorReportInvalidSelector(betterproto.Message):
+    """M010"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    valid_selectors: str = betterproto.string_field(2)
+    spec_method: str = betterproto.string_field(3)
+    raw_spec: str = betterproto.string_field(4)
+
+
+@dataclass
+class MacroEventInfo(betterproto.Message):
+    """M011"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    msg: str = betterproto.string_field(2)
+
+
+@dataclass
+class MacroEventDebug(betterproto.Message):
+    """M012"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    msg: str = betterproto.string_field(2)
+
+
+@dataclass
+class DepsNoPackagesFound(betterproto.Message):
+    """M013"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class DepsStartPackageInstall(betterproto.Message):
+    """M014"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    package_name: str = betterproto.string_field(2)
+
+
+@dataclass
+class DepsInstallInfo(betterproto.Message):
+    """M015"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    version_name: str = betterproto.string_field(2)
+
+
+@dataclass
+class DepsUpdateAvailable(betterproto.Message):
+    """M016"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    version_latest: str = betterproto.string_field(2)
+
+
+@dataclass
+class DepsUpToDate(betterproto.Message):
+    """M017"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class DepsListSubdirectory(betterproto.Message):
+    """M018"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    subdirectory: str = betterproto.string_field(2)
+
+
+@dataclass
+class DepsNotifyUpdatesAvailable(betterproto.Message):
+    """M019"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    packages: "ListOfStrings" = betterproto.message_field(2)
+
+
+@dataclass
+class RetryExternalCall(betterproto.Message):
+    """M020"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    attempt: int = betterproto.int32_field(2)
+    max: int = betterproto.int32_field(3)
+
+
+@dataclass
+class RecordRetryException(betterproto.Message):
+    """M021"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc: str = betterproto.string_field(2)
+
+
+@dataclass
+class RegistryIndexProgressGETRequest(betterproto.Message):
+    """M022"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    url: str = betterproto.string_field(2)
+
+
+@dataclass
+class RegistryIndexProgressGETResponse(betterproto.Message):
+    """M023"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    url: str = betterproto.string_field(2)
+    resp_code: int = betterproto.int32_field(3)
+
+
+@dataclass
+class RegistryResponseUnexpectedType(betterproto.Message):
+    """M024"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    response: str = betterproto.string_field(2)
+
+
+@dataclass
+class RegistryResponseMissingTopKeys(betterproto.Message):
+    """M025"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    response: str = betterproto.string_field(2)
+
+
+@dataclass
+class RegistryResponseMissingNestedKeys(betterproto.Message):
+    """M026"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    response: str = betterproto.string_field(2)
+
+
+@dataclass
+class RegistryResponseExtraNestedKeys(betterproto.Message):
+    """m027"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    response: str = betterproto.string_field(2)
+
+
+@dataclass
+class DepsSetDownloadDirectory(betterproto.Message):
+    """M028"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    path: str = betterproto.string_field(2)
+
+
+@dataclass
 class RunningOperationCaughtError(betterproto.Message):
     """Q001"""
 
     info: "EventInfo" = betterproto.message_field(1)
     exc: str = betterproto.string_field(2)
+
+
+@dataclass
+class CompileComplete(betterproto.Message):
+    """Q002"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class FreshnessCheckComplete(betterproto.Message):
+    """Q003"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class SeedHeader(betterproto.Message):
+    """Q004"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    header: str = betterproto.string_field(2)
+
+
+@dataclass
+class SeedHeaderSeparator(betterproto.Message):
+    """Q005"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    len_header: int = betterproto.int32_field(2)
+
+
+@dataclass
+class SQLRunnerException(betterproto.Message):
+    """Q006"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc: str = betterproto.string_field(2)
+    exc_info: str = betterproto.string_field(3)
+
+
+@dataclass
+class PrintErrorTestResult(betterproto.Message):
+    """Q007"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    name: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    num_models: int = betterproto.int32_field(5)
+    execution_time: int = betterproto.int32_field(6)
+
+
+@dataclass
+class PrintPassTestResult(betterproto.Message):
+    """Q008"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    name: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    num_models: int = betterproto.int32_field(5)
+    execution_time: int = betterproto.int32_field(6)
+
+
+@dataclass
+class PrintWarnTestResult(betterproto.Message):
+    """Q009"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    name: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    num_models: int = betterproto.int32_field(5)
+    execution_time: int = betterproto.int32_field(6)
+    num_failures: int = betterproto.int32_field(7)
+
+
+@dataclass
+class PrintFailureTestResult(betterproto.Message):
+    """Q010"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    name: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    num_models: int = betterproto.int32_field(5)
+    execution_time: int = betterproto.int32_field(6)
+    num_failures: int = betterproto.int32_field(7)
+
+
+@dataclass
+class PrintStartLine(betterproto.Message):
+    """Q011"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    description: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    total: int = betterproto.int32_field(5)
+
+
+@dataclass
+class PrintModelResultLine(betterproto.Message):
+    """Q012"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    description: str = betterproto.string_field(3)
+    status: str = betterproto.string_field(4)
+    index: int = betterproto.int32_field(5)
+    total: int = betterproto.int32_field(6)
+    execution_time: int = betterproto.int32_field(7)
+
+
+@dataclass
+class PrintModelErrorResultLine(betterproto.Message):
+    """Q013"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    description: str = betterproto.string_field(3)
+    status: str = betterproto.string_field(4)
+    index: int = betterproto.int32_field(5)
+    total: int = betterproto.int32_field(6)
+    execution_time: int = betterproto.int32_field(7)
+
+
+@dataclass
+class PrintSnapshotErrorResultLine(betterproto.Message):
+    """Q014"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    description: str = betterproto.string_field(3)
+    status: str = betterproto.string_field(4)
+    index: int = betterproto.int32_field(5)
+    total: int = betterproto.int32_field(6)
+    execution_time: int = betterproto.int32_field(7)
+    cfg: Dict[str, str] = betterproto.map_field(
+        8, betterproto.TYPE_STRING, betterproto.TYPE_STRING
+    )
+
+
+@dataclass
+class PrintSnapshotResultLine(betterproto.Message):
+    """Q015"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    description: str = betterproto.string_field(3)
+    status: str = betterproto.string_field(4)
+    index: int = betterproto.int32_field(5)
+    total: int = betterproto.int32_field(6)
+    execution_time: int = betterproto.int32_field(7)
+    cfg: Dict[str, str] = betterproto.map_field(
+        8, betterproto.TYPE_STRING, betterproto.TYPE_STRING
+    )
+
+
+@dataclass
+class PrintSeedErrorResultLine(betterproto.Message):
+    """Q016"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    status: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    total: int = betterproto.int32_field(5)
+    execution_time: int = betterproto.int32_field(6)
+    schema: str = betterproto.string_field(7)
+    relation: str = betterproto.string_field(8)
+
+
+@dataclass
+class PrintSeedResultLine(betterproto.Message):
+    """Q017"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    status: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    total: int = betterproto.int32_field(5)
+    execution_time: int = betterproto.int32_field(6)
+    schema: str = betterproto.string_field(7)
+    relation: str = betterproto.string_field(8)
+
+
+@dataclass
+class PrintHookEndErrorLine(betterproto.Message):
+    """Q018"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    index: int = betterproto.int32_field(3)
+    total: int = betterproto.int32_field(4)
+    execution_time: int = betterproto.int32_field(5)
+    source_name: str = betterproto.string_field(6)
+    table_name: str = betterproto.string_field(7)
+
+
+@dataclass
+class PrintHookEndErrorStaleLine(betterproto.Message):
+    """Q019"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    index: int = betterproto.int32_field(3)
+    total: int = betterproto.int32_field(4)
+    execution_time: int = betterproto.int32_field(5)
+    source_name: str = betterproto.string_field(6)
+    table_name: str = betterproto.string_field(7)
+
+
+@dataclass
+class PrintHookEndWarnLine(betterproto.Message):
+    """Q020"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    index: int = betterproto.int32_field(3)
+    total: int = betterproto.int32_field(4)
+    execution_time: int = betterproto.int32_field(5)
+    source_name: str = betterproto.string_field(6)
+    table_name: str = betterproto.string_field(7)
+
+
+@dataclass
+class PrintHookEndPassLine(betterproto.Message):
+    """Q021"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    index: int = betterproto.int32_field(3)
+    total: int = betterproto.int32_field(4)
+    execution_time: int = betterproto.int32_field(5)
+    source_name: str = betterproto.string_field(6)
+    table_name: str = betterproto.string_field(7)
+
+
+@dataclass
+class PrintCancelLine(betterproto.Message):
+    """Q022"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    conn_name: str = betterproto.string_field(2)
+
+
+@dataclass
+class DefaultSelector(betterproto.Message):
+    """Q023"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    name: str = betterproto.string_field(2)
+
+
+@dataclass
+class NodeStart(betterproto.Message):
+    """Q024"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    unique_id: str = betterproto.string_field(3)
+
+
+@dataclass
+class NodeFinished(betterproto.Message):
+    """Q025"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    unique_id: str = betterproto.string_field(3)
+    run_result: "RunResultMsg" = betterproto.message_field(4)
+
+
+@dataclass
+class QueryCancelationUnsupported(betterproto.Message):
+    """Q026"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    type: str = betterproto.string_field(2)
+
+
+@dataclass
+class ConcurrencyLine(betterproto.Message):
+    """Q027"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    num_threads: int = betterproto.int32_field(2)
+    target_name: str = betterproto.string_field(3)
+
+
+@dataclass
+class CompilingNode(betterproto.Message):
+    """Q028"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    unique_id: str = betterproto.string_field(2)
+
+
+@dataclass
+class WritingInjectedSQLForNode(betterproto.Message):
+    """Q029"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    unique_id: str = betterproto.string_field(2)
+
+
+@dataclass
+class NodeCompiling(betterproto.Message):
+    """Q030"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    unique_id: str = betterproto.string_field(3)
+
+
+@dataclass
+class NodeExecuting(betterproto.Message):
+    """Q031"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    unique_id: str = betterproto.string_field(3)
+
+
+@dataclass
+class PrintHookStartLine(betterproto.Message):
+    """Q032"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    statement: str = betterproto.string_field(3)
+    index: int = betterproto.int32_field(4)
+    total: int = betterproto.int32_field(5)
+
+
+@dataclass
+class PrintHookEndLine(betterproto.Message):
+    """Q033"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    statement: str = betterproto.string_field(3)
+    status: str = betterproto.string_field(4)
+    index: int = betterproto.int32_field(5)
+    total: int = betterproto.int32_field(6)
+    execution_time: int = betterproto.int32_field(7)
+
+
+@dataclass
+class SkippingDetails(betterproto.Message):
+    """Q034"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_info: "NodeInfo" = betterproto.message_field(2)
+    resource_type: str = betterproto.string_field(3)
+    schema: str = betterproto.string_field(4)
+    node_name: str = betterproto.string_field(5)
+    index: int = betterproto.int32_field(6)
+    total: int = betterproto.int32_field(7)
 
 
 @dataclass
@@ -1469,62 +1684,23 @@ class RunningOperationUncaughtError(betterproto.Message):
 
 
 @dataclass
-class DbtProjectError(betterproto.Message):
-    """A009"""
+class EndResult(betterproto.Message):
+    """Q037"""
 
     info: "EventInfo" = betterproto.message_field(1)
+    results: List["RunResultMsg"] = betterproto.message_field(2)
+    elapsed_time: float = betterproto.float_field(3)
+    generated_at: datetime = betterproto.message_field(4)
+    success: bool = betterproto.bool_field(5)
 
 
 @dataclass
-class DbtProjectErrorException(betterproto.Message):
-    """A010"""
+class CatchableExceptionOnRun(betterproto.Message):
+    """W002"""
 
     info: "EventInfo" = betterproto.message_field(1)
     exc: str = betterproto.string_field(2)
-
-
-@dataclass
-class DbtProfileError(betterproto.Message):
-    """A011"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class DbtProfileErrorException(betterproto.Message):
-    """A012"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    exc: str = betterproto.string_field(2)
-
-
-@dataclass
-class ProfileListTitle(betterproto.Message):
-    """A013"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ListSingleProfile(betterproto.Message):
-    """A014"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    profile: str = betterproto.string_field(2)
-
-
-@dataclass
-class NoDefinedProfiles(betterproto.Message):
-    """A015"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ProfileHelpMessage(betterproto.Message):
-    """A016"""
-
-    info: "EventInfo" = betterproto.message_field(1)
+    exc_info: str = betterproto.string_field(3)
 
 
 @dataclass
@@ -1544,6 +1720,112 @@ class GenericExceptionOnRun(betterproto.Message):
     build_path: str = betterproto.string_field(2)
     unique_id: str = betterproto.string_field(3)
     exc: str = betterproto.string_field(4)
+
+
+@dataclass
+class NodeConnectionReleaseError(betterproto.Message):
+    """W005"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    node_name: str = betterproto.string_field(2)
+    exc: str = betterproto.string_field(3)
+    exc_info: str = betterproto.string_field(4)
+
+
+@dataclass
+class FoundStats(betterproto.Message):
+    """W006"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    stat_line: str = betterproto.string_field(2)
+
+
+@dataclass
+class MainKeyboardInterrupt(betterproto.Message):
+    """Z001"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class MainEncounteredError(betterproto.Message):
+    """Z002"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc: str = betterproto.string_field(2)
+
+
+@dataclass
+class MainStackTrace(betterproto.Message):
+    """Z003"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    stack_trace: str = betterproto.string_field(2)
+
+
+@dataclass
+class SystemErrorRetrievingModTime(betterproto.Message):
+    """Z004"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    path: str = betterproto.string_field(2)
+
+
+@dataclass
+class SystemCouldNotWrite(betterproto.Message):
+    """Z005"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    path: str = betterproto.string_field(2)
+    reason: str = betterproto.string_field(3)
+    exc: str = betterproto.string_field(4)
+
+
+@dataclass
+class SystemExecutingCmd(betterproto.Message):
+    """Z006"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    cmd: List[str] = betterproto.string_field(2)
+
+
+@dataclass
+class SystemStdOutMsg(betterproto.Message):
+    """Z007"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    bmsg: bytes = betterproto.bytes_field(2)
+
+
+@dataclass
+class SystemStdErrMsg(betterproto.Message):
+    """Z008"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    bmsg: bytes = betterproto.bytes_field(2)
+
+
+@dataclass
+class SystemReportReturnCode(betterproto.Message):
+    """Z009"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    returncode: int = betterproto.int32_field(2)
+
+
+@dataclass
+class TimingInfoCollected(betterproto.Message):
+    """Z010"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+
+
+@dataclass
+class PrintDebugStackTrace(betterproto.Message):
+    """Z011"""
+
+    info: "EventInfo" = betterproto.message_field(1)
+    exc_info: str = betterproto.string_field(2)
 
 
 @dataclass
@@ -1587,133 +1869,8 @@ class OpenCommand(betterproto.Message):
 
 
 @dataclass
-class DepsNoPackagesFound(betterproto.Message):
-    """M013"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class DepsStartPackageInstall(betterproto.Message):
-    """M014"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    package_name: str = betterproto.string_field(2)
-
-
-@dataclass
-class DepsInstallInfo(betterproto.Message):
-    """M015"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    version_name: str = betterproto.string_field(2)
-
-
-@dataclass
-class DepsUpdateAvailable(betterproto.Message):
-    """M016"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    version_latest: str = betterproto.string_field(2)
-
-
-@dataclass
-class DepsUTD(betterproto.Message):
-    """M017"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class DepsListSubdirectory(betterproto.Message):
-    """M018"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    subdirectory: str = betterproto.string_field(2)
-
-
-@dataclass
-class DepsNotifyUpdatesAvailable(betterproto.Message):
-    """M019"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    packages: "ListOfStrings" = betterproto.message_field(2)
-
-
-@dataclass
-class DatabaseErrorRunning(betterproto.Message):
-    """E038"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    hook_type: str = betterproto.string_field(2)
-
-
-@dataclass
 class EmptyLine(betterproto.Message):
     """Z017"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class HooksRunning(betterproto.Message):
-    """E039"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    num_hooks: int = betterproto.int32_field(2)
-    hook_type: str = betterproto.string_field(3)
-
-
-@dataclass
-class HookFinished(betterproto.Message):
-    """E040"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    stat_line: str = betterproto.string_field(2)
-    execution: str = betterproto.string_field(3)
-    execution_time: float = betterproto.float_field(4)
-
-
-@dataclass
-class WriteCatalogFailure(betterproto.Message):
-    """E041"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    num_exceptions: int = betterproto.int32_field(2)
-
-
-@dataclass
-class CatalogWritten(betterproto.Message):
-    """E042"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    path: str = betterproto.string_field(2)
-
-
-@dataclass
-class CannotGenerateDocs(betterproto.Message):
-    """E043"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class BuildingCatalog(betterproto.Message):
-    """E044"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class CompileComplete(betterproto.Message):
-    """Q002"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class FreshnessCheckComplete(betterproto.Message):
-    """Q003"""
 
     info: "EventInfo" = betterproto.message_field(1)
 
@@ -1740,22 +1897,6 @@ class ServingDocsExitInfo(betterproto.Message):
     """Z020"""
 
     info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class SeedHeader(betterproto.Message):
-    """Q004"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    header: str = betterproto.string_field(2)
-
-
-@dataclass
-class SeedHeaderSeparator(betterproto.Message):
-    """Q005"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    len_header: int = betterproto.int32_field(2)
 
 
 @dataclass
@@ -1790,7 +1931,7 @@ class StatsLine(betterproto.Message):
 
 @dataclass
 class RunResultError(betterproto.Message):
-    """I046"""
+    """Z024"""
 
     info: "EventInfo" = betterproto.message_field(1)
     msg: str = betterproto.string_field(2)
@@ -1858,119 +1999,6 @@ class PrintSkipBecauseError(betterproto.Message):
 
 
 @dataclass
-class PrintCancelLine(betterproto.Message):
-    """Q021"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    conn_name: str = betterproto.string_field(2)
-
-
-@dataclass
-class DefaultSelector(betterproto.Message):
-    """Q022"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    name: str = betterproto.string_field(2)
-
-
-@dataclass
-class QueryCancelationUnsupported(betterproto.Message):
-    """Q025"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    type: str = betterproto.string_field(2)
-
-
-@dataclass
-class StarterProjectPath(betterproto.Message):
-    """A017"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    dir: str = betterproto.string_field(2)
-
-
-@dataclass
-class ConfigFolderDirectory(betterproto.Message):
-    """A018"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    dir: str = betterproto.string_field(2)
-
-
-@dataclass
-class NoSampleProfileFound(betterproto.Message):
-    """A019"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    adapter: str = betterproto.string_field(2)
-
-
-@dataclass
-class ProfileWrittenWithSample(betterproto.Message):
-    """A020"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    name: str = betterproto.string_field(2)
-    path: str = betterproto.string_field(3)
-
-
-@dataclass
-class ProfileWrittenWithTargetTemplateYAML(betterproto.Message):
-    """A021"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    name: str = betterproto.string_field(2)
-    path: str = betterproto.string_field(3)
-
-
-@dataclass
-class ProfileWrittenWithProjectTemplateYAML(betterproto.Message):
-    """A022"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    name: str = betterproto.string_field(2)
-    path: str = betterproto.string_field(3)
-
-
-@dataclass
-class SettingUpProfile(betterproto.Message):
-    """A023"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class InvalidProfileTemplateYAML(betterproto.Message):
-    """A024"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class ProjectNameAlreadyExists(betterproto.Message):
-    """A025"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    name: str = betterproto.string_field(2)
-
-
-@dataclass
-class GetAddendum(betterproto.Message):
-    """A026"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    msg: str = betterproto.string_field(2)
-
-
-@dataclass
-class DepsSetDownloadDirectory(betterproto.Message):
-    """A027"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    path: str = betterproto.string_field(2)
-
-
-@dataclass
 class EnsureGitInstalled(betterproto.Message):
     """Z036"""
 
@@ -1989,22 +2017,6 @@ class DepsSymlinkNotAvailable(betterproto.Message):
     """Z038"""
 
     info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class CompilingNode(betterproto.Message):
-    """Q027"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    unique_id: str = betterproto.string_field(2)
-
-
-@dataclass
-class WritingInjectedSQLForNode(betterproto.Message):
-    """Q028"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    unique_id: str = betterproto.string_field(2)
 
 
 @dataclass
@@ -2044,12 +2056,11 @@ class FlushEventsFailure(betterproto.Message):
 
 
 @dataclass
-class RetryExternalCall(betterproto.Message):
-    """M020"""
+class TrackingInitializeFailure(betterproto.Message):
+    """Z044"""
 
     info: "EventInfo" = betterproto.message_field(1)
-    attempt: int = betterproto.int32_field(2)
-    max: int = betterproto.int32_field(3)
+    exc_info: str = betterproto.string_field(2)
 
 
 @dataclass
@@ -2075,14 +2086,6 @@ class EventBufferFull(betterproto.Message):
     """Z048"""
 
     info: "EventInfo" = betterproto.message_field(1)
-
-
-@dataclass
-class RecordRetryException(betterproto.Message):
-    """M021"""
-
-    info: "EventInfo" = betterproto.message_field(1)
-    exc: str = betterproto.string_field(2)
 
 
 @dataclass

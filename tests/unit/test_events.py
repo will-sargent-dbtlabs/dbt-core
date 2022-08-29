@@ -1,7 +1,7 @@
 # flake8: noqa
 from dbt.events.test_types import UnitTestInfo
 from dbt.events import AdapterLogger
-from dbt.events.functions import event_to_json
+from dbt.events.functions import event_to_json, LOG_VERSION
 from dbt.events.types import *
 from dbt.events.test_types import *
 
@@ -159,21 +159,21 @@ def MockNode():
 
 
 sample_values = [
-    MainReportVersion(version=""),
+    MainReportVersion(version="", log_version=LOG_VERSION),
     MainKeyboardInterrupt(),
     MainEncounteredError(exc=""),
     MainStackTrace(stack_trace=""),
     MainTrackingUserState(user_state=""),
-    ParsingStart(),
-    ParsingCompiling(),
-    ParsingWritingManifest(),
-    ParsingDone(),
+    ParseCmdStart(),
+    ParseCmdCompiling(),
+    ParseCmdWritingManifest(),
+    ParseCmdDone(),
     ManifestDependenciesLoaded(),
     ManifestLoaderCreated(),
     ManifestLoaded(),
     ManifestChecked(),
     ManifestFlatGraphBuilt(),
-    ReportPerformancePath(path=""),
+    ParseCmdPerfInfoPath(path=""),
     GitSparseCheckoutSubdirectory(subdir=""),
     GitProgressCheckoutRevision(revision=""),
     GitProgressUpdatingExistingDependency(dir=""),
@@ -311,7 +311,7 @@ sample_values = [
     DepsUpdateAvailable(version_latest=""),
     DepsListSubdirectory(subdirectory=""),
     DepsNotifyUpdatesAvailable(packages=[]),
-    DatabaseErrorRunning(hook_type=""),
+    DatabaseErrorRunningHook(hook_type=""),
     EmptyLine(),
     HooksRunning(num_hooks=0, hook_type=""),
     HookFinished(stat_line="", execution="", execution_time=0),
@@ -400,7 +400,7 @@ sample_values = [
     SettingUpProfile(),
     InvalidProfileTemplateYAML(),
     ProjectNameAlreadyExists(name=""),
-    GetAddendum(msg=""),
+    ProjectCreated(project_name="", docs_url="", slack_url=""),
     DepsSetDownloadDirectory(path=""),
     EnsureGitInstalled(),
     DepsCreatingLocalSymlink(),
@@ -424,14 +424,14 @@ sample_values = [
     AdapterEventError(name="", base_msg="", args=()),
     PrintDebugStackTrace(),
     MainReportArgs(args={}),
-    RegistryProgressMakingGETRequest(url=""),
-    RegistryIndexProgressMakingGETRequest(url=""),
+    RegistryProgressGETRequest(url=""),
+    RegistryIndexProgressGETRequest(url=""),
     RegistryIndexProgressGETResponse(url="", resp_code=1),
     RegistryResponseUnexpectedType(response=""),
     RegistryResponseMissingTopKeys(response=""),
     RegistryResponseMissingNestedKeys(response=""),
     RegistryResponseExtraNestedKeys(response=""),
-    DepsUTD(),
+    DepsUpToDate(),
     PartialParsingNotEnabled(),
     SQLRunnerException(exc=""),
     DropRelation(dropped=ReferenceKeyMsg(database="", schema="", identifier="")),

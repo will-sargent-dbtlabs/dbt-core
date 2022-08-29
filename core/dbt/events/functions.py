@@ -24,7 +24,7 @@ from typing import List, Optional, Union, Callable
 from collections import deque
 
 global LOG_VERSION
-LOG_VERSION = 2
+LOG_VERSION = 3
 
 # create the global event history buffer with the default max size (10k)
 # python 3.7 doesn't support type hints on globals, but mypy requires them. hence the ignore.
