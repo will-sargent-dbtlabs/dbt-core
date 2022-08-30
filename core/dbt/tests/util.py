@@ -1,4 +1,3 @@
-import io
 import os
 import shutil
 import yaml
@@ -6,7 +5,7 @@ import json
 import warnings
 from datetime import datetime
 from typing import List
-from contextlib import contextmanager, redirect_stdout
+from contextlib import contextmanager
 
 from dbt.main import handle_and_check
 from dbt.logger import log_manager
@@ -18,7 +17,6 @@ from dbt.events.test_types import IntegrationTestDebug
 # Test utilities
 #   run_dbt
 #   run_dbt_and_capture
-#   run_dbt_and_capture_stdout
 #   get_manifest
 #   copy_file
 #   rm_file
@@ -95,16 +93,6 @@ def run_dbt_and_capture(args: List[str] = None, expect_pass=True):
     # make checks for strings in the logs fail, so remove those.
     if '{"code":' in stdout:
         stdout = stdout.replace("\\", "")
-
-    return res, stdout
-
-
-# Use this if you need to capture the standard out in a test
-def run_dbt_and_capture_stdout(args: List[str] = None, expect_pass=True):
-    stringbuf = io.StringIO()
-    with redirect_stdout(stringbuf):
-        res = run_dbt(args, expect_pass=expect_pass)
-    stdout = stringbuf.getvalue()
 
     return res, stdout
 

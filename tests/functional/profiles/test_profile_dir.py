@@ -1,11 +1,13 @@
+import io
 import os
 import pytest
 import yaml
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stdout
 from pathlib import Path
+from typing import List
 
 import dbt.flags as flags
-from dbt.tests.util import run_dbt_and_capture_stdout, write_file, rm_file
+from dbt.tests.util import run_dbt, write_file, rm_file
 
 
 @pytest.fixture(scope="class")
@@ -80,6 +82,16 @@ def environ(env):
                 del os.environ[key]
             else:
                 os.environ[key] = value
+
+
+# Use this if you need to capture the standard out in a test
+def run_dbt_and_capture_stdout(args: List[str] = None, expect_pass=True):
+    stringbuf = io.StringIO()
+    with redirect_stdout(stringbuf):
+        res = run_dbt(args, expect_pass=expect_pass)
+    stdout = stringbuf.getvalue()
+
+    return res, stdout
 
 
 class TestProfiles:
