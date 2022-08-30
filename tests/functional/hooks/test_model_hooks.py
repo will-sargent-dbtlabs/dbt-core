@@ -227,7 +227,7 @@ class TestPrePostModelHooksOnSeeds(object):
             "seeds": {
                 "post-hook": [
                     "alter table {{ this }} add column new_col int",
-                    "update {{ this }} set new_col = 1"
+                    "update {{ this }} set new_col = 1",
                 ],
                 "quote_columns": False,
             },
@@ -263,7 +263,7 @@ class TestPrePostModelHooksOnSeedsPlusPrefixedWhitespace(TestPrePostModelHooksOn
             "seed-paths": ["seeds"],
             "models": {},
             "seeds": {
-                "+ post-hook": [
+                "+post-hook": [
                     "alter table {{ this }} add column new_col int",
                     "update {{ this }} set new_col = 1",
                 ],
